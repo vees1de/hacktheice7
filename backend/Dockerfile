@@ -5,6 +5,8 @@ FROM node:20-slim AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
+# Генерируем Prisma клиент здесь (после установки deps)
+RUN npx prisma generate
 
 # Билд приложения
 COPY . .
@@ -14,9 +16,11 @@ RUN npm run build
 FROM node:20-slim AS production
 WORKDIR /app
 
-# Копируем node_modules и dist из builder
+# Копируем node_modules (с сгенерированным Prisma) и dist из builder
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+# Также скопируй Prisma schema, если нужно (для миграций в runtime, но обычно не требуется)
+COPY --from=builder /app/prisma ./prisma
 
 # Env для прод (порт 8000)
 ENV NODE_ENV=production
