@@ -9,12 +9,12 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.use(cookieParser());
   app.enableCors({
-    origin: ['http://localhost:4201'],
+    origin: ['http://localhost:3000'],
     credentials: true,
     exposedHeaders: 'set-cookie'
   });
 
-  await app.listen(4200);
+  await app.listen(8080);
 
   if (module.hot) {
     module.hot.accept();

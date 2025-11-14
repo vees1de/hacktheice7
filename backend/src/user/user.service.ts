@@ -1,105 +1,92 @@
 import { Injectable } from '@nestjs/common';
-import { hash } from 'argon2';
-import { AuthDto } from 'src/auth/dto/auth.dto';
 import { PrismaService } from 'src/prisma.service';
+import { RegisterDto } from 'src/auth/dto/register.dto';
+import { hash } from 'argon2';
 import { UserDto } from './user.dto';
-import { startOfDay, subDays } from 'date-fns';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async getById(id: string) {
+  async create(dto: RegisterDto) {
+    const hashedPassword = await hash(dto.password);
+
+    // Убедитесь, что все ОБЯЗАТЕЛЬНЫЕ поля из схемы Prisma здесь
+    const user = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        passwordHash: hashedPassword,
+        regionId: dto.regionId,
+        authProvider: 'email' // Явно указываем, т.к. это регистрация по email
+      }
+    });
+
+    return user;
+  }
+
+  async getByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: {
-        id
-      },
-      include: {
-        tasks: true
+        email
       }
     });
   }
 
-  getByEmail(email: string) {
+  async getById(id: string) {
     return this.prisma.user.findUnique({
       where: {
-        email
-      },
-      include: {
-        tasks: true
+        id
       }
     });
   }
 
   async getProfile(id: string) {
-    const profile = await this.getById(id);
-
-    const totalTasks = profile.tasks.length;
-    const completedTasks = await this.prisma.task.count({
+    const user = await this.prisma.user.findUnique({
       where: {
-        userId: id,
-        isCompleted: true
-      }
-    });
-
-    const todayStart = startOfDay(new Date());
-    const weekStart = startOfDay(subDays(new Date(), 7));
-
-    const todayTasks = await this.prisma.task.count({
-      where: {
-        userId: id,
-        createdAt: {
-          gte: todayStart.toISOString()
+        id
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        snils: true,
+        isVerified: true,
+        authProvider: true,
+        consentGiven: true,
+        createdAt: true,
+        region: {
+          select: {
+            id: true,
+            name: true,
+            code: true
+          }
         }
       }
     });
-
-    const weekTasks = await this.prisma.task.count({
-      where: {
-        userId: id,
-        createdAt: {
-          gte: weekStart.toISOString()
-        }
-      }
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...rest } = profile;
-
-    return {
-      user: rest,
-      statistics: [
-        { label: 'Total', value: totalTasks },
-        { label: 'Completed tasks', value: completedTasks },
-        { label: 'Today tasks', value: todayTasks },
-        { label: 'Week tasks', value: weekTasks }
-      ]
-    };
+    return user;
   }
 
-  async create(dto: AuthDto) {
-    const user = {
-      email: dto.email,
-      name: '',
-      password: await hash(dto.password)
-    };
-
-    return this.prisma.user.create({
-      data: user
-    });
-  }
-
+  // --- ХЕНДЛЕР 2: Обновление профиля (updateProfile) ---
   async update(id: string, dto: UserDto) {
-    let data = dto;
-
-    if (dto.password) {
-      data = { ...dto, password: await hash(dto.password) };
-    }
-
-    return this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id },
-      data,
-      select: { name: true, email: true }
+      data: {
+        ...dto
+      },
+      // Возвращаем обновленный профиль
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        snils: true,
+        isVerified: true,
+        authProvider: true,
+        consentGiven: true,
+        createdAt: true
+      }
     });
+    return updatedUser;
   }
 }

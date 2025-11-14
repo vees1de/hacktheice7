@@ -1,11 +1,9 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
+  moduleFormat           = "esm" 
 }
 
 datasource db {
@@ -14,86 +12,240 @@ datasource db {
 }
 
 model User {
-  id String @id @default(cuid())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  email String @unique
-  name String?
-  password String
-
-  workInterval Int? @default(50) @map("work_interval")
-  breakInterval Int? @default(10) @map("break_interval")
-  intervalsCount Int? @default(7) @map("intervals_count")
-
-  tasks Task[]
-  timeBlocks TimeBlock[]
-  pomodoroSession PomodoroSession[]
-
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  
+  email         String    @unique
+  passwordHash  String?   // Может быть null при аутентификации через Госуслуги
+  authProvider  String    @default("email") // "email", "gosuslugi"
+  isVerified    Boolean   @default(false) // Подтвержден ли статус льготника
+  
+  name          String?
+  phone         String?
+  snils         String?   @db.VarChar(14) // Маскированный СНИЛС
+  consentGiven  Boolean   @default(false) // Согласие на обработку перс. данных
+  consentDate   DateTime? @map("consent_date")
+  
+  region        Region    @relation(fields: [regionId], references: [id])
+  regionId      String    @map("region_id")
+  
+  // Прямая связь через промежуточную таблицу
+  userBeneficiaryCategories UserBeneficiaryCategory[]
+  
+  preferences   UserPreference?
+  benefitStatus UserBenefitStatus[]
+  hiddenBenefits HiddenBenefit[]
+  savedOffers   SavedOffer[]
+  
+  authTokens    AuthToken[]
+  
   @@map("user")
 }
 
-model Task {
-  id String @id @default(cuid())
+model AuthToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  type      String   // "confirmation", "reset_password", "session"
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  name String 
-  priority Priority?
-  isCompleted Boolean @default(false) @map("is_completed")
-
-  user User @relation(fields: [userId], references: [id])
-  userId String @map("user_id")
-
-  @@map("task")
+  
+  @@map("auth_token")
 }
 
-model TimeBlock{
-  id String @id @default(cuid())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  name String
-  color String?
-  duration Int
-  order Int @default(1)
-
-  user User @relation(fields: [userId], references: [id])
-  userId String @map("user_id")
-  @@map("time_block")
+model Region {
+  id        String  @id @default(cuid())
+  name      String  @unique // Полное название региона
+  code      String  @unique // Код региона (например, "77" для Москвы)
+  type      String  // "federal", "regional", "municipal"
+  
+  users     User[]
+  // Обратные связи через промежуточные таблицы
+  benefitRegions BenefitRegion[]
+  offerRegions OfferRegion[]
+  
+  @@map("region")
 }
 
-model PomodoroSession {
-  id String @id @default(cuid())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  isCompleted Boolean? @default(false) @map("is_completed")
-
-  user User @relation(fields: [userId], references: [id])
-  userId String @map("user_id")
-
-  rounds PomodoroRound[]
-
-  @@map("pomodoro_session")
+model BeneficiaryCategory {
+  id        String  @id @default(cuid())
+  name      String  @unique // "pensioner", "disabled_1", "disabled_2", "disabled_3", "multichild_parent", "veteran", "low_income"
+  title     String  // Человекочитаемое название: "Пенсионер", "Инвалид 1 группы" и т.д.
+  icon      String? // Путь к иконке категории
+  
+  // Обратные связи через промежуточные таблицы
+  userCategories UserBeneficiaryCategory[]
+  benefitCategories BenefitBeneficiaryCategory[]
+  offerCategories OfferBeneficiaryCategory[]
+  
+  @@map("beneficiary_category")
 }
 
-model PomodoroRound {
-  id String @id @default(cuid())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  totalSeconds Int @map("total_seconds")
-  isCompleted Boolean? @default(false) @map("is_completed")
-
-  pomodoroSession PomodoroSession @relation(fields: [pomodoroSessionId], references: [id], onDelete: Cascade)
-  pomodoroSessionId String @map("pomodoro_session_id")
-
-  @@map("pomodoro_round")
+// Промежуточная таблица для связи многие-ко-многим User-BeneficiaryCategory
+model UserBeneficiaryCategory {
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete: Cascade для удаления связей при удалении пользователя
+  userId            String
+  beneficiaryCategory BeneficiaryCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId        String
+  
+  confirmed         Boolean           @default(false) // Подтвержден ли статус
+  confirmationDate  DateTime?         @map("confirmation_date")
+  
+  @@id([userId, categoryId])
+  @@map("user_beneficiary_category")
 }
 
-enum Priority {
-  low
-  medium
-  high
+model Benefit {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  title       String
+  description String?
+  type        String   // "federal", "regional", "municipal"
+  validFrom   DateTime @map("valid_from")
+  validTo     DateTime @map("valid_to")
+  
+  requirements String  // Требования для получения
+  howToGet    String   // Инструкция по получению
+  sourceUrl   String?  @map("source_url") // Официальный источник
+  
+  // Прямые связи через промежуточные таблицы
+  benefitRegions BenefitRegion[]
+  benefitCategories BenefitBeneficiaryCategory[]
+  
+  status      UserBenefitStatus[]
+  userHidden  HiddenBenefit[]
+  
+  @@map("benefit")
+}
+
+// Промежуточная таблица для связи многие-ко-многим Benefit-Region
+model BenefitRegion {
+  benefit   Benefit @relation(fields: [benefitId], references: [id], onDelete: Cascade)
+  benefitId String
+  region    Region   @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  regionId  String
+  
+  @@id([benefitId, regionId])
+  @@map("benefit_region")
+}
+
+// Промежуточная таблица для связи многие-ко-многим Benefit-BeneficiaryCategory
+model BenefitBeneficiaryCategory {
+  benefit             Benefit             @relation(fields: [benefitId], references: [id], onDelete: Cascade)
+  benefitId           String
+  beneficiaryCategory BeneficiaryCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId          String
+  
+  @@id([benefitId, categoryId])
+  @@map("benefit_beneficiary_category")
+}
+
+model Offer {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  title       String
+  description String?
+  partnerName String   @map("partner_name")
+  partnerLogo String?  @map("partner_logo")
+  discount    String   // Описание скидки: "10%", "Фиксированная скидка 100 рублей" и т.д.
+  validFrom   DateTime @map("valid_from")
+  validTo     DateTime @map("valid_to")
+  terms       String   // Условия использования предложения
+  
+  link        String?  // Ссылка на партнера или детали предложения
+  
+  // Прямые связи через промежуточные таблицы
+  offerRegions OfferRegion[]
+  offerCategories OfferBeneficiaryCategory[]
+  
+  savedByUsers SavedOffer[]
+  
+  @@map("offer")
+}
+
+// Промежуточная таблица для связи многие-ко-многим Offer-Region
+model OfferRegion {
+  offer     Offer   @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  offerId   String
+  region    Region  @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  regionId  String
+  
+  @@id([offerId, regionId])
+  @@map("offer_region")
+}
+
+// Промежуточная таблица для связи многие-ко-многим Offer-BeneficiaryCategory
+model OfferBeneficiaryCategory {
+  offer               Offer               @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  offerId             String
+  beneficiaryCategory BeneficiaryCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId          String
+  
+  @@id([offerId, categoryId])
+  @@map("offer_beneficiary_category")
+}
+
+model UserBenefitStatus {
+  id        String   @id @default(cuid())
+  status    String   @default("active") // "active", "expired", "needs_confirmation"
+  startDate DateTime @default(now()) @map("start_date")
+  endDate   DateTime? @map("end_date")
+  notes     String?
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  benefit   Benefit  @relation(fields: [benefitId], references: [id], onDelete: Cascade)
+  benefitId String   @map("benefit_id")
+  
+  @@unique([userId, benefitId])
+  @@map("user_benefit_status")
+}
+
+model HiddenBenefit {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  benefit   Benefit  @relation(fields: [benefitId], references: [id], onDelete: Cascade)
+  benefitId String
+  
+  @@id([userId, benefitId])
+  @@map("hidden_benefit")
+}
+
+model SavedOffer {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  offerId   String
+  
+  savedAt   DateTime @default(now()) @map("saved_at")
+  
+  @@id([userId, offerId])
+  @@map("saved_offer")
+}
+
+model UserPreference {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  
+  notificationEmail Boolean  @default(true)
+  notificationPush  Boolean  @default(true)
+  showExpired       Boolean  @default(false)
+  
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String   @unique @map("user_id")
+  
+  interestedCategories String[] // JSON массив категорий, интересующих пользователя
+  preferredRegions    String[] // JSON массив предпочитаемых регионов
+  
+  @@map("user_preference")
 }

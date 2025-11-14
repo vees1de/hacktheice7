@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { verify } from 'argon2';
 import { Response } from 'express';
 import { UserService } from 'src/user/user.service';
+import { RegisterDto } from './dto/register.dto';
 import { AuthDto } from './dto/auth.dto';
 
 @Injectable()
@@ -21,8 +22,7 @@ export class AuthService {
   ) {}
 
   async login(dto: AuthDto) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...user } = await this.validateUser(dto);
+    const { passwordHash, ...user } = await this.validateUser(dto);
     const tokens = this.issueTokens(user.id);
 
     return {
@@ -31,13 +31,12 @@ export class AuthService {
     };
   }
 
-  async register(dto: AuthDto) {
+  async register(dto: RegisterDto) {
     const oldUser = await this.userService.getByEmail(dto.email);
 
     if (oldUser) throw new BadRequestException('User already exists');
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...user } = await this.userService.create(dto);
+    const { passwordHash, ...user } = await this.userService.create(dto);
 
     const tokens = this.issueTokens(user.id);
 
@@ -51,8 +50,8 @@ export class AuthService {
     const result = await this.jwt.verifyAsync(refreshToken);
     if (!result) throw new UnauthorizedException('Invalid refresh token');
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...user } = await this.userService.getById(result.id);
+    // Поле называется 'passwordHash', а не 'password'
+    const { passwordHash, ...user } = await this.userService.getById(result.id);
 
     const tokens = this.issueTokens(user.id);
 
@@ -81,7 +80,12 @@ export class AuthService {
 
     if (!user) throw new NotFoundException('User not found');
 
-    const isValid = await verify(user.password, dto.password);
+    // Проверяем, что у пользователя есть пароль (он мог войти через Госуслуги)
+    if (!user.passwordHash)
+      throw new UnauthorizedException('Password login not available');
+
+    // Сверяем с 'passwordHash', а не 'password'
+    const isValid = await verify(user.passwordHash, dto.password);
 
     if (!isValid) throw new UnauthorizedException('Invalid password');
 
@@ -94,11 +98,11 @@ export class AuthService {
 
     res.cookie(this.REFRESH_TOKEN_NAME, refreshToken, {
       httpOnly: true,
-      domain: 'localhost',
+      domain: 'localhost', // Укажите ваш домен в .env для production
       expires: expiresIn,
-      secure: true,
-      // lax if production
-      sameSite: 'none'
+      secure: true, // В production должно быть true
+      // lax если production
+      sameSite: 'none' // 'lax' для production, 'none' для dev с разными портами
     });
   }
 
@@ -108,7 +112,6 @@ export class AuthService {
       domain: 'localhost',
       expires: new Date(0),
       secure: true,
-      // lax if production
       sameSite: 'none'
     });
   }
