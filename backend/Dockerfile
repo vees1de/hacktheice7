@@ -4,7 +4,7 @@ FROM node:20-slim AS builder
 # Установка зависимостей
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci
 
 # Билд приложения
 COPY . .
