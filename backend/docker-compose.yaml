@@ -1,0 +1,13 @@
+services:
+  nestjs-backend:
+    build: . # Путь к Dockerfile (текущая директория)
+    container_name: nestjs-backend
+    restart: unless-stopped # Авторестарт при краше
+    ports:
+      - '8000:8000' # Маппинг хост:контейнер
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+      # Добавь свои env: DB_URL, JWT_SECRET и т.д.
+    volumes:
+      - ./.env:/app/.env:ro # Если у тебя .env файл (только чтение)
