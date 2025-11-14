@@ -1,42 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 
-import { useAuthStore } from '../stores/auth.store';
+import { useLangStore } from '../stores/language.store';
 
-const authStore = useAuthStore();
-
-const userEmail = computed(() => authStore.user?.email || '');
+const langStore = useLangStore();
+const { change } = langStore;
+const { t } = storeToRefs(langStore);
 </script>
 
 <template>
-  <div class="home-page">
-    <h1>Добро пожаловать!</h1>
-    <p>Ваш email: {{ userEmail }}</p>
-    <button @click="authStore.logout">Выйти</button>
-  </div>
+  {{ t['title'] }}
+  <button @click="change()">asdasd</button>
 </template>
 
-<style scoped>
-.home-page {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-  text-align: center;
-  font-family: 'Roboto', sans-serif;
-}
-
-button {
-  padding: 10px 20px;
-  background-color: #e53935;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-top: 20px;
-}
-
-button:hover {
-  background-color: #d32f2f;
-}
-</style>
+<style scoped></style>
