@@ -3,12 +3,31 @@
 
 generator client {
   provider = "prisma-client-js"
-  moduleFormat           = "esm" 
+  moduleFormat = "esm"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  REGISTRATION_PENDING // Зарегистрирован, но не подтвердил телефон
+  PHONE_VERIFIED       // Подтвердил телефон, но не подтвержден админом
+  ACTIVE               // Полностью подтвержден и активен
+  REJECTED             // Отклонен администратором
+}
+
+enum BeneficiaryCategoryType {
+  PENSIONER
+  DISABLED_1
+  DISABLED_2
+  DISABLED_3
+  MULTICHILD_PARENT
+  VETERAN
+  LOW_INCOME
+  STUDENT
+  ORPHAN
 }
 
 model User {
@@ -17,20 +36,24 @@ model User {
   updatedAt     DateTime  @updatedAt @map("updated_at")
   
   email         String    @unique
-  passwordHash  String?   // Может быть null при аутентификации через Госуслуги
+  passwordHash  String
   authProvider  String    @default("email") // "email", "gosuslugi"
   isVerified    Boolean   @default(false) // Подтвержден ли статус льготника
   
-  name          String?
-  phone         String?
-  snils         String?   @db.VarChar(14) // Маскированный СНИЛС
+  firstName     String    // Имя (сделано обязательным)
+  lastName      String    // Фамилия (сделано обязательным)
+  patronymic    String?   // Отчество
+  dateOfBirth   DateTime  @map("date_of_birth") // Дата рождения (сделано обязательным)
+  phone         String    @unique // Уникальный телефон
+  snils         String    @unique @db.VarChar(14) // Уникальный СНИЛС
   consentGiven  Boolean   @default(false) // Согласие на обработку перс. данных
   consentDate   DateTime? @map("consent_date")
   
   region        Region    @relation(fields: [regionId], references: [id])
   regionId      String    @map("region_id")
   
-  // Прямая связь через промежуточную таблицу
+  status        UserStatus @default(REGISTRATION_PENDING) // Статус пользователя
+  
   userBeneficiaryCategories UserBeneficiaryCategory[]
   
   preferences   UserPreference?
@@ -39,6 +62,8 @@ model User {
   savedOffers   SavedOffer[]
   
   authTokens    AuthToken[]
+  
+  verificationCode String? // Код подтверждения телефона
   
   @@map("user")
 }
@@ -60,12 +85,12 @@ model AuthToken {
 
 model Region {
   id        String  @id @default(cuid())
-  name      String  @unique // Полное название региона
-  code      String  @unique // Код региона (например, "77" для Москвы)
-  type      String  // "federal", "regional", "municipal"
+  name      String  @unique 
+  code      String  @unique 
+  type      String 
   
   users     User[]
-  // Обратные связи через промежуточные таблицы
+
   benefitRegions BenefitRegion[]
   offerRegions OfferRegion[]
   
@@ -74,11 +99,10 @@ model Region {
 
 model BeneficiaryCategory {
   id        String  @id @default(cuid())
-  name      String  @unique // "pensioner", "disabled_1", "disabled_2", "disabled_3", "multichild_parent", "veteran", "low_income"
+  name      BeneficiaryCategoryType @unique // Используем enum для категорий
   title     String  // Человекочитаемое название: "Пенсионер", "Инвалид 1 группы" и т.д.
   icon      String? // Путь к иконке категории
-  
-  // Обратные связи через промежуточные таблицы
+
   userCategories UserBeneficiaryCategory[]
   benefitCategories BenefitBeneficiaryCategory[]
   offerCategories OfferBeneficiaryCategory[]
@@ -88,7 +112,7 @@ model BeneficiaryCategory {
 
 // Промежуточная таблица для связи многие-ко-многим User-BeneficiaryCategory
 model UserBeneficiaryCategory {
-  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete: Cascade для удаления связей при удалении пользователя
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId            String
   beneficiaryCategory BeneficiaryCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId        String
@@ -107,11 +131,11 @@ model Benefit {
   
   title       String
   description String?
-  type        String   // "federal", "regional", "municipal"
+  type        String  
   validFrom   DateTime @map("valid_from")
   validTo     DateTime @map("valid_to")
   
-  requirements String  // Требования для получения
+  requirements String  
   howToGet    String   // Инструкция по получению
   sourceUrl   String?  @map("source_url") // Официальный источник
   
