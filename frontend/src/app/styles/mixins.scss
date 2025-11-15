@@ -1,0 +1,32 @@
+// Breakpoints с понятными названиями
+$breakpoints: (
+    'phone': 480px,
+    'tablet': 768px,
+    'desktop-md': 1024px,
+    'desktop-lg': 1280px,
+    ) !default;
+
+// Mobile First (min-width)
+@mixin phone {
+    @media (min-width: map-get($breakpoints, 'phone')) {
+        @content;
+    }
+}
+
+@mixin tablet {
+    @media (min-width: map-get($breakpoints, 'tablet')) {
+        @content;
+    }
+}
+
+@mixin desktop-md {
+    @media (min-width: map-get($breakpoints, 'desktop-md')) {
+        @content;
+    }
+}
+
+@mixin desktop-lg {
+    @media (min-width: map-get($breakpoints, 'desktop-lg')) {
+        @content;
+    }
+}

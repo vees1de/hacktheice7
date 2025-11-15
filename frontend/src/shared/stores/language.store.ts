@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
-import { ru } from '../shared/locales/ru';
-import { sk } from '../shared/locales/sk';
+import { ru } from '../locales/ru';
+import { sk } from '../locales/sk';
 
 const availableLangs = ['ru', 'sk'] as const;
 
