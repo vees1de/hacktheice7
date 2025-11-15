@@ -1,4 +1,6 @@
+import { useAuthStore } from '@entities/auth';
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import { useRouter } from 'vue-router';
 
 let apiInstance: AxiosInstance | null = null;
 const token = '';
@@ -34,6 +36,9 @@ const createAPIInstance = async (): Promise<AxiosInstance> => {
     return apiInstance;
   }
 
+  const router = useRouter();
+  const authStore = useAuthStore();
+
   apiInstance = axios.create({
     baseURL: 'https/bims14.ru/api',
     headers: {
@@ -44,10 +49,16 @@ const createAPIInstance = async (): Promise<AxiosInstance> => {
   });
 
   apiInstance.interceptors.request.use(config => {
-    if (token) {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
+    const unauth = false;
+    const ok = true;
+    if (unauth) {
+      router.push('/auth');
     }
+
+    if (ok) {
+      authStore.authorize();
+    }
+
     return config;
   });
 
