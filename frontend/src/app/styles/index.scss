@@ -1,0 +1,19 @@
+@import "./reset.scss";
+@import "./typography.scss";
+@import "./themes/dark.scss";
+@import "./themes/light.scss";
+@import "./variables.scss";
+
+
+html {
+    font-family: Geologica Roman, sans-serif;
+    color: #0E172E;
+
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    font-family: inherit;
+}
