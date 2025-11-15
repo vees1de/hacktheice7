@@ -40,7 +40,7 @@ const createAPIInstance = async (): Promise<AxiosInstance> => {
   const authStore = useAuthStore();
 
   apiInstance = axios.create({
-    baseURL: 'https/bims14.ru/api',
+    baseURL: 'https://bims14.ru/api/',
     headers: {
       'X-Requested-With': 'XMLHttpRequest',
       Accept: 'application/json',

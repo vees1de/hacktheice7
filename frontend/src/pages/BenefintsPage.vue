@@ -2,7 +2,8 @@
 import { Heading } from '@shared/ui';
 </script>
 <template>
-  <div class="home">
-    <Heading>Профиль</Heading>
+  <div class="benefits">
+    <Heading>Льготы</Heading>
   </div>
 </template>
+<style lang="scss" scoped></style>
