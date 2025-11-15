@@ -28,7 +28,8 @@ export class AuthController {
     try {
       const result = await this.authService.register(dto);
       return {
-        message: 'Registration successful. Verification code (mock): 4444',
+        message:
+          'Регистрация принята. Подтвердите телефон кодом из SMS (mock: 4444).',
         userId: result.userId
       };
     } catch (error) {
@@ -50,7 +51,8 @@ export class AuthController {
 
       await this.authService.verifyPhone(dto.phone);
       return {
-        message: 'Phone verified successfully. Waiting for admin approval.'
+        message:
+          'Телефон подтвержден. Теперь можно войти, а офферы партнеров откроются после входа через Госуслуги.'
       };
     } catch (error) {
       if (

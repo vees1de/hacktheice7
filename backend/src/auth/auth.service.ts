@@ -39,7 +39,10 @@ export class AuthService {
       }
 
       const { passwordHash, verificationCode, ...safeUser } = user;
-      return safeUser;
+      return {
+        ...safeUser,
+        commercialOffersAvailable: Boolean(user.isEsiaVerified)
+      };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -124,11 +127,14 @@ export class AuthService {
         where: { id: user.id },
         data: {
           verificationCode: null,
-          onboardingStep: 'ESIA_AUTH'
+          onboardingStep: 'ESIA_AUTH',
+          status: 'ACTIVE',
+          isVerified: true,
+          isEsiaVerified: false
         }
       });
 
-      // В реальности здесь отправлялось бы уведомление админам о новом пользователе на подтверждение
+      // Здесь можно инициировать следующий шаг — авторизацию через ЕСИА
     } catch (error) {
       if (
         error instanceof BadRequestException ||
@@ -153,10 +159,14 @@ export class AuthService {
         throw new NotFoundException('User not found');
       }
 
-      if (user.status !== 'ACTIVE') {
+      if (user.onboardingStep === 'SMS_VERIFICATION') {
         throw new UnauthorizedException(
-          'User account is not active yet. Please wait for admin approval.'
+          'Телефон не подтвержден. Введите SMS-код, чтобы продолжить.'
         );
+      }
+
+      if (user.status !== 'ACTIVE') {
+        throw new UnauthorizedException('User status does not allow login');
       }
 
       const isValid = await verify(user.passwordHash, dto.password);
@@ -168,7 +178,10 @@ export class AuthService {
       const tokens = this.issueTokens(user.id);
 
       return {
-        user: safeUser,
+        user: {
+          ...safeUser,
+          commercialOffersAvailable: Boolean(user.isEsiaVerified)
+        },
         ...tokens
       };
     } catch (error) {
@@ -204,7 +217,10 @@ export class AuthService {
       const tokens = this.issueTokens(user.id);
 
       return {
-        user: safeUser,
+        user: {
+          ...safeUser,
+          commercialOffersAvailable: Boolean(user.isEsiaVerified)
+        },
         ...tokens
       };
     } catch (error) {

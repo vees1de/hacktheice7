@@ -93,7 +93,10 @@ export class UserService {
 
     // Возвращаем профиль без чувствительных данных
     const { passwordHash, verificationCode, ...profile } = user;
-    return profile;
+    return {
+      ...profile,
+      commercialOffersAvailable: Boolean(user.isEsiaVerified)
+    };
   }
   async update(id: string, dto: UserDto) {
     // Проверяем, существует ли пользователь
@@ -152,7 +155,10 @@ export class UserService {
 
     // Возвращаем обновленный профиль без чувствительных данных
     const { passwordHash: _, verificationCode, ...profile } = updatedUser;
-    return profile;
+    return {
+      ...profile,
+      commercialOffersAvailable: Boolean(updatedUser.isEsiaVerified)
+    };
   }
 
   async getUserBenefits(userId: string) {
