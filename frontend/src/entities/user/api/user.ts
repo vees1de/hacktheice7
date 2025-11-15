@@ -1,9 +1,13 @@
-import { apiRequest } from '../http.client';
-import { Benefit, UpdateUserPayload, UserProfile } from '../types';
+import { Benefit } from '@entities/benefit';
+import { apiRequest } from '@shared/api';
+
+import { UpdateUserPayload, UserProfile } from '../types/user.types';
 
 export const userApi = {
   async getProfile() {
-    const { data } = await apiRequest<UserProfile>('/user/me', { method: 'GET' });
+    const { data } = await apiRequest<UserProfile>('/user/me', {
+      method: 'GET'
+    });
     return data;
   },
 

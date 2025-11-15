@@ -1,25 +1,12 @@
 <script setup lang="ts">
-import { useAuthStore } from '@entities/auth';
-import { type AuthRegisterRequest, authApi } from '@shared/api';
+import { AuthRegisterRequest, authApi } from '@entities/auth';
 import { createForm } from '@shared/lib/createForm';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
 import { Input } from '@shared/ui';
-import { useRouter } from 'vue-router';
 
-import { useLangStore } from '../shared/stores/language.store';
-
-export interface AccountForm {
-  email: FieldMetaData<string>;
-  firstName: FieldMetaData<string>;
-  lastName: FieldMetaData<string>;
-  patronymic: FieldMetaData<string>;
-  phone: FieldMetaData<string>;
-  snils: FieldMetaData<string>;
-  regionId: FieldMetaData<string>;
-  dateOfBirth: FieldMetaData<string>;
-  password: FieldMetaData<string>;
-  [key: string]: FieldMetaData<string>;
-}
+export type AccountForm = {
+  [K in keyof Account]: FieldMetaData<string>;
+};
 
 export type Account = {
   email: string;
@@ -32,11 +19,6 @@ export type Account = {
   dateOfBirth: string;
   password: string;
 };
-
-const { authorize } = useAuthStore();
-const router = useRouter();
-
-const langStore = useLangStore();
 
 const { form, watchForm, getValue } = createForm<AccountForm>({
   firstName: { value: 'фыв', validators: [] },
@@ -54,16 +36,26 @@ const handleRegistration = async () => {
   const body = getValue() as AuthRegisterRequest;
   body.dateOfBirth = new Date(body.dateOfBirth).toISOString();
   const res = await authApi.register(body);
-  if (userId) {
-    console.log('shop otp input');
-  }
-  console.log('Registered', res);
 };
 </script>
 
 <template>
   <div class="auth">
-    <Form class="auth__form">
+    <div class="logo">
+      <img src="@shared/assets/icons/lasso-icon.svg" />
+      <img src="@shared/assets/icons/lasso-title.svg" />
+    </div>
+
+    <div class="language">
+      <span>Русский язык</span>
+      <img
+        src="@shared/assets/icons/russia-icon.svg"
+        alt=""
+      />
+    </div>
+
+    <div class="auth__title">Регистрация</div>
+    <form class="auth__form">
       <Input
         v-model="form.firstName.value"
         label="Имя"
@@ -119,15 +111,50 @@ const handleRegistration = async () => {
         type="text"
         placeholder="Регион"
       />
-    </Form>
+    </form>
     <button @click="handleRegistration()">Зарегистрироваться</button>
   </div>
 </template>
 
 <style scoped lang="scss">
+.logo {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+
+  img:first-child {
+    width: 55px;
+    height: 55px;
+  }
+
+  h1 {
+    font-size: 1.875;
+    font-weight: 700;
+  }
+}
+
+.language {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 32px;
+}
+
 .auth {
   display: block;
   justify-content: center;
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 24px;
+  }
 
   &__form {
     // Mobile first (default)

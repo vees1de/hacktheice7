@@ -1,5 +1,4 @@
-import { apiRequest } from '../http.client';
-import { Region } from '../types';
+import { Region, apiRequest } from '@shared/api';
 
 export const regionApi = {
   async getAll() {

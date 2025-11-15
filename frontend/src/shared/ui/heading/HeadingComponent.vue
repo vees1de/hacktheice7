@@ -4,7 +4,7 @@
 </template>
 <style lang="scss" scoped>
 h2 {
-  font-size: 32px;
+  font-size: 2rem;
   line-height: 20px;
   margin-bottom: 12px;
   font-weight: 700;

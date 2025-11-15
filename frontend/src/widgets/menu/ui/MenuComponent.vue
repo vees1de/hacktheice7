@@ -65,6 +65,6 @@ const onMenuItem = (index: number) => {
 .item {
   text-align: center;
   line-height: 17px;
-  font-size: 10px;
+  font-size: 0.625;
 }
 </style>

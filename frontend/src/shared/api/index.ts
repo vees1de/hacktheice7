@@ -1,10 +1,4 @@
-export * from './types';
-export * from './services/auth';
-export * from './services/user';
-export * from './services/offer';
-export * from './services/benefit';
-export * from './services/beneficiaryCategory';
-export * from './services/region';
-export * from './services/admin';
-export * from './token.service';
+import { Region } from './types';
+
 export { apiRequest } from './http.client';
+export type { Region };

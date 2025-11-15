@@ -40,7 +40,7 @@ const handleInput = (event: Event) => {
       :id="label"
       :value="modelValue"
       :type="type || 'text'"
-      :placeholder="placeholder"
+      :placeholder="''"
       :required="required"
       :disabled="disabled"
       :aria-required="required"
@@ -84,7 +84,7 @@ const handleInput = (event: Event) => {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #374151;
+  font-weight: 600;
   font-size: 0.875rem;
   line-height: 1.25rem;
 }

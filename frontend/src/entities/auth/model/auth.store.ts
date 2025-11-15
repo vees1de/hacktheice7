@@ -1,9 +1,14 @@
+import { clearTokens, setTokens } from '@shared/api/token.service';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { authApi } from '@shared/api';
-import { clearTokens, setTokens } from '@shared/api/token.service';
-import type { AuthLoginRequest, AuthRegisterRequest, AuthSuccess } from '@shared/api';
+
+import { authApi } from '../api/auth';
+import {
+  AuthLoginRequest,
+  AuthRegisterRequest,
+  AuthSuccess
+} from '../types/auth.types';
 
 export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false);

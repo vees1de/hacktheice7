@@ -30,7 +30,7 @@ import { Block, Heading } from '@shared/ui';
 
   &__title {
     color: #fff;
-    font-size: 17px;
+    font-size: 1.063;
     padding-top: 8px;
     font-weight: 600;
     width: 60%;

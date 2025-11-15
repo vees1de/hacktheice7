@@ -1,11 +1,11 @@
 import { useAuthStore } from '@entities/auth';
 import AccountPage from '@pages/AccountPage.vue';
+import AdminPage from '@pages/AdminPage.vue';
 import AuthPage from '@pages/AuthPage.vue';
 import BenefintsPage from '@pages/BenefintsPage.vue';
 import ChatPage from '@pages/ChatPage.vue';
 import HomePage from '@pages/HomePage.vue';
 import SalesPage from '@pages/SalesPage.vue';
-import AdminPage from '@pages/AdminPage.vue';
 import { storeToRefs } from 'pinia';
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
 
@@ -17,7 +17,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/sales', component: SalesPage },
   { path: '/benefits', component: BenefintsPage },
   { path: '/admin', component: AdminPage },
-  { path: '/', redirect: '/account' }
+  { path: '/', redirect: '/user' }
 ];
 
 const router = createRouter({

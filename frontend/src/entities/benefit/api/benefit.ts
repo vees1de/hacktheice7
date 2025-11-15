@@ -1,9 +1,12 @@
-import { apiRequest } from '../http.client';
-import { Benefit, CreateBenefitPayload } from '../types';
+import { apiRequest } from '@shared/api';
+
+import { Benefit, CreateBenefitPayload } from '../types/benefit.types';
 
 export const benefitApi = {
   async getAll() {
-    const { data } = await apiRequest<Benefit[]>('/benefits', { method: 'GET' });
+    const { data } = await apiRequest<Benefit[]>('/benefits', {
+      method: 'GET'
+    });
     return data;
   },
 

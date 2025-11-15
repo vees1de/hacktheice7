@@ -1,5 +1,6 @@
-import { apiRequest } from '../http.client';
-import { CreateOfferPayload, Offer } from '../types';
+import { apiRequest } from '@shared/api';
+
+import { CreateOfferPayload, Offer } from '../types/offer.types';
 
 export const offerApi = {
   async getAll() {
@@ -8,7 +9,9 @@ export const offerApi = {
   },
 
   async getById(id: string) {
-    const { data } = await apiRequest<Offer>(`/offers/${id}`, { method: 'GET' });
+    const { data } = await apiRequest<Offer>(`/offers/${id}`, {
+      method: 'GET'
+    });
     return data;
   },
 

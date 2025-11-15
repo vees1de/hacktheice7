@@ -11,8 +11,10 @@ import {
   setTokens
 } from './token.service';
 
-const API_BASE =
-  import.meta.env.VITE_API_BASE?.toString() || 'http://localhost:8000/api';
+// const API_BASE =
+//   import.meta.env.VITE_API_BASE?.toString() || 'http://localhost:8000/api';
+
+const API_BASE = 'https://bims14.ru/api/';
 
 let apiInstance: AxiosInstance | null = null;
 let isRefreshing = false;

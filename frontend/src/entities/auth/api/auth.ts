@@ -1,10 +1,11 @@
-import { apiRequest } from '../http.client';
+import { apiRequest } from '@shared/api';
+import { setTokens } from '@shared/api/token.service';
+
 import {
   AuthLoginRequest,
   AuthRegisterRequest,
   AuthSuccess
-} from '../types';
-import { setTokens } from '../token.service';
+} from '../types/auth.types';
 
 export const authApi = {
   async register(payload: AuthRegisterRequest) {
@@ -16,10 +17,13 @@ export const authApi = {
   },
 
   async verifyPhone(payload: { phone: string; code: string }) {
-    const { data } = await apiRequest<{ message: string }>('/auth/verify-phone', {
-      method: 'POST',
-      data: payload
-    });
+    const { data } = await apiRequest<{ message: string }>(
+      '/auth/verify-phone',
+      {
+        method: 'POST',
+        data: payload
+      }
+    );
     return data;
   },
 

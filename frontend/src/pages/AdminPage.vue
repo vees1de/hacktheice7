@@ -1,19 +1,15 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { adminApi } from '@entities/admin';
 import { useAuthStore } from '@entities/auth';
 import {
-  adminApi,
-  authApi,
-  benefitApi,
-  beneficiaryCategoryApi,
-  offerApi,
-  regionApi,
-  type Benefit,
-  type BeneficiaryCategory,
-  type BeneficiaryCategoryType,
-  type Offer,
-  type Region
-} from '@shared/api';
+  BeneficiaryCategory,
+  BeneficiaryCategoryType,
+  beneficiaryCategoryApi
+} from '@entities/beneficiary';
+import { Benefit, benefitApi } from '@entities/benefit';
+import { Offer, offerApi } from '@entities/offer';
+import { Region, regionApi } from '@entities/region';
+import { onMounted, reactive, ref } from 'vue';
 
 const authStore = useAuthStore();
 
@@ -125,7 +121,8 @@ const handleLogin = async () => {
     await loadOffers();
     await loadBenefits();
   } catch (error: any) {
-    errors.login = error?.response?.data?.message || error?.message || 'Ошибка входа';
+    errors.login =
+      error?.response?.data?.message || error?.message || 'Ошибка входа';
   } finally {
     loading.login = false;
   }
@@ -156,7 +153,9 @@ const handleCreateOffer = async () => {
     });
   } catch (error: any) {
     errors.createOffer =
-      error?.response?.data?.message || error?.message || 'Не удалось создать оффер';
+      error?.response?.data?.message ||
+      error?.message ||
+      'Не удалось создать оффер';
   } finally {
     loading.createOffer = false;
   }
@@ -186,7 +185,9 @@ const handleCreateBenefit = async () => {
     });
   } catch (error: any) {
     errors.createBenefit =
-      error?.response?.data?.message || error?.message || 'Не удалось создать льготу';
+      error?.response?.data?.message ||
+      error?.message ||
+      'Не удалось создать льготу';
   } finally {
     loading.createBenefit = false;
   }
@@ -203,12 +204,17 @@ const submitUserCategory = async (action: 'add' | 'remove') => {
     if (action === 'add') {
       await adminApi.addCategory(userId, category as BeneficiaryCategoryType);
     } else {
-      await adminApi.removeCategory(userId, category as BeneficiaryCategoryType);
+      await adminApi.removeCategory(
+        userId,
+        category as BeneficiaryCategoryType
+      );
     }
     userCategoryStatus.value = 'Успешно';
   } catch (error: any) {
     userCategoryStatus.value =
-      error?.response?.data?.message || error?.message || 'Не удалось обновить категории';
+      error?.response?.data?.message ||
+      error?.message ||
+      'Не удалось обновить категории';
   } finally {
     loading.userCategory = false;
   }
@@ -229,12 +235,28 @@ onMounted(async () => {
           <p>Работа с бэкендом без моков: офферы, льготы, категории.</p>
         </div>
         <div class="login">
-          <input v-model="authForm.phone" type="text" placeholder="Телефон" />
-          <input v-model="authForm.password" type="password" placeholder="Пароль" />
-          <button :disabled="loading.login" @click="handleLogin">
+          <input
+            v-model="authForm.phone"
+            type="text"
+            placeholder="Телефон"
+          />
+          <input
+            v-model="authForm.password"
+            type="password"
+            placeholder="Пароль"
+          />
+          <button
+            :disabled="loading.login"
+            @click="handleLogin"
+          >
             {{ loading.login ? 'Вход...' : 'Войти' }}
           </button>
-          <p v-if="errors.login" class="error">{{ errors.login }}</p>
+          <p
+            v-if="errors.login"
+            class="error"
+          >
+            {{ errors.login }}
+          </p>
         </div>
       </header>
     </section>
@@ -246,19 +268,34 @@ onMounted(async () => {
           <p>Регионы и категории льгот, подтягиваются с бэкенда.</p>
         </div>
         <p v-if="loading.refs">Загрузка...</p>
-        <p v-if="errors.refs" class="error">{{ errors.refs }}</p>
+        <p
+          v-if="errors.refs"
+          class="error"
+        >
+          {{ errors.refs }}
+        </p>
       </header>
       <div class="grid">
         <div>
           <h3>Регионы</h3>
           <ul class="chips">
-            <li v-for="r in regions" :key="r.id">{{ r.name }} ({{ r.code }})</li>
+            <li
+              v-for="r in regions"
+              :key="r.id"
+            >
+              {{ r.name }} ({{ r.code }})
+            </li>
           </ul>
         </div>
         <div>
           <h3>Категории льгот</h3>
           <ul class="chips">
-            <li v-for="c in categories" :key="c.id">{{ c.title || c.name }}</li>
+            <li
+              v-for="c in categories"
+              :key="c.id"
+            >
+              {{ c.title || c.name }}
+            </li>
           </ul>
         </div>
       </div>
@@ -273,33 +310,78 @@ onMounted(async () => {
         <p v-if="loading.offers">Загрузка...</p>
       </header>
       <div class="form">
-        <input v-model="offerForm.title" placeholder="Название" />
-        <input v-model="offerForm.partnerName" placeholder="Партнер" />
-        <input v-model="offerForm.discount" placeholder="Скидка" />
-        <input v-model="offerForm.validFrom" type="date" />
-        <input v-model="offerForm.validTo" type="date" />
-        <input v-model="offerForm.terms" placeholder="Условия" />
-        <textarea v-model="offerForm.description" placeholder="Описание"></textarea>
+        <input
+          v-model="offerForm.title"
+          placeholder="Название"
+        />
+        <input
+          v-model="offerForm.partnerName"
+          placeholder="Партнер"
+        />
+        <input
+          v-model="offerForm.discount"
+          placeholder="Скидка"
+        />
+        <input
+          v-model="offerForm.validFrom"
+          type="date"
+        />
+        <input
+          v-model="offerForm.validTo"
+          type="date"
+        />
+        <input
+          v-model="offerForm.terms"
+          placeholder="Условия"
+        />
+        <textarea
+          v-model="offerForm.description"
+          placeholder="Описание"
+        ></textarea>
         <div class="two-col">
-          <label>Регионы:
-            <select v-model="offerForm.regionIds" multiple>
-              <option v-for="r in regions" :key="r.id" :value="r.id">
+          <label
+            >Регионы:
+            <select
+              v-model="offerForm.regionIds"
+              multiple
+            >
+              <option
+                v-for="r in regions"
+                :key="r.id"
+                :value="r.id"
+              >
                 {{ r.name }}
               </option>
             </select>
           </label>
-          <label>Категории:
-            <select v-model="offerForm.categoryIds" multiple>
-              <option v-for="c in categories" :key="c.id" :value="c.id">
+          <label
+            >Категории:
+            <select
+              v-model="offerForm.categoryIds"
+              multiple
+            >
+              <option
+                v-for="c in categories"
+                :key="c.id"
+                :value="c.id"
+              >
                 {{ c.title || c.name }}
               </option>
             </select>
           </label>
         </div>
-        <button :disabled="loading.createOffer" @click="handleCreateOffer">
+        <button
+          :disabled="loading.createOffer"
+          @click="handleCreateOffer"
+        >
           {{ loading.createOffer ? 'Создание...' : 'Создать оффер' }}
         </button>
-        <p v-if="errors.createOffer" class="error">{{ errors.createOffer }}</p>
+        <p
+          v-if="errors.createOffer"
+          class="error"
+        >
+          {{ errors.createOffer }}
+        </p>
       </div>
       <table class="table">
         <thead>
@@ -312,18 +394,26 @@ onMounted(async () => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="offer in offers" :key="offer.id">
+          <tr
+            v-for="offer in offers"
+            :key="offer.id"
+          >
             <td>{{ offer.title }}</td>
             <td>{{ offer.partnerName }}</td>
             <td>{{ offer.discount }}</td>
-            <td>{{ offer.validFrom?.slice(0, 10) }} — {{ offer.validTo?.slice(0, 10) }}</td>
+            <td>
+              {{ offer.validFrom?.slice(0, 10) }} —
+              {{ offer.validTo?.slice(0, 10) }}
+            </td>
             <td>
               <span
                 class="badge"
                 v-for="cat in offer.offerCategories || []"
                 :key="cat.beneficiaryCategory.id"
               >
-                {{ cat.beneficiaryCategory.title || cat.beneficiaryCategory.name }}
+                {{
+                  cat.beneficiaryCategory.title || cat.beneficiaryCategory.name
+                }}
               </span>
             </td>
           </tr>
@@ -340,33 +430,78 @@ onMounted(async () => {
         <p v-if="loading.benefits">Загрузка...</p>
       </header>
       <div class="form">
-        <input v-model="benefitForm.title" placeholder="Название" />
-        <input v-model="benefitForm.type" placeholder="Тип" />
-        <input v-model="benefitForm.validFrom" type="date" />
-        <input v-model="benefitForm.validTo" type="date" />
-        <input v-model="benefitForm.requirements" placeholder="Требования" />
-        <input v-model="benefitForm.howToGet" placeholder="Как получить" />
-        <textarea v-model="benefitForm.description" placeholder="Описание"></textarea>
+        <input
+          v-model="benefitForm.title"
+          placeholder="Название"
+        />
+        <input
+          v-model="benefitForm.type"
+          placeholder="Тип"
+        />
+        <input
+          v-model="benefitForm.validFrom"
+          type="date"
+        />
+        <input
+          v-model="benefitForm.validTo"
+          type="date"
+        />
+        <input
+          v-model="benefitForm.requirements"
+          placeholder="Требования"
+        />
+        <input
+          v-model="benefitForm.howToGet"
+          placeholder="Как получить"
+        />
+        <textarea
+          v-model="benefitForm.description"
+          placeholder="Описание"
+        ></textarea>
         <div class="two-col">
-          <label>Регионы:
-            <select v-model="benefitForm.regionIds" multiple>
-              <option v-for="r in regions" :key="r.id" :value="r.id">
+          <label
+            >Регионы:
+            <select
+              v-model="benefitForm.regionIds"
+              multiple
+            >
+              <option
+                v-for="r in regions"
+                :key="r.id"
+                :value="r.id"
+              >
                 {{ r.name }}
               </option>
             </select>
           </label>
-          <label>Категории:
-            <select v-model="benefitForm.categoryIds" multiple>
-              <option v-for="c in categories" :key="c.id" :value="c.id">
+          <label
+            >Категории:
+            <select
+              v-model="benefitForm.categoryIds"
+              multiple
+            >
+              <option
+                v-for="c in categories"
+                :key="c.id"
+                :value="c.id"
+              >
                 {{ c.title || c.name }}
               </option>
             </select>
           </label>
         </div>
-        <button :disabled="loading.createBenefit" @click="handleCreateBenefit">
+        <button
+          :disabled="loading.createBenefit"
+          @click="handleCreateBenefit"
+        >
           {{ loading.createBenefit ? 'Создание...' : 'Создать льготу' }}
         </button>
-        <p v-if="errors.createBenefit" class="error">{{ errors.createBenefit }}</p>
+        <p
+          v-if="errors.createBenefit"
+          class="error"
+        >
+          {{ errors.createBenefit }}
+        </p>
       </div>
       <table class="table">
         <thead>
@@ -378,17 +513,25 @@ onMounted(async () => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="benefit in benefits" :key="benefit.id">
+          <tr
+            v-for="benefit in benefits"
+            :key="benefit.id"
+          >
             <td>{{ benefit.title }}</td>
             <td>{{ benefit.type }}</td>
-            <td>{{ benefit.validFrom?.slice(0, 10) }} — {{ benefit.validTo?.slice(0, 10) }}</td>
+            <td>
+              {{ benefit.validFrom?.slice(0, 10) }} —
+              {{ benefit.validTo?.slice(0, 10) }}
+            </td>
             <td>
               <span
                 class="badge"
                 v-for="cat in benefit.benefitCategories || []"
                 :key="cat.beneficiaryCategory.id"
               >
-                {{ cat.beneficiaryCategory.title || cat.beneficiaryCategory.name }}
+                {{
+                  cat.beneficiaryCategory.title || cat.beneficiaryCategory.name
+                }}
               </span>
             </td>
           </tr>
@@ -404,18 +547,31 @@ onMounted(async () => {
         </div>
       </header>
       <div class="form">
-        <input v-model="userCategoryForm.userId" placeholder="User ID" />
+        <input
+          v-model="userCategoryForm.userId"
+          placeholder="User ID"
+        />
         <select v-model="userCategoryForm.category">
           <option value="">Категория</option>
-          <option v-for="c in categories" :key="c.id" :value="c.name">
+          <option
+            v-for="c in categories"
+            :key="c.id"
+            :value="c.name"
+          >
             {{ c.title || c.name }}
           </option>
         </select>
         <div class="actions">
-          <button :disabled="loading.userCategory" @click="submitUserCategory('add')">
+          <button
+            :disabled="loading.userCategory"
+            @click="submitUserCategory('add')"
+          >
             Добавить
           </button>
-          <button :disabled="loading.userCategory" @click="submitUserCategory('remove')">
+          <button
+            :disabled="loading.userCategory"
+            @click="submitUserCategory('remove')"
+          >
             Удалить
           </button>
           <span class="muted">Требуется токен админа.</span>
