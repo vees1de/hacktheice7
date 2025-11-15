@@ -5,9 +5,8 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { RegisterDto } from '../auth/dto/register.dto';
-import { BeneficiaryCategoryType } from '@prisma/client';
 import { hash } from 'argon2';
-import { UserDto } from './user.dto';
+import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -30,105 +29,12 @@ export class UserService {
         authProvider: 'email',
         consentGiven: true,
         consentDate: new Date(),
-        status: 'REGISTRATION_PENDING',
-        verificationCode: '4444' // Мок-код для подтверждения
+        status: 'PENDING',
+        verificationCode: '4444'
       }
     });
 
     return user;
-  }
-
-  async getPendingUsers() {
-    return this.prisma.user.findMany({
-      where: {
-        status: 'PHONE_VERIFIED'
-      },
-      include: {
-        region: true,
-        userBeneficiaryCategories: {
-          include: {
-            beneficiaryCategory: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'asc'
-      }
-    });
-  }
-
-  async approveUser(userId: string, categories: BeneficiaryCategoryType[]) {
-    // Проверяем, существует ли пользователь (вне транзакции, чтобы не тратить ресурсы, если пользователь не найден)
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId }
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    if (user.status === 'ACTIVE') {
-      throw new BadRequestException('User is already approved');
-    }
-
-    // Проверяем, существуют ли все запрашиваемые категории (вне транзакции, чтобы проверить заранее)
-    // Это предотвратит ошибку внутри транзакции из-за отсутствующей категории
-    const categoryRecords = await this.prisma.beneficiaryCategory.findMany({
-      where: {
-        name: { in: categories }
-      }
-    });
-
-    const foundCategoryNames = new Set(categoryRecords.map(cat => cat.name));
-    const missingCategories = categories.filter(
-      cat => !foundCategoryNames.has(cat)
-    );
-
-    if (missingCategories.length > 0) {
-      throw new NotFoundException(
-        `Beneficiary categories not found: ${missingCategories.join(', ')}`
-      );
-    }
-
-    // Используем транзакцию для атомарности операций
-    const updatedUser = await this.prisma.$transaction(async prisma => {
-      // Обновляем статус пользователя ВНУТРИ транзакции
-      const userUpdate = await prisma.user.update({
-        where: { id: userId },
-        data: {
-          status: 'ACTIVE',
-          isVerified: true
-        }
-      });
-
-      // Назначаем категории льгот ВНУТРИ транзакции
-      for (const category of categories) {
-        // Находим ID категории по её имени ВНУТРИ транзакции
-        // (Мы уже проверили, что она существует, но делаем это внутри транзакции для консистентности)
-        const beneficiaryCategory = categoryRecords.find(
-          cat => cat.name === category
-        );
-        if (!beneficiaryCategory) {
-          // Теоретически, этого не должно произойти, если проверка выше корректна
-          throw new Error(
-            `Unexpected error: Category ${category} not found after pre-check`
-          );
-        }
-
-        await prisma.userBeneficiaryCategory.create({
-          data: {
-            userId,
-            categoryId: beneficiaryCategory.id,
-            confirmed: true,
-            confirmationDate: new Date()
-          }
-        });
-      }
-
-      return userUpdate; // Возвращаем обновленного пользователя
-    }); // Если где-то внутри throw, транзакция автоматически откатится
-
-    return updatedUser;
   }
 
   async getById(id: string) {
@@ -189,11 +95,13 @@ export class UserService {
     const { passwordHash, verificationCode, ...profile } = user;
     return profile;
   }
-
   async update(id: string, dto: UserDto) {
     // Проверяем, существует ли пользователь
     const user = await this.prisma.user.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        userBeneficiaryCategories: true // Подгружаем связанные категории
+      }
     });
 
     if (!user) {
@@ -206,11 +114,25 @@ export class UserService {
       passwordHash = await hash(dto.password);
     }
 
+    // Подготовим данные для обновления, исключая вложенные объекты
+    const { password, userBeneficiaryCategories, ...userData } = dto;
+
+    // Обновляем основные данные пользователя
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
-        ...dto,
-        passwordHash
+        ...userData,
+        passwordHash,
+        // Обработка связанных данных (категории)
+        userBeneficiaryCategories: userBeneficiaryCategories
+          ? {
+              deleteMany: {}, // Удаляем все старые связи
+              create: userBeneficiaryCategories.map(cat => ({
+                categoryId: cat.name, // Предполагаем, что `name` в DTO - это ID категории
+                confirmed: cat.confirmed
+              }))
+            }
+          : undefined
       },
       include: {
         region: {
@@ -218,6 +140,11 @@ export class UserService {
             id: true,
             name: true,
             code: true
+          }
+        },
+        userBeneficiaryCategories: {
+          include: {
+            beneficiaryCategory: true
           }
         }
       }

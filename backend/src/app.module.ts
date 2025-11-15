@@ -5,6 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma.module';
 import { RegionModule } from './region/regios.module';
 import { AdminModule } from './admin/admin.module';
+import { OfferModule } from './offer/offer.module';
+import { BenefitModule } from './benefit/benefit.module';
 
 @Module({
   imports: [
@@ -13,7 +15,9 @@ import { AdminModule } from './admin/admin.module';
     UserModule,
     PrismaModule,
     RegionModule,
-    AdminModule
+    AdminModule,
+    OfferModule,
+    BenefitModule
   ]
 })
 export class AppModule {}

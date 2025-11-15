@@ -12,10 +12,19 @@ datasource db {
 }
 
 enum UserStatus {
-  REGISTRATION_PENDING // Зарегистрирован, но не подтвердил телефон
-  PHONE_VERIFIED       // Подтвердил телефон, но не подтвержден админом
-  ACTIVE               // Полностью подтвержден и активен
-  REJECTED             // Отклонен администратором
+  PENDING     /// Ожидает завершения регистрации
+  ACTIVE      /// Активен и может пользоваться системой
+  INACTIVE    /// Деактивирован пользователем
+  SUSPENDED   /// Временная блокировка (модерация, жалобы)
+  REJECTED    /// Регистрация отклонена
+  BLOCKED     /// Полная блокировка
+}
+
+enum OnboardingStep {
+  SMS_VERIFICATION
+  ESIA_AUTH
+  PROFILE_SETUP
+  COMPLETE
 }
 
 enum BeneficiaryCategoryType {
@@ -27,7 +36,13 @@ enum BeneficiaryCategoryType {
   VETERAN
   LOW_INCOME
   STUDENT
-  ORPHAN
+  DISABLED_CHILD_PARENT
+}
+
+enum StaffRole {
+  MANAGER
+  ADMIN
+  PARTNER
 }
 
 model User {
@@ -35,24 +50,26 @@ model User {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   
-  email         String    @unique
+  email         String?    @unique
   passwordHash  String
-  authProvider  String    @default("email") // "email", "gosuslugi"
-  isVerified    Boolean   @default(false) // Подтвержден ли статус льготника
+  authProvider  String    @default("email") 
+  isVerified    Boolean   @default(false)
+  isEsiaVerified Boolean   @default(false)
   
-  firstName     String    // Имя (сделано обязательным)
-  lastName      String    // Фамилия (сделано обязательным)
-  patronymic    String?   // Отчество
-  dateOfBirth   DateTime  @map("date_of_birth") // Дата рождения (сделано обязательным)
-  phone         String    @unique // Уникальный телефон
-  snils         String    @unique @db.VarChar(14) // Уникальный СНИЛС
-  consentGiven  Boolean   @default(false) // Согласие на обработку перс. данных
+  firstName     String    
+  lastName      String  
+  patronymic    String?  
+  dateOfBirth   DateTime  @map("date_of_birth") 
+  phone         String    @unique 
+  snils         String    @unique @db.VarChar(14) 
+  consentGiven  Boolean   @default(false) 
   consentDate   DateTime? @map("consent_date")
-  
+
   region        Region    @relation(fields: [regionId], references: [id])
   regionId      String    @map("region_id")
   
-  status        UserStatus @default(REGISTRATION_PENDING) // Статус пользователя
+  status        UserStatus @default(PENDING)
+  onboardingStep OnboardingStep? @default(SMS_VERIFICATION)
   
   userBeneficiaryCategories UserBeneficiaryCategory[]
   
@@ -61,11 +78,26 @@ model User {
   hiddenBenefits HiddenBenefit[]
   savedOffers   SavedOffer[]
   
+  staffProfile  Staff?
   authTokens    AuthToken[]
   
   verificationCode String? // Код подтверждения телефона
   
   @@map("user")
+}
+
+model Staff {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  role   StaffRole
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String    @unique @map("user_id")
+
+  offers Offer[]   @relation("StaffOffers")
+
+  @@map("staff")
 }
 
 model AuthToken {
@@ -110,14 +142,13 @@ model BeneficiaryCategory {
   @@map("beneficiary_category")
 }
 
-// Промежуточная таблица для связи многие-ко-многим User-BeneficiaryCategory
 model UserBeneficiaryCategory {
   user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId            String
   beneficiaryCategory BeneficiaryCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId        String
   
-  confirmed         Boolean           @default(false) // Подтвержден ли статус
+  confirmed         Boolean           @default(false) 
   confirmationDate  DateTime?         @map("confirmation_date")
   
   @@id([userId, categoryId])
@@ -190,6 +221,9 @@ model Offer {
   // Прямые связи через промежуточные таблицы
   offerRegions OfferRegion[]
   offerCategories OfferBeneficiaryCategory[]
+
+  createdByStaff   Staff?   @relation("StaffOffers", fields: [createdByStaffId], references: [id])
+  createdByStaffId String?  @map("created_by_staff_id")
   
   savedByUsers SavedOffer[]
   

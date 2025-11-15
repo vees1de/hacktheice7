@@ -1,36 +1,34 @@
-// src/auth/jwt.strategy.ts (или путь к вашему стратегии)
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma.service'; // Убедитесь, что путь правильный
-import { NeedApprovalException } from './exceptions/need-approval.exception';
+import { PrismaService } from '../prisma.service';
+import { SafeUser } from './types/safe-user.type';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private prisma: PrismaService, // Используем PrismaService
-    configService: ConfigService // Используем ConfigService
+    private prisma: PrismaService,
+    configService: ConfigService
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Убедитесь, что токен извлекается правильно
-      ignoreExpiration: false, // Важно: не игнорируем expiration
-      secretOrKey: configService.get('JWT_SECRET') // Убедитесь, что секрет совпадает
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: configService.get<string>('JWT_SECRET')
     });
   }
 
-  async validate(payload: { id: string }) {
+  async validate(payload: { id: string }): Promise<SafeUser> {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.id },
-      select: {
-        // Выбирайте только нужные поля, исключая passwordHash
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        status: true,
-        // ... другие нужные поля
-        passwordHash: false // Исключить!
+      include: {
+        staffProfile: true,
+        region: true,
+        userBeneficiaryCategories: {
+          include: {
+            beneficiaryCategory: true
+          }
+        }
       }
     });
 
@@ -38,15 +36,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('User not found');
     }
 
-    if (user.status === 'REGISTRATION_PENDING') {
-      throw new NeedApprovalException();
-    }
-
     if (user.status === 'REJECTED') {
-      throw new UnauthorizedException('User rejected');
+      throw new UnauthorizedException('User account has been rejected');
     }
 
-    console.log('validate user:', user);
-    return user;
+    const { passwordHash, verificationCode, ...safeUser } = user;
+    return safeUser as SafeUser;
   }
 }

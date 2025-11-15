@@ -1,11 +1,11 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { SafeUser } from '../types/safe-user.type';
 
 export const CurrentUser = createParamDecorator(
-  (data: keyof User, ctx: ExecutionContext) => {
+  (data: keyof SafeUser | undefined, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
-    const user = request.user;
+    const user: SafeUser | undefined = request.user;
 
-    return data ? user[data] : user;
+    return data ? user?.[data] : user;
   }
 );

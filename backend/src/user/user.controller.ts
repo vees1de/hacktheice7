@@ -1,4 +1,3 @@
-// src/user/user.controller.ts
 import {
   Body,
   Controller,
@@ -13,8 +12,8 @@ import {
 import { UserService } from './user.service';
 import { CurrentUser } from 'src/auth/decorators/user.decorator';
 import { Auth } from 'src/auth/decorators/auth.decorator';
-import { UserDto } from './user.dto';
 import { HideBenefitDto } from './dto/hide-benefit.dto';
+import { UserDto } from './dto/user.dto';
 
 @Controller('user')
 export class UserController {
