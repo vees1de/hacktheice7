@@ -47,18 +47,40 @@ const state = {
     {
       id: 'b1',
       title: 'Компенсация ЖКХ',
-      category: 'Ветеран',
+      category: 'VETERAN',
       region: 'СПб',
       availability: 'Доступно'
     },
     {
       id: 'b2',
       title: 'Соц. контракт',
-      category: 'Малоимущий',
+      category: 'LOW_INCOME',
       region: 'Москва',
       availability: 'Заявка необходима'
     }
   ]
+};
+
+const BENEFIT_CATEGORIES = [
+  'PENSIONER',
+  'DISABLED_1',
+  'DISABLED_2',
+  'DISABLED_3',
+  'MULTICHILD_PARENT',
+  'VETERAN',
+  'LOW_INCOME',
+  'STUDENT',
+  'DISABLED_CHILD_PARENT'
+];
+
+const API_BASE = '/api';
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('adminToken') || '';
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
 };
 
 const $ = selector => document.querySelector(selector);
@@ -162,6 +184,118 @@ const renderBenefits = () => {
   });
 };
 
+const addOffer = data => {
+  state.offers = [
+    ...state.offers,
+    {
+      id: `o_${Date.now()}`,
+      title: data.title,
+      partner: data.partner,
+      discount: data.discount,
+      period: data.period,
+      published: data.published
+    }
+  ];
+  renderOffers();
+  renderStats();
+};
+
+const addBenefit = data => {
+  state.benefits = [
+    ...state.benefits,
+    {
+      id: `b_${Date.now()}`,
+      title: data.title,
+      category: data.category,
+      region: data.region,
+      availability: data.availability
+    }
+  ];
+  renderBenefits();
+};
+
+const bindForms = () => {
+  const offerForm = $('#offer-form');
+  const benefitForm = $('#benefit-form');
+  const categorySelect = $('#benefit-category');
+  const userCategorySelect = $('#user-category-select');
+  const userCategoryForm = $('#user-category-form');
+  const removeCategoryBtn = $('#remove-category-btn');
+
+  BENEFIT_CATEGORIES.forEach(value => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = value;
+    categorySelect.appendChild(option);
+
+    const option2 = option.cloneNode(true);
+    userCategorySelect.appendChild(option2);
+  });
+
+  offerForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const formData = new FormData(offerForm);
+    addOffer({
+      title: formData.get('title') || '',
+      partner: formData.get('partner') || '',
+      discount: formData.get('discount') || '',
+      period: formData.get('period') || '',
+      published: Boolean(formData.get('published'))
+    });
+    offerForm.reset();
+  });
+
+  benefitForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const formData = new FormData(benefitForm);
+    addBenefit({
+      title: formData.get('title') || '',
+      category: formData.get('category') || '',
+      region: formData.get('region') || '',
+      availability: formData.get('availability') || ''
+    });
+    benefitForm.reset();
+  });
+
+  const submitUserCategory = async (action = 'add') => {
+    const formData = new FormData(userCategoryForm);
+    const payload = {
+      userId: formData.get('userId') || '',
+      category: formData.get('category') || ''
+    };
+    const endpoint =
+      action === 'remove' ? '/admin/remove-category' : '/admin/add-category';
+    const status = $('#user-category-status');
+    status.textContent = 'Отправка...';
+    try {
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message || 'Ошибка сохранения');
+      }
+      status.textContent = 'Успешно.';
+      console.log('User categories updated', data);
+    } catch (err) {
+      status.textContent = `Ошибка: ${err.message}`;
+      console.error(err);
+    }
+  };
+
+  userCategoryForm.addEventListener('submit', e => {
+    e.preventDefault();
+    submitUserCategory('add');
+  });
+
+  removeCategoryBtn.addEventListener('click', e => {
+    e.preventDefault();
+    submitUserCategory('remove');
+  });
+};
+
 const toggleUserStatus = id => {
   state.users = state.users.map(user => {
     if (user.id !== id) return user;
@@ -205,6 +339,7 @@ const bindSettings = () => {
 const init = () => {
   bindNavigation();
   bindSettings();
+  bindForms();
   renderStats();
   renderUsers();
   renderOffers();

@@ -82,6 +82,31 @@
             <h2>Пользователи</h2>
             <p>Управление статусами и доступом.</p>
           </div>
+          <form id="user-category-form" class="form-card">
+            <div class="form-grid">
+              <label class="form-field">
+                <span>User ID</span>
+                <input required name="userId" type="text" placeholder="Введите userId" />
+              </label>
+              <label class="form-field">
+                <span>Категория льготы</span>
+                <select required name="category" id="user-category-select"></select>
+              </label>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn--primary" type="submit" data-action="add">
+                Добавить категорию
+              </button>
+              <button class="btn" type="button" id="remove-category-btn">
+                Удалить категорию
+              </button>
+              <span class="form-hint">
+                Используется JWT: сохраните токен в localStorage как
+                <code>adminToken</code>.
+              </span>
+            </div>
+            <div id="user-category-status" class="form-status"></div>
+          </form>
           <div class="table-wrapper">
             <table class="table">
               <thead>
@@ -104,6 +129,31 @@
             <h2>Офферы</h2>
             <p>Партнерские предложения и скидки.</p>
           </div>
+          <form id="offer-form" class="form-card">
+            <div class="form-grid">
+              <label class="form-field">
+                <span>Название</span>
+                <input required name="title" type="text" placeholder="Скидка 10% на электронику" />
+              </label>
+              <label class="form-field">
+                <span>Партнёр</span>
+                <input required name="partner" type="text" placeholder="TechLine" />
+              </label>
+              <label class="form-field">
+                <span>Скидка</span>
+                <input required name="discount" type="text" placeholder="10%" />
+              </label>
+              <label class="form-field">
+                <span>Период действия</span>
+                <input required name="period" type="text" placeholder="01.03 – 30.04" />
+              </label>
+              <label class="form-field checkbox-field">
+                <input name="published" type="checkbox" />
+                <span>Опубликовать сразу</span>
+              </label>
+            </div>
+            <button class="btn btn--primary" type="submit">Добавить оффер</button>
+          </form>
           <div class="table-wrapper">
             <table class="table">
               <thead>
@@ -125,6 +175,27 @@
             <h2>Льготы</h2>
             <p>Государственные предложения для подтвержденных пользователей.</p>
           </div>
+          <form id="benefit-form" class="form-card">
+            <div class="form-grid">
+              <label class="form-field">
+                <span>Название</span>
+                <input required name="title" type="text" placeholder="Компенсация ЖКХ" />
+              </label>
+              <label class="form-field">
+                <span>Категория</span>
+                <select required name="category" id="benefit-category"></select>
+              </label>
+              <label class="form-field">
+                <span>Регион</span>
+                <input required name="region" type="text" placeholder="Москва" />
+              </label>
+              <label class="form-field">
+                <span>Доступность</span>
+                <input required name="availability" type="text" placeholder="Заявка необходима" />
+              </label>
+            </div>
+            <button class="btn btn--primary" type="submit">Создать льготу</button>
+          </form>
           <div class="table-wrapper">
             <table class="table">
               <thead>

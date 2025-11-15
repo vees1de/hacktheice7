@@ -1,74 +1,108 @@
-import { useAuthStore } from '@entities/auth';
-import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
-import { useRouter } from 'vue-router';
+import axios, {
+  type AxiosError,
+  type AxiosInstance,
+  type AxiosRequestConfig
+} from 'axios';
+
+import {
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  setTokens
+} from './token.service';
+
+const API_BASE =
+  import.meta.env.VITE_API_BASE?.toString() || 'http://localhost:8000/api';
 
 let apiInstance: AxiosInstance | null = null;
-const token = '';
+let isRefreshing = false;
+let refreshQueue: Array<(token: string | null) => void> = [];
 
-// const loadConfigClosure = () => {
-//   let promise: Promise<AxiosResponse<{ apiBaseUrl: string }>> | null = null;
+const processQueue = (token: string | null) => {
+  refreshQueue.forEach(resolve => resolve(token));
+  refreshQueue = [];
+};
 
-//   return function () {
-//     if (promise) {
-//       return promise;
-//     } else {
-//       try {
-//         promise = axios.get('/assets/config.json', {
-//           headers: {
-//             'Cache-Control': 'no-cache, no-store, must-revalidate',
-//             Pragma: 'no-cache',
-//             Expires: '0'
-//           }
-//         });
-//       } catch (error) {
-//         console.error('Error loading configuration:', error);
-//         throw new Error('Failed to load configuration');
-//       }
-//       return promise;
-//     }
-//   };
-// };
-
-// const loadConfig = loadConfigClosure();
-
-const createAPIInstance = async (): Promise<AxiosInstance> => {
-  if (apiInstance) {
-    return apiInstance;
-  }
-
-  const router = useRouter();
-  const authStore = useAuthStore();
+const createAPIInstance = (): AxiosInstance => {
+  if (apiInstance) return apiInstance;
 
   apiInstance = axios.create({
-    baseURL: 'https://bims14.ru/api/',
+    baseURL: API_BASE,
     headers: {
-      'X-Requested-With': 'XMLHttpRequest',
       Accept: 'application/json',
       'Content-Type': 'application/json'
     }
   });
 
   apiInstance.interceptors.request.use(config => {
-    const unauth = false;
-    const ok = true;
-    if (unauth) {
-      router.push('/auth');
+    const token = getAccessToken();
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
-
-    if (ok) {
-      authStore.authorize();
-    }
-
     return config;
   });
+
+  apiInstance.interceptors.response.use(
+    response => response,
+    async (error: AxiosError) => {
+      const originalRequest: any = error.config;
+      const status = error.response?.status;
+
+      if (status === 401 && !originalRequest?._retry) {
+        if (isRefreshing) {
+          return new Promise(resolve => {
+            refreshQueue.push((token: string | null) => {
+              if (token && originalRequest?.headers) {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+              }
+              resolve(apiInstance!.request(originalRequest));
+            });
+          });
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          const refreshToken = getRefreshToken();
+          if (!refreshToken) throw new Error('No refresh token');
+
+          const res = await axios.post(
+            `${API_BASE}/auth/refresh`,
+            { refreshToken },
+            { headers: { 'Content-Type': 'application/json' } }
+          );
+          const newAccess = res.data?.accessToken as string | undefined;
+          const newRefresh = res.data?.refreshToken as string | undefined;
+          if (newAccess && newRefresh) {
+            setTokens(newAccess, newRefresh);
+            processQueue(newAccess);
+            if (originalRequest?.headers) {
+              originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+            }
+            return apiInstance!.request(originalRequest);
+          }
+          throw new Error('Failed to refresh');
+        } catch (refreshError) {
+          clearTokens();
+          processQueue(null);
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
+      return Promise.reject(error);
+    }
+  );
 
   return apiInstance;
 };
 
-export const apiRequest = async (
+export const apiRequest = async <T = unknown>(
   url: string,
   options: AxiosRequestConfig = {}
 ) => {
-  const api = await createAPIInstance();
-  return api.request({ url, ...options });
+  const api = createAPIInstance();
+  return api.request<T>({ url, ...options });
 };

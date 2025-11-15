@@ -6,35 +6,21 @@ import { BeneficiaryCategoryType } from '@prisma/client';
 export class BeneficiaryCategoryService {
   constructor(private prisma: PrismaService) {}
 
+  async getAllCategories() {
+    return this.prisma.beneficiaryCategory.findMany({
+      orderBy: { title: 'asc' }
+    });
+  }
+
   async assignCategoriesToUser(
     userId: string,
     categories: BeneficiaryCategoryType[]
   ) {
-    // Сначала удаляем все текущие категории пользователя
-    await this.prisma.userBeneficiaryCategory.deleteMany({
-      where: { userId }
-    });
-
-    // Затем добавляем новые
+    // Полная замена: удаляем все и добавляем переданные
+    await this.prisma.userBeneficiaryCategory.deleteMany({ where: { userId } });
     for (const categoryName of categories) {
-      const category = await this.prisma.beneficiaryCategory.findFirst({
-        where: { name: categoryName }
-      });
-
-      if (!category) {
-        throw new NotFoundException(`Category ${categoryName} not found`);
-      }
-
-      await this.prisma.userBeneficiaryCategory.create({
-        data: {
-          userId,
-          categoryId: category.id,
-          confirmed: true,
-          confirmationDate: new Date()
-        }
-      });
+      await this.addCategoryToUser(userId, categoryName);
     }
-
     return this.getUserCategories(userId);
   }
 
@@ -45,6 +31,53 @@ export class BeneficiaryCategoryService {
         beneficiaryCategory: true
       }
     });
+  }
+
+  async addCategoryToUser(userId: string, category: BeneficiaryCategoryType) {
+    const categoryEntity = await this.prisma.beneficiaryCategory.findFirst({
+      where: { name: category }
+    });
+
+    if (!categoryEntity) {
+      throw new NotFoundException(`Category ${category} not found`);
+    }
+
+    await this.prisma.userBeneficiaryCategory.upsert({
+      where: {
+        userId_categoryId: { userId, categoryId: categoryEntity.id }
+      },
+      update: {
+        confirmed: true,
+        confirmationDate: new Date()
+      },
+      create: {
+        userId,
+        categoryId: categoryEntity.id,
+        confirmed: true,
+        confirmationDate: new Date()
+      }
+    });
+
+    return this.getUserCategories(userId);
+  }
+
+  async removeCategoryFromUser(
+    userId: string,
+    category: BeneficiaryCategoryType
+  ) {
+    const categoryEntity = await this.prisma.beneficiaryCategory.findFirst({
+      where: { name: category }
+    });
+
+    if (!categoryEntity) {
+      throw new NotFoundException(`Category ${category} not found`);
+    }
+
+    await this.prisma.userBeneficiaryCategory.deleteMany({
+      where: { userId, categoryId: categoryEntity.id }
+    });
+
+    return this.getUserCategories(userId);
   }
 
   async getUserBenefits(userId: string) {

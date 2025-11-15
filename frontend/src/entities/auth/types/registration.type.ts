@@ -1,8 +1,8 @@
 export interface Registration {
-  email: string;
+  email?: string;
   firstName: string;
   lastName: string;
-  patronymic: string;
+  patronymic?: string;
   phone: string;
   snils: string;
   regionId: string;

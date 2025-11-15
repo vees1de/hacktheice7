@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuthStore } from '@entities/auth';
-import { apiRequest } from '@shared/api/http.client';
+import { type AuthRegisterRequest, authApi } from '@shared/api';
 import { createForm } from '@shared/lib/createForm';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
 import { Input } from '@shared/ui';
@@ -51,20 +51,13 @@ const { form, watchForm, getValue } = createForm<AccountForm>({
 });
 
 const handleRegistration = async () => {
-  const body = getValue();
-  // @ts-ignore
+  const body = getValue() as AuthRegisterRequest;
   body.dateOfBirth = new Date(body.dateOfBirth).toISOString();
-  const response = await apiRequest('/auth/register', {
-    method: 'POST',
-    data: body
-  });
-  // console.log(body);
-  if (response.status === 200) {
-    console.log('Okey');
+  const res = await authApi.register(body);
+  if (userId) {
+    console.log('shop otp input');
   }
-  // const body = getValue() as Account;
-  // authorize();
-  // router.push('/account');
+  console.log('Registered', res);
 };
 </script>
 

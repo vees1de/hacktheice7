@@ -7,6 +7,7 @@ import { RegionModule } from './region/regios.module';
 import { AdminModule } from './admin/admin.module';
 import { OfferModule } from './offer/offer.module';
 import { BenefitModule } from './benefit/benefit.module';
+import { BeneficiaryCategoryModule } from './beneficiary-category/beneficiary-category.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { BenefitModule } from './benefit/benefit.module';
     RegionModule,
     AdminModule,
     OfferModule,
-    BenefitModule
+    BenefitModule,
+    BeneficiaryCategoryModule
   ]
 })
 export class AppModule {}
