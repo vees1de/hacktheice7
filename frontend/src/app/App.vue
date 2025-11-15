@@ -15,6 +15,6 @@ import { Menu } from '@widgets/menu';
 
 <style scoped lang="scss">
 .wrapper {
-  height: 1000px;
+  // height: 1000px;
 }
 </style>

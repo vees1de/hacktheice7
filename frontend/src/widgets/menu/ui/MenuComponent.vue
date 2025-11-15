@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const activeMenuItem = ref(0);
 
 const items = [
-  { title: 'главная', icon: 'home' },
-  { title: 'льготы', icon: 'shield' },
-  { icon: 'lasso' },
-  { title: 'акции', icon: 'sale' },
-  { title: 'профиль', icon: 'user' }
+  { title: 'главная', icon: 'home', link: '/home' },
+  { title: 'льготы', icon: 'shield', link: '/benefits' },
+  { icon: 'lasso', link: '/chat' },
+  { title: 'акции', icon: 'sale', link: '/sales' },
+  { title: 'профиль', icon: 'user', link: '/user' }
 ];
 
 const onMenuItem = (index: number) => {
   activeMenuItem.value = index;
+  router.push(items[index].link);
 };
 </script>
 <template>
@@ -26,8 +29,14 @@ const onMenuItem = (index: number) => {
         @click="onMenuItem(index)"
       >
         <img
+          v-if="item.title"
           class="item__icon"
           :src="`/src/shared/assets/icons/${index === activeMenuItem ? 'bold-' : ''}${item.icon}-icon.svg`"
+        />
+        <img
+          v-else
+          class="item__icon"
+          :src="`/src/shared/assets/icons/${item.icon}-icon.svg`"
         />
         <div
           v-if="item.title"
