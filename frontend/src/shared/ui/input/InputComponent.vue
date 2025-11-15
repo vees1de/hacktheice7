@@ -5,7 +5,7 @@ interface Props {
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
-  type?: 'text' | 'email' | 'password' | 'number' | 'tel';
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'date';
   error?: string;
   helperText?: string;
 }
@@ -50,6 +50,7 @@ const handleInput = (event: Event) => {
       "
       @input="handleInput"
       class="custom-input"
+      :class="{ 'date-input': type === 'date' }"
     />
 
     <div
@@ -134,6 +135,28 @@ const handleInput = (event: Event) => {
     &:focus {
       border-color: #ef4444;
       box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+  }
+
+  &.date-input {
+    // Специфичные стили для date input
+    min-height: 3rem;
+
+    // Для браузеров, которые поддерживают webkit календари
+    &::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 0.25rem;
+      margin-right: 0.25rem;
+
+      &:hover {
+        background-color: #f3f4f6;
+      }
+    }
+
+    // Для Firefox
+    &::-moz-focus-inner {
+      border: 0;
     }
   }
 }

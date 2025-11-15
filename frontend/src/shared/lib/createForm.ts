@@ -28,6 +28,14 @@ export function createForm<T extends Record<string, FieldMetaData<any>>>(
 
   return {
     form: reactiveForm,
+    getValue: () => {
+      const raw = {};
+      for (const [key, form] of Object.entries(reactiveForm)) {
+        // @ts-ignore
+        raw[key] = form.value;
+      }
+      return raw;
+    },
     watchForm: (callback: (value: T) => void) => {
       return watch(() => reactiveForm, callback, {
         deep: true,

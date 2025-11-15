@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Header } from '@shared/ui';
+import { Menu } from '@widgets/menu';
 </script>
 
 <template>
@@ -8,6 +9,7 @@ import { Header } from '@shared/ui';
     <main>
       <RouterView />
     </main>
+    <Menu />
   </div>
 </template>
 
