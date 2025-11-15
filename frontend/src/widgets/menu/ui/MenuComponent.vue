@@ -50,6 +50,7 @@ const onMenuItem = (index: number) => {
 </template>
 <style lang="scss" scoped>
 .menu {
+  height: var(--menu-height);
   display: flex;
   justify-content: space-between;
   background-color: #fff;
@@ -57,6 +58,7 @@ const onMenuItem = (index: number) => {
   position: fixed;
   border-top: 1px #c8cdd0 solid;
   bottom: 0;
+  left: 0;
   padding: 6px 25px;
 }
 

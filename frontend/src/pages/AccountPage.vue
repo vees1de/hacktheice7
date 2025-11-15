@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { apiRequest } from '@shared/api/http.client';
-import { onMounted } from 'vue';
-
-onMounted(() => {
-  apiRequest('as').catch(v => console.log(v));
-});
+import { Heading } from '@shared/ui';
 </script>
-<template>Аккаунт</template>
+<template>
+  <div class="home">
+    <Heading>Профиль</Heading>
+  </div>
+</template>

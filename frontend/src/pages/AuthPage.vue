@@ -69,7 +69,7 @@ const handleRegistration = async () => {
 </script>
 
 <template>
-  <div class="container auth">
+  <div class="auth">
     <Form class="auth__form">
       <Input
         v-model="form.firstName.value"

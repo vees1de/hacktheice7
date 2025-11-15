@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import { Header } from '@shared/ui';
+import { useAuthStore } from '@entities/auth';
 import { Menu } from '@widgets/menu';
+import { storeToRefs } from 'pinia';
+
+const { isAuthenticated } = storeToRefs(useAuthStore());
 </script>
 
 <template>
   <div class="wrapper">
-    <Header />
     <main>
       <RouterView />
     </main>
-    <Menu />
+    <Menu v-if="isAuthenticated" />
   </div>
 </template>
 
 <style scoped lang="scss">
-.wrapper {
-  // height: 1000px;
+main {
+  padding: 16px 16px var(--menu-height);
 }
 </style>
