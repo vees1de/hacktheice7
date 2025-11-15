@@ -100,7 +100,7 @@ const handleInput = (event: Event) => {
   font-size: 1rem;
   line-height: 1.5;
   color: #111827;
-  background-color: #ffffff;
+  background-color: #f2f7fe;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   transition: all 0.2s ease-in-out;
@@ -115,7 +115,7 @@ const handleInput = (event: Event) => {
   }
 
   &:focus {
-    border-color: #3b82f6;
+    border-color: #96bae6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 

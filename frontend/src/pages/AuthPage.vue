@@ -2,7 +2,7 @@
 import { AuthRegisterRequest, authApi } from '@entities/auth';
 import { createForm } from '@shared/lib/createForm';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
-import { Input } from '@shared/ui';
+import { Button, Input } from '@shared/ui';
 
 export type AccountForm = {
   [K in keyof Account]: FieldMetaData<string>;
@@ -112,7 +112,7 @@ const handleRegistration = async () => {
         placeholder="Регион"
       />
     </form>
-    <button @click="handleRegistration()">Зарегистрироваться</button>
+    <Button @clck="handleRegistration()">Продолжить</Button>
   </div>
 </template>
 
