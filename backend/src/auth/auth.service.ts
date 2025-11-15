@@ -99,11 +99,11 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    if (user.status !== 'ACTIVE') {
-      throw new UnauthorizedException(
-        'User account is not active yet. Please wait for admin approval.'
-      );
-    }
+    // if (user.status !== 'ACTIVE') {
+    //   throw new UnauthorizedException(
+    //     'User account is not active yet. Please wait for admin approval.'
+    //   );
+    // }
 
     const isValid = await verify(user.passwordHash, dto.password);
     if (!isValid) {
