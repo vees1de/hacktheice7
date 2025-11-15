@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 
-import { useLangStore } from '../stores/language.store';
+import { useLangStore } from '../shared/stores/language.store';
 
 const langStore = useLangStore();
 const { change } = langStore;
