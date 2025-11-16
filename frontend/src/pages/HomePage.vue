@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useViewStore } from '@shared/stores/view.store';
 import { Block, Heading } from '@shared/ui';
+import { BenefitElement } from '@widgets/benefit-element';
 import { QrSheetComponent } from '@widgets/qr-sheet';
 import { storeToRefs } from 'pinia';
 
@@ -9,6 +10,15 @@ const { isQrSheetVisible } = storeToRefs(viewStore);
 const openQrSheet = () => {
   viewStore.toggleQrVisible();
 };
+
+const benefits = [
+  { icon: 'bus', name: 'Транспорт' },
+  { icon: 'heart', name: 'Медицина' },
+  { icon: 'bus', name: 'ЖКХ' },
+  { icon: 'cash', name: 'Социальные выплаты' },
+  { icon: 'wheel', name: 'Образование и досуг' },
+  { icon: 'document', name: 'Налоговые льготы' }
+];
 </script>
 
 <template>
@@ -27,12 +37,37 @@ const openQrSheet = () => {
           />
         </div>
       </Block>
+      <h3>Категории льгот для пенсионера</h3>
+      <section class="benefits-grid">
+        <template
+          v-for="(benefit, index) in benefits"
+          :key="benefit.icon"
+        >
+          <BenefitElement
+            :icon="benefit.icon"
+            :name="benefit.name"
+          />
+        </template>
+      </section>
+      <h3></h3>
     </div>
   </div>
   <QrSheetComponent v-if="isQrSheetVisible" />
 </template>
 
 <style lang="scss" scoped>
+h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
 .qr {
   display: flex;
   justify-content: space-between;
@@ -40,6 +75,7 @@ const openQrSheet = () => {
   background: #1a73e8 url('/src/shared/assets/images/intersect.svg');
   background-repeat: repeat-x;
   background-position: 0 calc(100% + 20px);
+  margin-bottom: 32px;
 
   &__title {
     color: #fff;

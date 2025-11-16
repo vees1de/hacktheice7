@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-defineProps<{ imgSrc: string; name: string }>();
+defineProps<{ icon: string; name: string }>();
 </script>
 <template>
   <div class="benefit-element">
-    <img :src="imgSrc" />
+    <img :src="`src/shared/assets/icons/${icon}-icon.svg`" />
     <h5>{{ name }}</h5>
   </div>
 </template>
@@ -16,6 +16,11 @@ defineProps<{ imgSrc: string; name: string }>();
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border-radius: 16px;
+  border-radius: 10px;
+  aspect-ratio: 1 / 1;
+  gap: 6px;
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
 }
 </style>
