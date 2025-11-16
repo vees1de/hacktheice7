@@ -1,12 +1,8 @@
 <script setup lang="ts">
+import { Option } from '@shared/types/dropdownOption';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 import InputComponent from '../input/InputComponent.vue';
-
-interface Option {
-  value: string | number;
-  text: string;
-}
 
 interface Props {
   modelValue: string | number;

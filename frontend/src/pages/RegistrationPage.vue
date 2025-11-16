@@ -1,32 +1,62 @@
 <script setup lang="ts">
 import { useAuthStore } from '@entities/auth';
+import { regionApi } from '@entities/region';
 import { createForm } from '@shared/lib/createForm';
-import { required } from '@shared/lib/validators';
+import { onlyString, required } from '@shared/lib/validators';
+import { Option } from '@shared/types/dropdownOption';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
-import { Button, Input } from '@shared/ui';
-import { computed, ref } from 'vue';
+import { Button, Dropdown, Input } from '@shared/ui';
+import { CodeInput } from '@widgets/code-input';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-export type AuthForm = {
-  [K in keyof Auth]: FieldMetaData<string>;
+export type AccountForm = {
+  [K in keyof Account]: FieldMetaData<string>;
 };
 
-export type Auth = {
+export type Account = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  patronymic: string;
   phone: string;
+  snils: string;
+  regionId: string;
+  dateOfBirth: string;
   password: string;
 };
 
 const router = useRouter();
 const step = ref(1);
+const regionOptions = ref<Option[]>([]);
+const canSubmit = ref(false);
 
-const createdForm = createForm<AuthForm>({
+onMounted(async () => {
+  const response = await regionApi.getAll();
+  const regions: Option[] = response.map(region => ({
+    value: region.id,
+    text: region.name
+  }));
+
+  regionOptions.value = regions;
+});
+
+const createdForm = createForm<AccountForm>({
+  firstName: { value: '', validators: [required(), onlyString()] },
+  lastName: { value: '', validators: [required(), onlyString()] },
   phone: { value: '+', validators: [required()] },
-  password: { value: '', validators: [required()] }
+  patronymic: { value: '', validators: [required(), onlyString()] },
+  dateOfBirth: { value: '', validators: [required()] },
+  email: { value: '', validators: [required()] },
+  password: { value: '', validators: [required()] },
+  regionId: { value: '', validators: [required()] },
+  snils: { value: '', validators: [required()] }
 });
 
 const { form, getValue, checkValidation } = createdForm;
 
 const goToStep2 = () => {
+  console.log(form, checkValidation());
   const formHasError = checkValidation();
   if (!formHasError) {
     step.value = 2;
@@ -38,29 +68,8 @@ const handleFinal = async () => {
   await router.push('/home');
 };
 
-const codeDigits = ref(['', '', '', '']);
-const canSubmit = computed(() => codeDigits.value.every(d => d.length === 1));
-
-const handleDigitInput = (index: number, e: Event) => {
-  const target = e.target as HTMLInputElement;
-  let value = target.value.replace(/\D/g, ''); // только цифры
-
-  if (value.length > 1) value = value[0];
-  codeDigits.value[index] = value;
-
-  // переход вперёд
-  if (value && index < 3) {
-    const next = document.getElementById(`digit-${index + 1}`);
-    next?.focus();
-  }
-};
-
-const handleBackspace = (index: number, e: KeyboardEvent) => {
-  if (e.key === 'Backspace' && !codeDigits.value[index] && index > 0) {
-    const prev = document.getElementById(`digit-${index - 1}`);
-    codeDigits.value[index - 1] = '';
-    prev?.focus();
-  }
+const handleCodeInput = () => {
+  canSubmit.value = true;
 };
 </script>
 
@@ -89,15 +98,50 @@ const handleBackspace = (index: number, e: KeyboardEvent) => {
       class="auth__form"
     >
       <Input
+        v-model="form.firstName.value"
+        label="Имя"
+        type="text"
+      />
+      <Input
+        v-model="form.lastName.value"
+        label="Фамилия"
+        type="text"
+      />
+      <Input
+        v-model="form.patronymic.value"
+        label="Отчество"
+        type="text"
+      />
+      <Input
+        v-model="form.snils.value"
+        label="СНИЛС"
+        type="text"
+      />
+      <Input
         v-model="form.phone.value"
         label="Телефон"
         inputmode="tel"
+      />
+      <Input
+        v-model="form.email.value"
+        label="Эл. почта"
+        type="email"
+      />
+      <Input
+        v-model="form.dateOfBirth.value"
+        label="День рождения"
+        type="date"
       />
       <Input
         v-model="form.password.value"
         label="Пароль"
         type="password"
       />
+      <Dropdown
+        label="Регион"
+        v-model="form.regionId.value"
+        :options="regionOptions"
+      ></Dropdown>
     </form>
 
     <Button
@@ -112,63 +156,23 @@ const handleBackspace = (index: number, e: KeyboardEvent) => {
       v-if="step === 2"
       class="auth__form code-wrapper"
     >
-      <div class="code-inputs">
-        <input
-          v-for="(digit, i) in codeDigits"
-          :key="i"
-          :id="`digit-${i}`"
-          class="code-box"
-          type="text"
-          inputmode="numeric"
-          maxlength="1"
-          v-model="codeDigits[i]"
-          @input="e => handleDigitInput(i, e)"
-          @keydown="e => handleBackspace(i, e)"
-        />
-      </div>
+      <CodeInput @success="handleFinal()" />
     </form>
 
-    <Button
+    <!-- <Button
       v-if="step === 2"
       class="submit button__step2"
       :disabled="!canSubmit"
       @click="handleFinal"
     >
       Подтвердить
-    </Button>
+    </Button> -->
   </div>
 </template>
 
 <style scoped lang="scss">
 .button__step2 {
   margin-top: 32px;
-}
-
-.code-wrapper {
-  display: flex;
-  justify-content: center;
-}
-
-.code-inputs {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-.code-box {
-  width: 56px;
-  height: 64px;
-  font-size: 2rem;
-  font-weight: 600;
-  text-align: center;
-  border-radius: 12px;
-  border: 1.5px solid #d0d5dd;
-  outline: none;
-  transition: 0.2s border;
-
-  &:focus {
-    border-color: #1a73e8;
-  }
 }
 
 .submit[disabled] {
