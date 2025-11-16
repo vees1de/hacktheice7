@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@entities/auth';
 import { createForm } from '@shared/lib/createForm';
+import { required } from '@shared/lib/validators';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
 import { Button, Dropdown, Input } from '@shared/ui';
 import { computed, ref } from 'vue';
@@ -25,23 +26,25 @@ export type Account = {
 const router = useRouter();
 const step = ref(1);
 
-const { form, watchForm, getValue } = createForm<AccountForm>({
-  firstName: { value: '', validators: [] },
-  lastName: { value: '', validators: [] },
-  phone: { value: '+', validators: [] },
-  patronymic: { value: '', validators: [] },
-  dateOfBirth: { value: '', validators: [] },
-  email: { value: '', validators: [] },
-  password: { value: '', validators: [] },
-  regionId: { value: '', validators: [] },
-  snils: { value: '', validators: [] }
+const createdForm = createForm<AccountForm>({
+  firstName: { value: '', validators: [required()] },
+  lastName: { value: '', validators: [required()] },
+  phone: { value: '+', validators: [required()] },
+  patronymic: { value: '', validators: [required()] },
+  dateOfBirth: { value: '', validators: [required()] },
+  email: { value: '', validators: [required()] },
+  password: { value: '', validators: [required()] },
+  regionId: { value: '', validators: [required()] },
+  snils: { value: '', validators: [required()] }
 });
 
-// код подтверждения
-const code = ref('');
+const { form, getValue, checkValidation } = createdForm;
 
 const goToStep2 = () => {
-  step.value = 2;
+  const formHasError = checkValidation();
+  if (!formHasError) {
+    step.value = 2;
+  }
 };
 
 const handleFinal = async () => {
@@ -65,8 +68,6 @@ const handleDigitInput = (index: number, e: Event) => {
     next?.focus();
   }
 };
-
-const con = () => console.log(getValue());
 
 const handleBackspace = (index: number, e: KeyboardEvent) => {
   if (e.key === 'Backspace' && !codeDigits.value[index] && index > 0) {
@@ -155,7 +156,7 @@ const handleBackspace = (index: number, e: KeyboardEvent) => {
     <Button
       v-if="step === 1"
       class="submit"
-      @click="con"
+      @click="goToStep2"
     >
       Продолжить
     </Button>

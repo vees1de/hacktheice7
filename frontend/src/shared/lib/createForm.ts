@@ -6,25 +6,25 @@ export function createForm<T extends Record<string, FieldMetaData<any>>>(
 ) {
   const reactiveForm = reactive({ ...template }) as T;
 
-  for (const fieldKey of Object.keys(reactiveForm)) {
-    const validators = reactiveForm[fieldKey].validators;
+  // for (const fieldKey of Object.keys(reactiveForm)) {
+  //   const validators = reactiveForm[fieldKey].validators;
 
-    if (validators?.length) {
-      watch(
-        () => reactiveForm[fieldKey].value,
-        newValue => {
-          let hasError = false;
-          for (let validator of validators) {
-            if (!reactiveForm[fieldKey].disabled && !validator(newValue)) {
-              hasError = true;
-              break;
-            }
-          }
-          reactiveForm[fieldKey].error = hasError;
-        }
-      );
-    }
-  }
+  //   if (validators?.length) {
+  //     watch(
+  //       () => reactiveForm[fieldKey].value,
+  //       newValue => {
+  //         let hasError = false;
+  //         for (let validator of validators) {
+  //           if (!reactiveForm[fieldKey].disabled && !validator(newValue)) {
+  //             hasError = true;
+  //             break;
+  //           }
+  //         }
+  //         reactiveForm[fieldKey].error = hasError;
+  //       }
+  //     );
+  //   }
+  // }
 
   return {
     form: reactiveForm,
@@ -41,6 +41,38 @@ export function createForm<T extends Record<string, FieldMetaData<any>>>(
         deep: true,
         immediate: true
       });
+    },
+    checkValidation: () => {
+      let isFormValid = false;
+      for (const fieldKey of Object.keys(reactiveForm)) {
+        const validators = reactiveForm[fieldKey].validators;
+
+        if (validators?.length) {
+          let hasError = false;
+          for (let validator of validators) {
+            if (
+              !reactiveForm[fieldKey].disabled &&
+              !validator(reactiveForm[fieldKey].value)
+            ) {
+              hasError = true;
+              isFormValid = true;
+              break;
+            }
+          }
+          reactiveForm[fieldKey].error = hasError;
+        }
+      }
+
+      return isFormValid;
+    },
+    hasError: () => {
+      let hasError = false;
+      for (const value of Object.values(reactiveForm)) {
+        if (value.error) {
+          hasError = false;
+        }
+      }
+      return hasError;
     }
   };
 }
