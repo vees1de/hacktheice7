@@ -3,6 +3,7 @@ import { useAuthStore } from '@entities/auth';
 import { createForm } from '@shared/lib/createForm';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
 import { Button, Input } from '@shared/ui';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 export type AccountForm = {
@@ -22,6 +23,7 @@ export type Account = {
 };
 
 const router = useRouter();
+const step = ref(1);
 
 const { form, watchForm, getValue } = createForm<AccountForm>({
   firstName: { value: 'фыв', validators: [] },
@@ -35,12 +37,41 @@ const { form, watchForm, getValue } = createForm<AccountForm>({
   snils: { value: '08336732477', validators: [] }
 });
 
-const handleRegistration = async () => {
+// код подтверждения
+const code = ref('');
+
+const goToStep2 = () => {
+  step.value = 2;
+};
+
+const handleFinal = async () => {
   useAuthStore().isAuthenticated = true;
   await router.push('/home');
-  // const body = getValue() as AuthRegisterRequest;
-  // body.dateOfBirth = new Date(body.dateOfBirth).toISOString();
-  // const res = await authApi.register(body);
+};
+
+const codeDigits = ref(['', '', '', '']);
+const canSubmit = computed(() => codeDigits.value.every(d => d.length === 1));
+
+const handleDigitInput = (index: number, e: Event) => {
+  const target = e.target as HTMLInputElement;
+  let value = target.value.replace(/\D/g, ''); // только цифры
+
+  if (value.length > 1) value = value[0];
+  codeDigits.value[index] = value;
+
+  // переход вперёд
+  if (value && index < 3) {
+    const next = document.getElementById(`digit-${index + 1}`);
+    next?.focus();
+  }
+};
+
+const handleBackspace = (index: number, e: KeyboardEvent) => {
+  if (e.key === 'Backspace' && !codeDigits.value[index] && index > 0) {
+    const prev = document.getElementById(`digit-${index - 1}`);
+    codeDigits.value[index - 1] = '';
+    prev?.focus();
+  }
 };
 </script>
 
@@ -59,74 +90,138 @@ const handleRegistration = async () => {
       />
     </div>
 
-    <div class="auth__title">Регистрация</div>
-    <form class="auth__form">
+    <div class="auth__title">
+      {{ step === 1 ? 'Регистрация' : 'Подтвердить регистрацию по СМС' }}
+    </div>
+
+    <!-- ШАГ 1 -->
+    <form
+      v-if="step === 1"
+      class="auth__form"
+    >
       <Input
         v-model="form.firstName.value"
         label="Имя"
         type="text"
-        placeholder="Имя"
       />
       <Input
         v-model="form.lastName.value"
         label="Фамилия"
         type="text"
-        placeholder="Фамилия"
       />
       <Input
         v-model="form.patronymic.value"
         label="Отчество"
         type="text"
-        placeholder="Отчество"
       />
       <Input
         v-model="form.snils.value"
         label="СНИЛС"
         type="text"
-        placeholder="снилс"
       />
       <Input
         v-model="form.phone.value"
         label="Телефон"
         inputmode="tel"
-        type="text"
-        placeholder="Телефон"
       />
       <Input
         v-model="form.email.value"
         label="Эл. почта"
         type="email"
-        placeholder="Эл. почта"
       />
       <Input
         v-model="form.dateOfBirth.value"
         label="День рождения"
         type="date"
-        placeholder="День рождения"
       />
       <Input
         v-model="form.password.value"
         label="Пароль"
         type="password"
-        placeholder="Пароль"
       />
       <Input
         v-model="form.regionId.value"
         label="Регион"
         type="text"
-        placeholder="Регион"
       />
     </form>
+
     <Button
+      v-if="step === 1"
       class="submit"
-      @clck="handleRegistration()"
-      >Продолжить</Button
+      @click="goToStep2"
     >
-    <div class="has-account">Уже зарегистрировались? <a>Войдите</a></div>
+      Продолжить
+    </Button>
+
+    <form
+      v-if="step === 2"
+      class="auth__form code-wrapper"
+    >
+      <div class="code-inputs">
+        <input
+          v-for="(digit, i) in codeDigits"
+          :key="i"
+          :id="`digit-${i}`"
+          class="code-box"
+          type="text"
+          inputmode="numeric"
+          maxlength="1"
+          v-model="codeDigits[i]"
+          @input="e => handleDigitInput(i, e)"
+          @keydown="e => handleBackspace(i, e)"
+        />
+      </div>
+    </form>
+
+    <Button
+      v-if="step === 2"
+      class="submit button__step2"
+      :disabled="!canSubmit"
+      @click="handleFinal"
+    >
+      Подтвердить
+    </Button>
   </div>
 </template>
 
 <style scoped lang="scss">
+.button__step2 {
+  margin-top: 32px;
+}
+
+.code-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.code-inputs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.code-box {
+  width: 56px;
+  height: 64px;
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 12px;
+  border: 1.5px solid #d0d5dd;
+  outline: none;
+  transition: 0.2s border;
+
+  &:focus {
+    border-color: #1a73e8;
+  }
+}
+
+.submit[disabled] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .has-account {
   text-align: center;
   font-size: 1rem;
