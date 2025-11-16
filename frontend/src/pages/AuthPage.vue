@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@entities/auth';
 import { createForm } from '@shared/lib/createForm';
-import { required } from '@shared/lib/validators';
+import { onlyString, required } from '@shared/lib/validators';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
 import { Button, Dropdown, Input } from '@shared/ui';
 import { computed, ref } from 'vue';
@@ -27,10 +27,10 @@ const router = useRouter();
 const step = ref(1);
 
 const createdForm = createForm<AccountForm>({
-  firstName: { value: '', validators: [required()] },
-  lastName: { value: '', validators: [required()] },
+  firstName: { value: '', validators: [required(), onlyString()] },
+  lastName: { value: '', validators: [required(), onlyString()] },
   phone: { value: '+', validators: [required()] },
-  patronymic: { value: '', validators: [required()] },
+  patronymic: { value: '', validators: [required(), onlyString()] },
   dateOfBirth: { value: '', validators: [required()] },
   email: { value: '', validators: [required()] },
   password: { value: '', validators: [required()] },

@@ -15,8 +15,6 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const viewInputValue = ref(props.modelValue);
-
 const emit = defineEmits(['update:modelValue', 'clickOutside']);
 
 const isPasswordVisible = ref(false);
@@ -42,7 +40,6 @@ const handleInput = (event: Event) => {
 
   if (props.type === 'date') {
     const formatted = formatDateInput(target.value);
-    viewInputValue.value = formatted;
     emit('update:modelValue', formatted);
   } else {
     emit('update:modelValue', target.value);
@@ -96,7 +93,7 @@ const formatDateInput = (input: string) => {
     <div class="input-wrapper">
       <input
         :id="label"
-        :value="viewInputValue"
+        :value="modelValue"
         :type="inputType"
         :placeholder="placeholder"
         :required="required"
