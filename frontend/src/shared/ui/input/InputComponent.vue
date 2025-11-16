@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { MaskaDetail } from 'maska';
 import { computed, ref } from 'vue';
 
 interface Props {
@@ -12,21 +13,31 @@ interface Props {
   error?: string;
   helperText?: string;
 }
-
 const props = defineProps<Props>();
-
 const emit = defineEmits(['update:modelValue', 'clickOutside']);
-
 const isPasswordVisible = ref(false);
 
 const inputType = computed(() => {
   if (props.type === 'date') {
     return 'text';
   }
+
   if (props.type !== 'password') {
     return props.type || 'text';
   }
   return isPasswordVisible.value ? 'text' : 'password';
+});
+
+const inputMask = computed(() => {
+  if (props.type === 'date') {
+    return '##.##.####';
+  }
+
+  if (props.type === 'tel') {
+    return '+7(9##)-###-##-##';
+  }
+
+  return null;
 });
 
 const togglePasswordVisibility = () => {
@@ -35,42 +46,9 @@ const togglePasswordVisibility = () => {
   }
 };
 
-const handleInput = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-
-  if (props.type === 'date') {
-    const formatted = formatDateInput(target.value);
-    emit('update:modelValue', formatted);
-  } else {
-    emit('update:modelValue', target.value);
-  }
-};
-
-const formatDateInput = (input: string) => {
-  // Убираем все нецифровые символы
-  let value = input.replace(/\D/g, '');
-
-  // Ограничиваем длину цифр 8 символами
-  value = value.substring(0, 8);
-
-  // Автоматически добавляем точки при вводе
-  if (value.length > 4) {
-    value =
-      value.substring(0, 2) +
-      '.' +
-      value.substring(2, 4) +
-      '.' +
-      value.substring(4);
-  } else if (value.length > 2) {
-    value = value.substring(0, 2) + '.' + value.substring(2);
-  }
-
-  // Максимальная длина с точками - 10 символов (DD.MM.YYYY)
-  if (value.length > 10) {
-    value = value.substring(0, 10);
-  }
-
-  return value;
+const handleInput = (event: CustomEvent<MaskaDetail>) => {
+  const value = event.detail.unmasked;
+  emit('update:modelValue', value);
 };
 </script>
 
@@ -104,9 +82,10 @@ const formatDateInput = (input: string) => {
         :aria-describedby="
           error ? `${label}-error` : helperText ? `${label}-helper` : undefined
         "
-        @input="handleInput"
         class="custom-input"
         :class="{ 'date-input': type === 'date' }"
+        v-maska="inputMask"
+        @maska="handleInput"
       />
       <div
         class="input-icon"

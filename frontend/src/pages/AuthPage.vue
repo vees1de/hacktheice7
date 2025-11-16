@@ -1,32 +1,28 @@
 <script setup lang="ts">
-import { useAuthStore } from '@entities/auth';
+import { AuthLoginRequest, useAuthStore } from '@entities/auth';
 import { createForm } from '@shared/lib/createForm';
 import { required } from '@shared/lib/validators';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
 import { Button, Input } from '@shared/ui';
-import { computed, ref } from 'vue';
+import { CodeInput } from '@widgets/code-input';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 export type AuthForm = {
-  [K in keyof Auth]: FieldMetaData<string>;
-};
-
-export type Auth = {
-  phone: string;
-  password: string;
+  [K in keyof AuthLoginRequest]: FieldMetaData<string>;
 };
 
 const router = useRouter();
-const step = ref(1);
 
 const createdForm = createForm<AuthForm>({
-  phone: { value: '+', validators: [required()] },
+  phone: { value: '', validators: [required()] },
   password: { value: '', validators: [required()] }
 });
-
 const { form, getValue, checkValidation } = createdForm;
 
-const goToStep2 = () => {
+const step = ref(1);
+
+const goToPhoneConfirmationStep = () => {
   const formHasError = checkValidation();
   if (!formHasError) {
     step.value = 2;
@@ -36,31 +32,6 @@ const goToStep2 = () => {
 const handleFinal = async () => {
   useAuthStore().isAuthenticated = true;
   await router.push('/home');
-};
-
-const codeDigits = ref(['', '', '', '']);
-const canSubmit = computed(() => codeDigits.value.every(d => d.length === 1));
-
-const handleDigitInput = (index: number, e: Event) => {
-  const target = e.target as HTMLInputElement;
-  let value = target.value.replace(/\D/g, ''); // только цифры
-
-  if (value.length > 1) value = value[0];
-  codeDigits.value[index] = value;
-
-  // переход вперёд
-  if (value && index < 3) {
-    const next = document.getElementById(`digit-${index + 1}`);
-    next?.focus();
-  }
-};
-
-const handleBackspace = (index: number, e: KeyboardEvent) => {
-  if (e.key === 'Backspace' && !codeDigits.value[index] && index > 0) {
-    const prev = document.getElementById(`digit-${index - 1}`);
-    codeDigits.value[index - 1] = '';
-    prev?.focus();
-  }
 };
 </script>
 
@@ -91,7 +62,9 @@ const handleBackspace = (index: number, e: KeyboardEvent) => {
       <Input
         v-model="form.phone.value"
         label="Телефон"
+        type="tel"
         inputmode="tel"
+        placeholder="+7"
       />
       <Input
         v-model="form.password.value"
@@ -103,7 +76,7 @@ const handleBackspace = (index: number, e: KeyboardEvent) => {
     <Button
       v-if="step === 1"
       class="submit"
-      @click="goToStep2"
+      @click="goToPhoneConfirmationStep"
     >
       Продолжить
     </Button>
@@ -112,30 +85,8 @@ const handleBackspace = (index: number, e: KeyboardEvent) => {
       v-if="step === 2"
       class="auth__form code-wrapper"
     >
-      <div class="code-inputs">
-        <input
-          v-for="(digit, i) in codeDigits"
-          :key="i"
-          :id="`digit-${i}`"
-          class="code-box"
-          type="text"
-          inputmode="numeric"
-          maxlength="1"
-          v-model="codeDigits[i]"
-          @input="e => handleDigitInput(i, e)"
-          @keydown="e => handleBackspace(i, e)"
-        />
-      </div>
+      <CodeInput @success="handleFinal" />
     </form>
-
-    <Button
-      v-if="step === 2"
-      class="submit button__step2"
-      :disabled="!canSubmit"
-      @click="handleFinal"
-    >
-      Подтвердить
-    </Button>
   </div>
 </template>
 

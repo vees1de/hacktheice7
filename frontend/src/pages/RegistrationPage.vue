@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { useAuthStore } from '@entities/auth';
+import {
+  AuthRegisterRequest,
+  authApi,
+  toAuthRegisterDto,
+  useAuthStore
+} from '@entities/auth';
 import { regionApi } from '@entities/region';
 import { createForm } from '@shared/lib/createForm';
 import { onlyString, required } from '@shared/lib/validators';
@@ -44,7 +49,7 @@ onMounted(async () => {
 const createdForm = createForm<AccountForm>({
   firstName: { value: '', validators: [required(), onlyString()] },
   lastName: { value: '', validators: [required(), onlyString()] },
-  phone: { value: '+', validators: [required()] },
+  phone: { value: '', validators: [required()] },
   patronymic: { value: '', validators: [required(), onlyString()] },
   dateOfBirth: { value: '', validators: [required()] },
   email: { value: '', validators: [required()] },
@@ -56,7 +61,7 @@ const createdForm = createForm<AccountForm>({
 const { form, getValue, checkValidation } = createdForm;
 
 const goToStep2 = () => {
-  console.log(form, checkValidation());
+  console.log(getValue());
   const formHasError = checkValidation();
   if (!formHasError) {
     step.value = 2;
@@ -64,12 +69,12 @@ const goToStep2 = () => {
 };
 
 const handleFinal = async () => {
+  const body = getValue() as AuthRegisterRequest;
+  toAuthRegisterDto(body);
+  await authApi.register(body);
+
   useAuthStore().isAuthenticated = true;
   await router.push('/home');
-};
-
-const handleCodeInput = () => {
-  canSubmit.value = true;
 };
 </script>
 
@@ -121,6 +126,8 @@ const handleCodeInput = () => {
         v-model="form.phone.value"
         label="Телефон"
         inputmode="tel"
+        type="tel"
+        placeholder="+7"
       />
       <Input
         v-model="form.email.value"
