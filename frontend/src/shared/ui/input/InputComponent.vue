@@ -7,6 +7,7 @@ interface Props {
   placeholder?: string;
   required?: boolean;
   disabled?: boolean;
+  autocomplete?: boolean;
   type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'date';
   error?: string;
   helperText?: string;
@@ -14,7 +15,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'clickOutside']);
 
 const isPasswordVisible = ref(false);
 
@@ -61,6 +62,7 @@ const handleInput = (event: Event) => {
         :placeholder="placeholder"
         :required="required"
         :disabled="disabled"
+        :autocomplete="autocomplete ? '' : 'off'"
         :aria-required="required"
         :aria-invalid="!!error"
         :aria-describedby="
@@ -135,7 +137,7 @@ const handleInput = (event: Event) => {
 
 .input-icon {
   position: absolute;
-  right: 1rem;
+  right: 1.5rem;
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
@@ -152,7 +154,7 @@ const handleInput = (event: Event) => {
 
 .custom-input {
   width: 100%;
-  padding: 0.75rem 2.5rem 0.75rem 1rem; // увеличен правый отступ для иконки
+  padding: 0.75rem 1rem 0.75rem 1rem; // увеличен правый отступ для иконки
   font-size: 1rem;
   line-height: 1.5;
   color: #111827;

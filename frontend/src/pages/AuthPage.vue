@@ -2,7 +2,7 @@
 import { useAuthStore } from '@entities/auth';
 import { createForm } from '@shared/lib/createForm';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
-import { Button, Input } from '@shared/ui';
+import { Button, Dropdown, Input } from '@shared/ui';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -65,6 +65,8 @@ const handleDigitInput = (index: number, e: Event) => {
     next?.focus();
   }
 };
+
+const con = () => console.log(getValue());
 
 const handleBackspace = (index: number, e: KeyboardEvent) => {
   if (e.key === 'Backspace' && !codeDigits.value[index] && index > 0) {
@@ -139,17 +141,21 @@ const handleBackspace = (index: number, e: KeyboardEvent) => {
         label="Пароль"
         type="password"
       />
-      <Input
-        v-model="form.regionId.value"
+      <Dropdown
         label="Регион"
-        type="text"
-      />
+        v-model="form.regionId.value"
+        :options="[
+          { value: '1', text: '14' },
+          { value: '2', text: '20' },
+          { value: '3', text: '34' }
+        ]"
+      ></Dropdown>
     </form>
 
     <Button
       v-if="step === 1"
       class="submit"
-      @click="goToStep2"
+      @click="con"
     >
       Продолжить
     </Button>
