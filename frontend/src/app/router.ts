@@ -29,7 +29,7 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const { isAuthenticated } = storeToRefs(authStore);
 
-  if (to.path !== 'auth') {
+  if (to.path !== '/auth') {
     authStore.setAuthTrue();
   }
 
