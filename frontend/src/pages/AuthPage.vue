@@ -24,15 +24,15 @@ export type Account = {
 const router = useRouter();
 
 const { form, watchForm, getValue } = createForm<AccountForm>({
-  firstName: { value: 'фыв', validators: [] },
-  lastName: { value: 'фыв', validators: [] },
-  phone: { value: '+79248617535', validators: [] },
-  patronymic: { value: 'фыв', validators: [] },
+  firstName: { value: '', validators: [] },
+  lastName: { value: '', validators: [] },
+  phone: { value: '+', validators: [] },
+  patronymic: { value: '', validators: [] },
   dateOfBirth: { value: '', validators: [] },
-  email: { value: 'ASD@MA.teST', validators: [] },
-  password: { value: '123123', validators: [] },
-  regionId: { value: '12323', validators: [] },
-  snils: { value: '08336732477', validators: [] }
+  email: { value: '', validators: [] },
+  password: { value: '', validators: [] },
+  regionId: { value: '', validators: [] },
+  snils: { value: '', validators: [] }
 });
 
 const handleRegistration = async () => {
