@@ -2,12 +2,19 @@
 import { useAuthStore } from '@entities/auth';
 import { Menu } from '@widgets/menu';
 import { storeToRefs } from 'pinia';
+import { onMounted, ref } from 'vue';
 
 const { isAuthenticated } = storeToRefs(useAuthStore());
+const appIsMounted = ref(false);
+
+onMounted(() => (appIsMounted.value = true));
 </script>
 
 <template>
-  <div class="wrapper">
+  <div
+    v-if="appIsMounted"
+    class="wrapper"
+  >
     <main>
       <RouterView />
     </main>

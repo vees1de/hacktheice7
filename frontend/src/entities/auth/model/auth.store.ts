@@ -21,6 +21,10 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const setAuthTrue = () => {
+    isAuthenticated.value = true;
+  };
+
   const register = async (payload: AuthRegisterRequest) => {
     return authApi.register(payload);
   };
@@ -41,5 +45,13 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated.value = true;
   };
 
-  return { isAuthenticated, authorize, register, login, logout, setAuth };
+  return {
+    isAuthenticated,
+    authorize,
+    register,
+    login,
+    logout,
+    setAuth,
+    setAuthTrue
+  };
 });

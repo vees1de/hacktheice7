@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { AuthRegisterRequest, authApi } from '@entities/auth';
+import { useAuthStore } from '@entities/auth';
 import { createForm } from '@shared/lib/createForm';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
 import { Button, Input } from '@shared/ui';
+import { useRouter } from 'vue-router';
 
 export type AccountForm = {
   [K in keyof Account]: FieldMetaData<string>;
@@ -20,6 +21,8 @@ export type Account = {
   password: string;
 };
 
+const router = useRouter();
+
 const { form, watchForm, getValue } = createForm<AccountForm>({
   firstName: { value: 'фыв', validators: [] },
   lastName: { value: 'фыв', validators: [] },
@@ -33,9 +36,11 @@ const { form, watchForm, getValue } = createForm<AccountForm>({
 });
 
 const handleRegistration = async () => {
-  const body = getValue() as AuthRegisterRequest;
-  body.dateOfBirth = new Date(body.dateOfBirth).toISOString();
-  const res = await authApi.register(body);
+  useAuthStore().isAuthenticated = true;
+  await router.push('/home');
+  // const body = getValue() as AuthRegisterRequest;
+  // body.dateOfBirth = new Date(body.dateOfBirth).toISOString();
+  // const res = await authApi.register(body);
 };
 </script>
 
@@ -112,11 +117,30 @@ const handleRegistration = async () => {
         placeholder="Регион"
       />
     </form>
-    <Button @clck="handleRegistration()">Продолжить</Button>
+    <Button
+      class="submit"
+      @clck="handleRegistration()"
+      >Продолжить</Button
+    >
+    <div class="has-account">Уже зарегистрировались? <a>Войдите</a></div>
   </div>
 </template>
 
 <style scoped lang="scss">
+.has-account {
+  text-align: center;
+  font-size: 1rem;
+
+  a {
+    text-decoration: none;
+    color: #1a73e8;
+  }
+}
+
+.submit {
+  margin-bottom: 12px;
+}
+
 .logo {
   display: flex;
   width: 100%;
@@ -148,6 +172,7 @@ const handleRegistration = async () => {
 .auth {
   display: block;
   justify-content: center;
+  margin-bottom: 80px;
 
   &__title {
     font-size: 1.5rem;

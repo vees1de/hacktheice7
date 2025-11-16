@@ -17,7 +17,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: '/sales', component: SalesPage },
   { path: '/benefits', component: BenefintsPage },
   { path: '/admin', component: AdminPage },
-  { path: '/', redirect: '/user' }
+  { path: '/', redirect: '/auth' }
 ];
 
 const router = createRouter({
@@ -28,6 +28,10 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const { isAuthenticated } = storeToRefs(authStore);
+
+  if (to.path !== 'auth') {
+    authStore.setAuthTrue();
+  }
 
   const hashToKeep = to.hash || from.hash;
 

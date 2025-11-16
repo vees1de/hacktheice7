@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { effect, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -17,6 +17,18 @@ const onMenuItem = (index: number) => {
   activeMenuItem.value = index;
   router.push(items[index].link);
 };
+
+effect(() => {
+  const path = router.currentRoute.value.path;
+
+  if (path) {
+    items.forEach(({ link }, index) => {
+      if (path === link) {
+        activeMenuItem.value = index;
+      }
+    });
+  }
+});
 </script>
 <template>
   <div class="menu">
@@ -65,6 +77,6 @@ const onMenuItem = (index: number) => {
 .item {
   text-align: center;
   line-height: 17px;
-  font-size: 0.625;
+  font-size: 0.625rem;
 }
 </style>
