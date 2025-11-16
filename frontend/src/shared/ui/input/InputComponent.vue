@@ -15,11 +15,16 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const viewInputValue = ref(props.modelValue);
+
 const emit = defineEmits(['update:modelValue', 'clickOutside']);
 
 const isPasswordVisible = ref(false);
 
 const inputType = computed(() => {
+  if (props.type === 'date') {
+    return 'text';
+  }
   if (props.type !== 'password') {
     return props.type || 'text';
   }
@@ -34,7 +39,41 @@ const togglePasswordVisibility = () => {
 
 const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  emit('update:modelValue', target.value);
+
+  if (props.type === 'date') {
+    const formatted = formatDateInput(target.value);
+    viewInputValue.value = formatted;
+    emit('update:modelValue', formatted);
+  } else {
+    emit('update:modelValue', target.value);
+  }
+};
+
+const formatDateInput = (input: string) => {
+  // Убираем все нецифровые символы
+  let value = input.replace(/\D/g, '');
+
+  // Ограничиваем длину цифр 8 символами
+  value = value.substring(0, 8);
+
+  // Автоматически добавляем точки при вводе
+  if (value.length > 4) {
+    value =
+      value.substring(0, 2) +
+      '.' +
+      value.substring(2, 4) +
+      '.' +
+      value.substring(4);
+  } else if (value.length > 2) {
+    value = value.substring(0, 2) + '.' + value.substring(2);
+  }
+
+  // Максимальная длина с точками - 10 символов (DD.MM.YYYY)
+  if (value.length > 10) {
+    value = value.substring(0, 10);
+  }
+
+  return value;
 };
 </script>
 
@@ -57,7 +96,7 @@ const handleInput = (event: Event) => {
     <div class="input-wrapper">
       <input
         :id="label"
-        :value="modelValue"
+        :value="viewInputValue"
         :type="inputType"
         :placeholder="placeholder"
         :required="required"
