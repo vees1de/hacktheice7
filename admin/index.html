@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Админка | Fullstack Template</title>
+    <title>Админка/title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -12,8 +12,8 @@
         <div class="brand">
           <div class="brand__logo">FS</div>
           <div>
-            <div class="brand__name">Fullstack Admin</div>
-            <div class="brand__muted">Vanilla HTML/CSS/JS</div>
+            <div class="brand__name">Admin</div>
+            <div class="brand__muted">Dashboard</div>
           </div>
         </div>
         <nav class="nav">
@@ -39,9 +39,9 @@
         <header class="topbar">
           <div>
             <p class="topbar__title">Панель администратора</p>
-            <p class="topbar__subtitle">
+            <!-- <p class="topbar__subtitle">
               Простая админка на чистом HTML, CSS и JS без сторонних библиотек.
-            </p>
+            </p> -->
           </div>
           <div class="user-chip">
             <div class="avatar">AD</div>
@@ -86,11 +86,20 @@
             <div class="form-grid">
               <label class="form-field">
                 <span>User ID</span>
-                <input required name="userId" type="text" placeholder="Введите userId" />
+                <input
+                  required
+                  name="userId"
+                  type="text"
+                  placeholder="Введите userId"
+                />
               </label>
               <label class="form-field">
                 <span>Категория льготы</span>
-                <select required name="category" id="user-category-select"></select>
+                <select
+                  required
+                  name="category"
+                  id="user-category-select"
+                ></select>
               </label>
             </div>
             <div class="form-actions">
@@ -133,11 +142,21 @@
             <div class="form-grid">
               <label class="form-field">
                 <span>Название</span>
-                <input required name="title" type="text" placeholder="Скидка 10% на электронику" />
+                <input
+                  required
+                  name="title"
+                  type="text"
+                  placeholder="Скидка 10% на электронику"
+                />
               </label>
               <label class="form-field">
                 <span>Партнёр</span>
-                <input required name="partner" type="text" placeholder="TechLine" />
+                <input
+                  required
+                  name="partner"
+                  type="text"
+                  placeholder="TechLine"
+                />
               </label>
               <label class="form-field">
                 <span>Скидка</span>
@@ -145,14 +164,21 @@
               </label>
               <label class="form-field">
                 <span>Период действия</span>
-                <input required name="period" type="text" placeholder="01.03 – 30.04" />
+                <input
+                  required
+                  name="period"
+                  type="text"
+                  placeholder="01.03 – 30.04"
+                />
               </label>
               <label class="form-field checkbox-field">
                 <input name="published" type="checkbox" />
                 <span>Опубликовать сразу</span>
               </label>
             </div>
-            <button class="btn btn--primary" type="submit">Добавить оффер</button>
+            <button class="btn btn--primary" type="submit">
+              Добавить оффер
+            </button>
           </form>
           <div class="table-wrapper">
             <table class="table">
@@ -179,7 +205,12 @@
             <div class="form-grid">
               <label class="form-field">
                 <span>Название</span>
-                <input required name="title" type="text" placeholder="Компенсация ЖКХ" />
+                <input
+                  required
+                  name="title"
+                  type="text"
+                  placeholder="Компенсация ЖКХ"
+                />
               </label>
               <label class="form-field">
                 <span>Категория</span>
@@ -187,14 +218,26 @@
               </label>
               <label class="form-field">
                 <span>Регион</span>
-                <input required name="region" type="text" placeholder="Москва" />
+                <input
+                  required
+                  name="region"
+                  type="text"
+                  placeholder="Москва"
+                />
               </label>
               <label class="form-field">
                 <span>Доступность</span>
-                <input required name="availability" type="text" placeholder="Заявка необходима" />
+                <input
+                  required
+                  name="availability"
+                  type="text"
+                  placeholder="Заявка необходима"
+                />
               </label>
             </div>
-            <button class="btn btn--primary" type="submit">Создать льготу</button>
+            <button class="btn btn--primary" type="submit">
+              Создать льготу
+            </button>
           </form>
           <div class="table-wrapper">
             <table class="table">
