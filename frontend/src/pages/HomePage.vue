@@ -1,5 +1,14 @@
 <script lang="ts" setup>
+import { useViewStore } from '@shared/stores/view.store';
 import { Block, Heading } from '@shared/ui';
+import { QrSheetComponent } from '@widgets/qr-sheet';
+import { storeToRefs } from 'pinia';
+
+const viewStore = useViewStore();
+const { isQrSheetVisible } = storeToRefs(viewStore);
+const openQrSheet = () => {
+  viewStore.toggleQrVisible();
+};
 </script>
 
 <template>
@@ -8,7 +17,10 @@ import { Block, Heading } from '@shared/ui';
     <div class="home__content">
       <Block class="qr">
         <div class="qr__title">Единый кошелек льготника</div>
-        <div class="qr__image">
+        <div
+          @click="openQrSheet"
+          class="qr__image"
+        >
           <img
             src="@shared/assets/images/qrcode.png"
             alt="qr-code"
@@ -17,6 +29,7 @@ import { Block, Heading } from '@shared/ui';
       </Block>
     </div>
   </div>
+  <QrSheetComponent v-if="isQrSheetVisible" />
 </template>
 
 <style lang="scss" scoped>
