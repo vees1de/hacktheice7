@@ -91,7 +91,7 @@ const handleBackspace = (index: number, e: KeyboardEvent) => {
     </div>
 
     <div class="auth__title">
-      {{ step === 1 ? 'Регистрация' : 'Подтвердить регистрацию по СМС' }}
+      {{ step === 1 ? 'Регистрация' : 'Подтвердить регистрацию по СМС' }}
     </div>
 
     <!-- ШАГ 1 -->

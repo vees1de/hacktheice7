@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue';
+
 interface Props {
   modelValue: string | number;
   label?: string;
@@ -10,9 +12,24 @@ interface Props {
   helperText?: string;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits(['update:modelValue']);
+
+const isPasswordVisible = ref(false);
+
+const inputType = computed(() => {
+  if (props.type !== 'password') {
+    return props.type || 'text';
+  }
+  return isPasswordVisible.value ? 'text' : 'password';
+});
+
+const togglePasswordVisibility = () => {
+  if (props.type === 'password') {
+    isPasswordVisible.value = !isPasswordVisible.value;
+  }
+};
 
 const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
@@ -36,22 +53,39 @@ const handleInput = (event: Event) => {
       >
     </label>
 
-    <input
-      :id="label"
-      :value="modelValue"
-      :type="type || 'text'"
-      :placeholder="''"
-      :required="required"
-      :disabled="disabled"
-      :aria-required="required"
-      :aria-invalid="!!error"
-      :aria-describedby="
-        error ? `${label}-error` : helperText ? `${label}-helper` : undefined
-      "
-      @input="handleInput"
-      class="custom-input"
-      :class="{ 'date-input': type === 'date' }"
-    />
+    <div class="input-wrapper">
+      <input
+        :id="label"
+        :value="modelValue"
+        :type="inputType"
+        :placeholder="placeholder"
+        :required="required"
+        :disabled="disabled"
+        :aria-required="required"
+        :aria-invalid="!!error"
+        :aria-describedby="
+          error ? `${label}-error` : helperText ? `${label}-helper` : undefined
+        "
+        @input="handleInput"
+        class="custom-input"
+        :class="{ 'date-input': type === 'date' }"
+      />
+      <div
+        class="input-icon"
+        @click="togglePasswordVisibility"
+        v-if="type === 'password'"
+      >
+        <!-- Иконка глаза будет здесь -->
+        <img
+          :src="
+            isPasswordVisible
+              ? 'src/shared/assets/icons/russia-icon.svg'
+              : 'src/shared/assets/icons/sale-icon.svg'
+          "
+          :alt="isPasswordVisible ? 'Скрыть пароль' : 'Показать пароль'"
+        />
+      </div>
+    </div>
 
     <div
       v-if="helperText && !error"
@@ -94,9 +128,31 @@ const handleInput = (event: Event) => {
   margin-left: 0.25rem;
 }
 
+.input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.input-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+  }
+}
+
 .custom-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 2.5rem 0.75rem 1rem; // увеличен правый отступ для иконки
   font-size: 1rem;
   line-height: 1.5;
   color: #111827;
