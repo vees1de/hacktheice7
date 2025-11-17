@@ -32,14 +32,18 @@ router.beforeEach(async (to, from, next) => {
   const { isAuthenticated } = storeToRefs(authStore);
 
   try {
-    if (to.path !== '/auth') {
+    if (to.path !== '/auth' && to.path !== '/registration') {
       await authStore.checkToken();
     }
   } catch {
     // space
   }
 
-  if (!isAuthenticated.value && to.path !== '/auth') {
+  if (
+    !isAuthenticated.value &&
+    to.path !== '/auth' &&
+    to.path !== '/registration'
+  ) {
     next({ path: '/auth' });
   } else {
     next();

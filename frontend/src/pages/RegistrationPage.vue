@@ -7,7 +7,8 @@ import {
 } from '@entities/auth';
 import { regionApi } from '@entities/region';
 import { createForm } from '@shared/lib/createForm';
-import { onlyString, required } from '@shared/lib/validators';
+import { date, minSymbols, onlyString, required } from '@shared/lib/validators';
+import { useViewStore } from '@shared/stores/view.store';
 import { Option } from '@shared/types/dropdownOption';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
 import { Button, Dropdown, Input } from '@shared/ui';
@@ -20,21 +21,19 @@ export type AccountForm = {
 };
 
 export type Account = {
-  email: string;
   firstName: string;
   lastName: string;
   patronymic: string;
   phone: string;
-  snils: string;
   regionId: string;
   dateOfBirth: string;
   password: string;
 };
 
 const router = useRouter();
+const { toggleLoader } = useViewStore();
 const step = ref(1);
 const regionOptions = ref<Option[]>([]);
-const canSubmit = ref(false);
 
 onMounted(async () => {
   const response = await regionApi.getAll();
@@ -51,17 +50,14 @@ const createdForm = createForm<AccountForm>({
   lastName: { value: '', validators: [required(), onlyString()] },
   phone: { value: '', validators: [required()] },
   patronymic: { value: '', validators: [required(), onlyString()] },
-  dateOfBirth: { value: '', validators: [required()] },
-  email: { value: '', validators: [] },
-  password: { value: '', validators: [required()] },
-  regionId: { value: '', validators: [required()] },
-  snils: { value: '', validators: [] }
+  dateOfBirth: { value: '', validators: [required(), date()] },
+  password: { value: '', validators: [required(), minSymbols(6)] },
+  regionId: { value: '', validators: [required()] }
 });
 
 const { form, getValue, checkValidation } = createdForm;
 
 const goToStep2 = () => {
-  console.log(getValue());
   const formHasError = checkValidation();
   if (!formHasError) {
     step.value = 2;
@@ -69,6 +65,7 @@ const goToStep2 = () => {
 };
 
 const handleFinal = async () => {
+  toggleLoader();
   const body = getValue() as AuthRegisterRequest;
   if (!body.email) {
     delete body.email;
@@ -81,6 +78,7 @@ const handleFinal = async () => {
 
   useAuthStore().isAuthenticated = true;
   await router.push('/home');
+  toggleLoader();
 };
 </script>
 
@@ -112,44 +110,50 @@ const handleFinal = async () => {
         v-model="form.firstName.value"
         label="Имя"
         type="text"
-      />
+        :error="form.firstName.error"
+      >
+        <template v-slot:error>Неверно заполнено</template>
+      </Input>
       <Input
         v-model="form.lastName.value"
         label="Фамилия"
         type="text"
-      />
+        :error="form.lastName.error"
+        ><template v-slot:error>Неверно заполнено</template>
+      </Input>
       <Input
         v-model="form.patronymic.value"
         label="Отчество"
         type="text"
-      />
-      <Input
-        v-model="form.snils.value"
-        label="СНИЛС"
-        type="text"
-      />
+        :error="form.patronymic.error"
+      >
+        <template v-slot:error>Неверно заполнено</template>
+      </Input>
       <Input
         v-model="form.phone.value"
         label="Телефон"
         inputmode="tel"
         type="tel"
         placeholder="+7"
-      />
-      <Input
-        v-model="form.email.value"
-        label="Эл. почта"
-        type="email"
-      />
+        :error="form.phone.error"
+        ><template v-slot:error>Неверно заполнено</template></Input
+      >
       <Input
         v-model="form.dateOfBirth.value"
         label="День рождения"
         type="date"
-      />
+        :error="form.dateOfBirth.error"
+      >
+        <template v-slot:error>Неверная дата</template>
+      </Input>
       <Input
         v-model="form.password.value"
         label="Пароль"
         type="password"
-      />
+        :error="form.password.error"
+      >
+        <template v-slot:error>Пароль не может быть меньше 6 символов</template>
+      </Input>
       <Dropdown
         label="Регион"
         v-model="form.regionId.value"

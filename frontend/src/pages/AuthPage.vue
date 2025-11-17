@@ -74,12 +74,18 @@ const handleFinal = async (code: string) => {
         type="tel"
         inputmode="tel"
         placeholder="+7"
-      />
+        :error="form.phone.error"
+      >
+        <template v-slot:error>Заполните телефон верно</template>
+      </Input>
       <Input
         v-model="form.password.value"
         label="Пароль"
         type="password"
-      />
+        :error="form.password.error"
+      >
+        <template v-slot:error>Обязательное поле</template>
+      </Input>
     </form>
 
     <Button

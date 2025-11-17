@@ -10,7 +10,7 @@ interface Props {
   disabled?: boolean;
   autocomplete?: boolean;
   type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'date';
-  error?: string;
+  error?: boolean;
   helperText?: string;
 }
 const props = defineProps<Props>();
@@ -92,7 +92,6 @@ const handleInput = (event: CustomEvent<MaskaDetail>) => {
         @click="togglePasswordVisibility"
         v-if="type === 'password'"
       >
-        <!-- Иконка глаза будет здесь -->
         <img
           :src="
             isPasswordVisible
@@ -118,7 +117,7 @@ const handleInput = (event: CustomEvent<MaskaDetail>) => {
       class="error-message"
       role="alert"
     >
-      {{ error }}
+      <slot name="error"></slot>
     </div>
   </div>
 </template>
