@@ -50,12 +50,6 @@ export class UserService {
     return user;
   }
 
-  async getByEmail(email: string) {
-    return this.prisma.user.findUnique({
-      where: { email }
-    });
-  }
-
   async getByPhone(phone: string) {
     return this.prisma.user.findUnique({
       where: { phone }
