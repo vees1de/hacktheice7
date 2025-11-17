@@ -92,9 +92,21 @@ async function main() {
     phone,
     firstName,
     lastName,
-    regionId
+    regionId,
+    snils
+  }: {
+    email: string;
+    role: StaffRole;
+    phone: string;
+    firstName: string;
+    lastName: string;
+    regionId: string;
+    snils?: string;
   }) {
     const passwordHash = await hash(`${role.toLowerCase()}123`);
+
+    const fallbackSnils =
+      snils || phone.replace(/\D/g, '').padEnd(11, '0').slice(0, 11);
 
     const user = await prisma.user.upsert({
       where: { phone },
@@ -107,7 +119,7 @@ async function main() {
         patronymic: '',
         phone,
         dateOfBirth: new Date('1990-01-01'),
-        snils: '00000000000',
+        snils: fallbackSnils,
         status: 'ACTIVE',
         isVerified: true,
         isEsiaVerified: false,
@@ -118,16 +130,16 @@ async function main() {
       }
     });
 
-    await prisma.staff.upsert({
+    const staff = await prisma.staff.upsert({
       where: { userId: user.id },
       update: { role },
       create: { userId: user.id, role }
     });
 
-    return user;
+    return { user, staff };
   }
 
-  const admin = await createStaffUser({
+  const { user: admin } = await createStaffUser({
     email: 'admin@demo.ru',
     phone: '+79990000000',
     firstName: 'Админ',
@@ -136,7 +148,7 @@ async function main() {
     regionId: regionList[0].id
   });
 
-  const partner = await createStaffUser({
+  const { user: partner, staff: partnerStaff } = await createStaffUser({
     email: 'partner@demo.ru',
     phone: '+79991110000',
     firstName: 'Партнер',
@@ -145,7 +157,7 @@ async function main() {
     regionId: regionList[1].id
   });
 
-  const manager = await createStaffUser({
+  const { user: manager } = await createStaffUser({
     email: 'manager@demo.ru',
     phone: '+79992220000',
     firstName: 'Менеджер',
@@ -153,6 +165,32 @@ async function main() {
     role: StaffRole.MANAGER,
     regionId: regionList[2].id
   });
+
+  // Кассиры для сканирования QR (роль PARTNER)
+  const cashiers = [
+    {
+      email: 'cashier1@demo.ru',
+      phone: '+79993330000',
+      firstName: 'Кассир',
+      lastName: 'Иванова',
+      snils: '93300000000'
+    },
+    {
+      email: 'cashier2@demo.ru',
+      phone: '+79994440000',
+      firstName: 'Кассир',
+      lastName: 'Петров',
+      snils: '94400000000'
+    }
+  ];
+
+  for (const cashier of cashiers) {
+    await createStaffUser({
+      ...cashier,
+      role: StaffRole.PARTNER,
+      regionId: regionList[0].id
+    });
+  }
 
   // --------------------------
   // OFFERS (UPDATED)
@@ -187,7 +225,7 @@ async function main() {
     const offer = await prisma.offer.create({
       data: {
         ...data,
-        createdByStaffId: partner.id
+        createdByStaffId: partnerStaff.id
       }
     });
 

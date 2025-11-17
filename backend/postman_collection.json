@@ -294,6 +294,82 @@
               }
             }
           ]
+        },
+        {
+          "name": "Create Share Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/share-token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "share-token"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Share token issued', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json(); pm.collectionVariables.set('shareToken', json.token || '');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resolve Share Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{shareToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/share-token/resolve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "share-token",
+                "resolve"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Token resolved', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -451,6 +527,48 @@
               ]
             }
           }
+        },
+        {
+          "name": "Update User Beneficiary Categories",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categories\": [\n    \"PENSIONER\",\n    \"VETERAN\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user/beneficiary-categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "user",
+                "beneficiary-categories"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Categories updated', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json(); if(json.userBeneficiaryCategories){pm.collectionVariables.set('categoryId',(json.userBeneficiaryCategories[0]||{}).categoryId||'');}"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -968,7 +1086,7 @@
     },
     {
       "key": "adminPassword",
-      "value": "adminPassword123",
+      "value": "admin123",
       "type": "string",
       "description": "Seed admin password"
     },
@@ -980,7 +1098,7 @@
     },
     {
       "key": "partnerPassword",
-      "value": "partnerPassword123",
+      "value": "partner123",
       "type": "string",
       "description": "Seed partner password"
     },
@@ -992,7 +1110,7 @@
     },
     {
       "key": "managerPassword",
-      "value": "managerPassword123",
+      "value": "manager123",
       "type": "string",
       "description": "Seed manager password"
     },
@@ -1013,6 +1131,30 @@
       "value": "",
       "type": "string",
       "description": "Manager JWT"
+    },
+    {
+      "key": "cashier1Phone",
+      "value": "+79993330000",
+      "type": "string",
+      "description": "Seed cashier phone 1"
+    },
+    {
+      "key": "cashier2Phone",
+      "value": "+79994440000",
+      "type": "string",
+      "description": "Seed cashier phone 2"
+    },
+    {
+      "key": "cashierPassword",
+      "value": "partner123",
+      "type": "string",
+      "description": "Seed cashier password (partner role)"
+    },
+    {
+      "key": "shareToken",
+      "value": "",
+      "type": "string",
+      "description": "Token returned by /auth/share-token"
     }
   ]
 }
