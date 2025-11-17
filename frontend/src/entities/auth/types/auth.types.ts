@@ -49,6 +49,11 @@ export interface AuthRegisterRequest {
   regionId: string;
 }
 
+export interface VerifyPhoneRequest {
+  phone: string;
+  code: string;
+}
+
 export interface AuthLoginRequest {
   phone: string;
   password: string;

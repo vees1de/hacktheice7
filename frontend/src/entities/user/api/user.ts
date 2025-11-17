@@ -5,10 +5,10 @@ import { UpdateUserPayload, UserProfile } from '../types/user.types';
 
 export const userApi = {
   async getProfile() {
-    const { data } = await apiRequest<UserProfile>('/user/me', {
+    const response = await apiRequest<UserProfile>('/user/me', {
       method: 'GET'
     });
-    return data;
+    return response;
   },
 
   async updateProfile(payload: UpdateUserPayload) {

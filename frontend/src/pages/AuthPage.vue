@@ -13,6 +13,7 @@ export type AuthForm = {
 };
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const createdForm = createForm<AuthForm>({
   phone: { value: '', validators: [required()] },
@@ -22,16 +23,21 @@ const { form, getValue, checkValidation } = createdForm;
 
 const step = ref(1);
 
-const goToPhoneConfirmationStep = () => {
+const goToPhoneConfirmationStep = async () => {
   const formHasError = checkValidation();
   if (!formHasError) {
+    const body = getValue() as AuthLoginRequest;
+    body.phone = '+79' + body.phone;
+    await authStore.login(body);
     step.value = 2;
   }
 };
 
-const handleFinal = async () => {
-  useAuthStore().isAuthenticated = true;
-  await router.push('/home');
+const handleFinal = async (code: string) => {
+  console.log(code);
+  if (code === '4444') {
+    await router.push('/home');
+  }
 };
 </script>
 
