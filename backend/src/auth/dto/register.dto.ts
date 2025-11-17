@@ -10,8 +10,9 @@ import {
 } from 'class-validator';
 
 export class RegisterDto {
+  @IsOptional()
   @IsEmail()
-  email: string;
+  email?: string;
 
   @IsNotEmpty()
   @IsString()
@@ -30,10 +31,10 @@ export class RegisterDto {
   @Matches(/^\+7\d{10}$/, { message: 'Phone must be in format +7XXXXXXXXXX' })
   phone: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @Matches(/^\d{11}$/, { message: 'SNILS must be 11 digits' })
-  snils: string;
+  snils?: string;
 
   @IsNotEmpty()
   @IsString()

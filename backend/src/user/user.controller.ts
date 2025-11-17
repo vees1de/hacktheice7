@@ -14,6 +14,7 @@ import { CurrentUser } from 'src/auth/decorators/user.decorator';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { HideBenefitDto } from './dto/hide-benefit.dto';
 import { UserDto } from './dto/user.dto';
+import { UpdateUserCategoriesDto } from './dto/update-user-categories.dto';
 
 @Controller('user')
 export class UserController {
@@ -63,5 +64,15 @@ export class UserController {
     @Param('benefitId') benefitId: string
   ) {
     return this.userService.unhideBenefit(userId, benefitId);
+  }
+
+  @Put('beneficiary-categories')
+  @Auth()
+  @UsePipes(new ValidationPipe())
+  async updateUserCategories(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateUserCategoriesDto
+  ) {
+    return this.userService.updateUserCategories(userId, dto.categories || []);
   }
 }

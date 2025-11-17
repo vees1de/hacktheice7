@@ -4,7 +4,8 @@ const fs = require('fs');
 const { URL } = require('url');
 
 const PORT = 3001;
-const PUBLIC_DIR = __dirname;
+const DIST_DIR = path.join(__dirname, 'dist');
+const PUBLIC_DIR = fs.existsSync(DIST_DIR) ? DIST_DIR : __dirname;
 const API_TARGET = process.env.API_TARGET || 'http://localhost:8000';
 
 const MIME_TYPES = {
