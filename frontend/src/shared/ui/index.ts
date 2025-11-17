@@ -4,5 +4,6 @@ import Dropdown from './dropdown/DropdownComponent.vue';
 import Header from './header/HeaderComponent.vue';
 import Heading from './heading/HeadingComponent.vue';
 import Input from './input/InputComponent.vue';
+import Loader from './loader/LoaderComponent.vue';
 
-export { Block, Button, Dropdown, Header, Heading, Input };
+export { Block, Button, Dropdown, Header, Heading, Input, Loader };

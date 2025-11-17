@@ -2,6 +2,7 @@
 import { AuthLoginRequest, useAuthStore } from '@entities/auth';
 import { createForm } from '@shared/lib/createForm';
 import { required } from '@shared/lib/validators';
+import { useViewStore } from '@shared/stores/view.store';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
 import { Button, Input } from '@shared/ui';
 import { CodeInput } from '@widgets/code-input';
@@ -14,6 +15,7 @@ export type AuthForm = {
 
 const router = useRouter();
 const authStore = useAuthStore();
+const viewStore = useViewStore();
 
 const createdForm = createForm<AuthForm>({
   phone: { value: '', validators: [required()] },
@@ -26,15 +28,16 @@ const step = ref(1);
 const goToPhoneConfirmationStep = async () => {
   const formHasError = checkValidation();
   if (!formHasError) {
+    viewStore.toggleLoader();
     const body = getValue() as AuthLoginRequest;
     body.phone = '+79' + body.phone;
     await authStore.login(body);
     step.value = 2;
+    viewStore.toggleLoader();
   }
 };
 
 const handleFinal = async (code: string) => {
-  console.log(code);
   if (code === '4444') {
     await router.push('/home');
   }

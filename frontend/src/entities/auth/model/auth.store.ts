@@ -17,6 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
   const router = useRouter();
 
   const setAuth = (data: AuthSuccess | null) => {
+    console.log('setAuth');
     isAuthenticated.value = Boolean(data);
     if (data) {
       setTokens(data.accessToken, data.refreshToken);
@@ -30,10 +31,6 @@ export const useAuthStore = defineStore('auth', () => {
         isAuthenticated.value = true;
       }
     }
-  };
-
-  const setAuthTrue = () => {
-    isAuthenticated.value = true;
   };
 
   const register = async (payload: AuthRegisterRequest) => {
@@ -62,7 +59,6 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     setAuth,
-    setAuthTrue,
     checkToken,
     mobileConfirm
   };

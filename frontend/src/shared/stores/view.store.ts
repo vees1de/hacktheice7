@@ -6,5 +6,8 @@ export const useViewStore = defineStore('view', () => {
   const toggleQrVisible = () => {
     isQrSheetVisible.value = !isQrSheetVisible.value;
   };
-  return { isQrSheetVisible, toggleQrVisible };
+
+  const isLoading = ref(false);
+  const toggleLoader = () => (isLoading.value = !isLoading.value);
+  return { isQrSheetVisible, toggleQrVisible, isLoading, toggleLoader };
 });

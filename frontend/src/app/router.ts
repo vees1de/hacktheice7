@@ -31,17 +31,16 @@ router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
   const { isAuthenticated } = storeToRefs(authStore);
 
-  const hashToKeep = to.hash || from.hash;
   try {
-    await authStore.checkToken();
+    if (to.path !== '/auth') {
+      await authStore.checkToken();
+    }
   } catch {
     // space
   }
 
-  if (to.meta.requiresAuth && !isAuthenticated.value) {
-    next({ path: '/auth', hash: hashToKeep });
-  } else if (from.hash && !to.hash) {
-    next({ ...to, hash: from.hash });
+  if (!isAuthenticated.value && to.path !== '/auth') {
+    next({ path: '/auth' });
   } else {
     next();
   }
