@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma.service';
 import { RegisterDto } from '../auth/dto/register.dto';
 import { hash } from 'argon2';
 import { UserDto } from './dto/user.dto';
+import { BeneficiaryCategoryType } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -17,14 +18,14 @@ export class UserService {
 
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
+        email: dto.email || null,
         passwordHash: hashedPassword,
         firstName: dto.firstName,
         lastName: dto.lastName,
         patronymic: dto.patronymic,
         dateOfBirth: dto.dateOfBirth,
         phone: dto.phone,
-        snils: dto.snils,
+        snils: dto.snils || null,
         regionId: dto.regionId,
         authProvider: 'email',
         consentGiven: true,
@@ -47,12 +48,6 @@ export class UserService {
     }
 
     return user;
-  }
-
-  async getByEmail(email: string) {
-    return this.prisma.user.findUnique({
-      where: { email }
-    });
   }
 
   async getByPhone(phone: string) {
@@ -290,6 +285,49 @@ export class UserService {
       ...benefit,
       isHidden: hiddenBenefitIds.includes(benefit.id)
     }));
+  }
+
+  async updateUserCategories(
+    userId: string,
+    categories: BeneficiaryCategoryType[]
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    await this.prisma.userBeneficiaryCategory.deleteMany({
+      where: { userId }
+    });
+
+    if (categories.length > 0) {
+      const categoryEntities = await this.prisma.beneficiaryCategory.findMany({
+        where: { name: { in: categories } }
+      });
+
+      if (categoryEntities.length !== categories.length) {
+        throw new BadRequestException('One or more categories not found');
+      }
+
+      await this.prisma.userBeneficiaryCategory.createMany({
+        data: categoryEntities.map(category => ({
+          userId,
+          categoryId: category.id,
+          confirmed: true,
+          confirmationDate: new Date()
+        }))
+      });
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isEsiaVerified: categories.length > 0 }
+    });
+
+    return this.getProfile(userId);
   }
 
   async hideBenefit(userId: string, benefitId: string) {

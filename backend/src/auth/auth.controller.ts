@@ -16,6 +16,9 @@ import { RegisterDto } from './dto/register.dto';
 import { VerifyPhoneDto } from './dto/verify-phone.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ShareTokenDto } from './dto/share-token.dto';
+import { Auth } from './decorators/auth.decorator';
+import { CurrentUser } from './decorators/user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -95,6 +98,30 @@ export class AuthController {
         throw error;
       }
       throw new UnauthorizedException('Token refresh failed');
+    }
+  }
+
+  @HttpCode(200)
+  @Post('share-token')
+  @Auth()
+  async createShareToken(@CurrentUser('id') userId: string) {
+    return this.authService.createShareToken(userId);
+  }
+
+  @HttpCode(200)
+  @UsePipes(new ValidationPipe())
+  @Post('share-token/resolve')
+  async getUserByShareToken(@Body() dto: ShareTokenDto) {
+    try {
+      return await this.authService.getUserFromShareToken(dto.token);
+    } catch (error) {
+      if (
+        error instanceof UnauthorizedException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+      throw new UnauthorizedException('Unable to resolve token');
     }
   }
 }

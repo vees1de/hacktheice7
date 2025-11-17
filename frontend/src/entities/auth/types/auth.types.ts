@@ -45,7 +45,7 @@ export interface AuthRegisterRequest {
   patronymic?: string;
   dateOfBirth: string;
   phone: string;
-  snils: string;
+  snils?: string;
   regionId: string;
 }
 

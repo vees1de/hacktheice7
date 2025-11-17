@@ -50,7 +50,7 @@ model User {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   
-  email         String?    @unique
+  email         String?    
   passwordHash  String
   authProvider  String    @default("email") 
   isVerified    Boolean   @default(false)
@@ -61,7 +61,7 @@ model User {
   patronymic    String?  
   dateOfBirth   DateTime  @map("date_of_birth") 
   phone         String    @unique 
-  snils         String    @unique @db.VarChar(14) 
+  snils         String?   
   consentGiven  Boolean   @default(false) 
   consentDate   DateTime? @map("consent_date")
 

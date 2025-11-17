@@ -52,10 +52,10 @@ const createdForm = createForm<AccountForm>({
   phone: { value: '', validators: [required()] },
   patronymic: { value: '', validators: [required(), onlyString()] },
   dateOfBirth: { value: '', validators: [required()] },
-  email: { value: '', validators: [required()] },
+  email: { value: '', validators: [] },
   password: { value: '', validators: [required()] },
   regionId: { value: '', validators: [required()] },
-  snils: { value: '', validators: [required()] }
+  snils: { value: '', validators: [] }
 });
 
 const { form, getValue, checkValidation } = createdForm;
@@ -70,6 +70,12 @@ const goToStep2 = () => {
 
 const handleFinal = async () => {
   const body = getValue() as AuthRegisterRequest;
+  if (!body.email) {
+    delete body.email;
+  }
+  if (!body.snils) {
+    delete body.snils;
+  }
   toAuthRegisterDto(body);
   await authApi.register(body);
 

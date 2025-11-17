@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { hash, verify } from 'argon2';
+import { randomBytes } from 'crypto';
 import { UserService } from '../user/user.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -55,7 +56,7 @@ export class AuthService {
     try {
       const existingUser = await this.prisma.user.findFirst({
         where: {
-          OR: [{ email: dto.email }, { phone: dto.phone }, { snils: dto.snils }]
+          OR: [{ phone: dto.phone }]
         }
       });
 
@@ -69,14 +70,14 @@ export class AuthService {
 
       const user = await this.prisma.user.create({
         data: {
-          email: dto.email,
+          email: dto.email || null,
           passwordHash: hashedPassword,
           firstName: dto.firstName,
           lastName: dto.lastName,
           patronymic: dto.patronymic,
           dateOfBirth: dto.dateOfBirth,
           phone: dto.phone,
-          snils: dto.snils,
+          snils: dto.snils || null,
           regionId: dto.regionId,
           authProvider: 'email',
           consentGiven: true,
@@ -247,5 +248,113 @@ export class AuthService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  async createShareToken(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user || user.status !== 'ACTIVE') {
+      throw new NotFoundException('User not found or not active');
+    }
+
+    const token = randomBytes(24).toString('hex');
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes TTL
+
+    await this.prisma.authToken.create({
+      data: {
+        token,
+        type: 'share_profile',
+        expiresAt,
+        userId: user.id,
+        used: false
+      }
+    });
+
+    return { token, expiresAt };
+  }
+
+  async getUserFromShareToken(hashToken: string) {
+    const authToken = await this.prisma.authToken.findUnique({
+      where: { token: hashToken },
+      include: {
+        user: {
+          include: {
+            region: {
+              select: {
+                id: true,
+                name: true,
+                code: true
+              }
+            },
+            userBeneficiaryCategories: {
+              where: { confirmed: true },
+              include: {
+                beneficiaryCategory: {
+                  select: {
+                    id: true,
+                    name: true,
+                    title: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!authToken || authToken.type !== 'share_profile') {
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    if (authToken.used || authToken.expiresAt < new Date()) {
+      throw new UnauthorizedException('Token expired or already used');
+    }
+
+    if (!authToken.user || authToken.user.status !== 'ACTIVE') {
+      throw new UnauthorizedException('User is not active');
+    }
+
+    await this.prisma.authToken.update({
+      where: { id: authToken.id },
+      data: { used: true }
+    });
+
+    const user = authToken.user;
+
+    const age = this.calculateAge(new Date(user.dateOfBirth));
+
+    return {
+      id: user.id,
+      fullName: [user.lastName, user.firstName, user.patronymic]
+        .filter(Boolean)
+        .join(' '),
+      phone: user.phone,
+      age,
+      region: user.region,
+      benefits: user.userBeneficiaryCategories.map(
+        ({ beneficiaryCategory }) => ({
+          id: beneficiaryCategory.id,
+          code: beneficiaryCategory.name,
+          title: beneficiaryCategory.title
+        })
+      )
+    };
+  }
+
+  private calculateAge(dateOfBirth: Date): number {
+    const today = new Date();
+    let age = today.getFullYear() - dateOfBirth.getFullYear();
+    const monthDiff = today.getMonth() - dateOfBirth.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())
+    ) {
+      age--;
+    }
+
+    return Math.max(age, 0);
   }
 }

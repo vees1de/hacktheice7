@@ -31,5 +31,13 @@ export const userApi = {
       method: 'GET'
     });
     return data;
+  },
+
+  async updateUserCategories(categories: string[]) {
+    const { data } = await apiRequest<UserProfile>('/user/beneficiary-categories', {
+      method: 'PUT',
+      data: { categories }
+    });
+    return data;
   }
 };
