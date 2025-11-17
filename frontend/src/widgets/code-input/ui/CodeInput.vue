@@ -15,7 +15,8 @@ const codeDigits = ref(['', '', '', '']);
 
 effect(() => {
   const isOk = codeDigits.value.every(d => d.length === 1);
-  isOk ? emit('success') : emit('fail');
+  const code = codeDigits.value.join('');
+  isOk ? emit('success', code) : emit('fail');
 });
 
 const handleDigitInput = (index: number, e: Event) => {

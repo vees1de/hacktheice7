@@ -4,7 +4,8 @@ import { setTokens } from '@shared/api/token.service';
 import {
   AuthLoginRequest,
   AuthRegisterRequest,
-  AuthSuccess
+  AuthSuccess,
+  VerifyPhoneRequest
 } from '../types/auth.types';
 
 export const authApi = {
@@ -16,7 +17,7 @@ export const authApi = {
     return data;
   },
 
-  async verifyPhone(payload: { phone: string; code: string }) {
+  async verifyPhone(payload: VerifyPhoneRequest) {
     const { data } = await apiRequest<{ message: string }>(
       '/auth/verify-phone',
       {

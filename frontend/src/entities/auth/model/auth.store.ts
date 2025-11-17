@@ -1,3 +1,4 @@
+import { userApi } from '@entities/user/api/user';
 import { clearTokens, setTokens } from '@shared/api/token.service';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
@@ -7,7 +8,8 @@ import { authApi } from '../api/auth';
 import {
   AuthLoginRequest,
   AuthRegisterRequest,
-  AuthSuccess
+  AuthSuccess,
+  VerifyPhoneRequest
 } from '../types/auth.types';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -18,6 +20,15 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated.value = Boolean(data);
     if (data) {
       setTokens(data.accessToken, data.refreshToken);
+    }
+  };
+
+  const checkToken = async () => {
+    if (!isAuthenticated.value) {
+      const response = await userApi.getProfile();
+      if (response.status === 200) {
+        isAuthenticated.value = true;
+      }
     }
   };
 
@@ -41,17 +52,18 @@ export const useAuthStore = defineStore('auth', () => {
     router.push('/auth');
   };
 
-  const authorize = () => {
-    isAuthenticated.value = true;
+  const mobileConfirm = async (verifyBody: VerifyPhoneRequest) => {
+    await authApi.verifyPhone(verifyBody);
   };
 
   return {
     isAuthenticated,
-    authorize,
     register,
     login,
     logout,
     setAuth,
-    setAuthTrue
+    setAuthTrue,
+    checkToken,
+    mobileConfirm
   };
 });
