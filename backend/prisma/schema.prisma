@@ -37,6 +37,7 @@ enum BeneficiaryCategoryType {
   LOW_INCOME
   STUDENT
   DISABLED_CHILD_PARENT
+  RESIDENTS_NORTH_REGIONS
 }
 
 enum StaffRole {

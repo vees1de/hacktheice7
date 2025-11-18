@@ -31,9 +31,9 @@ export class AuthController {
     try {
       const result = await this.authService.register(dto);
       return {
-        message:
-          'Регистрация принята. Подтвердите телефон кодом из SMS (mock: 4444).',
-        userId: result.userId
+        message: 'Регистрация принята. Подтвердите телефон кодом из SMS.',
+        result: true,
+        data: result
       };
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -55,7 +55,8 @@ export class AuthController {
       await this.authService.verifyPhone(dto.phone);
       return {
         message:
-          'Телефон подтвержден. Теперь можно войти, а офферы партнеров откроются после входа через Госуслуги.'
+          'Телефон подтвержден. Теперь можно войти, а офферы партнеров откроются после входа через Госуслуги.',
+        result: true
       };
     } catch (error) {
       if (

@@ -56,7 +56,7 @@ export class AuthService {
     try {
       const existingUser = await this.prisma.user.findFirst({
         where: {
-          OR: [{ phone: dto.phone }]
+          phone: dto.phone
         }
       });
 
@@ -70,14 +70,12 @@ export class AuthService {
 
       const user = await this.prisma.user.create({
         data: {
-          email: dto.email || null,
           passwordHash: hashedPassword,
           firstName: dto.firstName,
           lastName: dto.lastName,
           patronymic: dto.patronymic,
           dateOfBirth: dto.dateOfBirth,
           phone: dto.phone,
-          snils: dto.snils || null,
           regionId: dto.regionId,
           authProvider: 'email',
           consentGiven: true,
@@ -87,7 +85,7 @@ export class AuthService {
           onboardingStep: 'SMS_VERIFICATION'
         }
       });
-
+      console.log('userdata:', user);
       // Отправка SMS с кодом подтверждения (в реальности)
       // this.smsService.sendVerificationCode(dto.phone, '4444');
 
@@ -179,6 +177,7 @@ export class AuthService {
       const tokens = this.issueTokens(user.id);
 
       return {
+        result: true,
         user: {
           ...safeUser,
           commercialOffersAvailable: Boolean(user.isEsiaVerified)

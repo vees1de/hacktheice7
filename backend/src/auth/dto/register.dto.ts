@@ -33,7 +33,6 @@ export class RegisterDto {
 
   @IsOptional()
   @IsString()
-  @Matches(/^\d{11}$/, { message: 'SNILS must be 11 digits' })
   snils?: string;
 
   @IsNotEmpty()

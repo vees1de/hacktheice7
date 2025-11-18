@@ -1,20 +1,50 @@
+-- CreateEnum
+CREATE TYPE "UserStatus" AS ENUM ('PENDING', 'ACTIVE', 'INACTIVE', 'SUSPENDED', 'REJECTED', 'BLOCKED');
+
+-- CreateEnum
+CREATE TYPE "OnboardingStep" AS ENUM ('SMS_VERIFICATION', 'ESIA_AUTH', 'PROFILE_SETUP', 'COMPLETE');
+
+-- CreateEnum
+CREATE TYPE "BeneficiaryCategoryType" AS ENUM ('PENSIONER', 'DISABLED_1', 'DISABLED_2', 'DISABLED_3', 'MULTICHILD_PARENT', 'VETERAN', 'LOW_INCOME', 'STUDENT', 'DISABLED_CHILD_PARENT', 'RESIDENTS_NORTH_REGIONS');
+
+-- CreateEnum
+CREATE TYPE "StaffRole" AS ENUM ('MANAGER', 'ADMIN', 'PARTNER');
+
 -- CreateTable
 CREATE TABLE "user" (
     "id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
-    "email" TEXT NOT NULL,
-    "passwordHash" TEXT,
+    "email" TEXT,
+    "passwordHash" TEXT NOT NULL,
     "authProvider" TEXT NOT NULL DEFAULT 'email',
     "isVerified" BOOLEAN NOT NULL DEFAULT false,
-    "name" TEXT,
-    "phone" TEXT,
-    "snils" VARCHAR(14),
+    "isEsiaVerified" BOOLEAN NOT NULL DEFAULT false,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "patronymic" TEXT,
+    "date_of_birth" TIMESTAMP(3) NOT NULL,
+    "phone" TEXT NOT NULL,
+    "snils" TEXT,
     "consentGiven" BOOLEAN NOT NULL DEFAULT false,
     "consent_date" TIMESTAMP(3),
     "region_id" TEXT NOT NULL,
+    "status" "UserStatus" NOT NULL DEFAULT 'PENDING',
+    "onboardingStep" "OnboardingStep" DEFAULT 'SMS_VERIFICATION',
+    "verificationCode" TEXT,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "staff" (
+    "id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "role" "StaffRole" NOT NULL,
+    "user_id" TEXT NOT NULL,
+
+    CONSTRAINT "staff_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -43,7 +73,7 @@ CREATE TABLE "region" (
 -- CreateTable
 CREATE TABLE "beneficiary_category" (
     "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
+    "name" "BeneficiaryCategoryType" NOT NULL,
     "title" TEXT NOT NULL,
     "icon" TEXT,
 
@@ -107,6 +137,7 @@ CREATE TABLE "offer" (
     "valid_to" TIMESTAMP(3) NOT NULL,
     "terms" TEXT NOT NULL,
     "link" TEXT,
+    "created_by_staff_id" TEXT,
 
     CONSTRAINT "offer_pkey" PRIMARY KEY ("id")
 );
@@ -173,7 +204,10 @@ CREATE TABLE "user_preference" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
+CREATE UNIQUE INDEX "user_phone_key" ON "user"("phone");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "staff_user_id_key" ON "staff"("user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "auth_token_token_key" ON "auth_token"("token");
@@ -197,6 +231,9 @@ CREATE UNIQUE INDEX "user_preference_user_id_key" ON "user_preference"("user_id"
 ALTER TABLE "user" ADD CONSTRAINT "user_region_id_fkey" FOREIGN KEY ("region_id") REFERENCES "region"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "staff" ADD CONSTRAINT "staff_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "auth_token" ADD CONSTRAINT "auth_token_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -216,6 +253,9 @@ ALTER TABLE "benefit_beneficiary_category" ADD CONSTRAINT "benefit_beneficiary_c
 
 -- AddForeignKey
 ALTER TABLE "benefit_beneficiary_category" ADD CONSTRAINT "benefit_beneficiary_category_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "beneficiary_category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "offer" ADD CONSTRAINT "offer_created_by_staff_id_fkey" FOREIGN KEY ("created_by_staff_id") REFERENCES "staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "offer_region" ADD CONSTRAINT "offer_region_offerId_fkey" FOREIGN KEY ("offerId") REFERENCES "offer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
