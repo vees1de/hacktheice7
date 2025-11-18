@@ -1,8 +1,10 @@
 <script lang="ts" setup>
 import { useViewStore } from '@shared/stores/view.store';
 import { Block } from '@shared/ui';
+import { BenefitsCarousel } from '@widgets/benefits-carousel';
 import { ChatBot } from '@widgets/chatbot';
 import { QrSheetComponent } from '@widgets/qr-sheet';
+import { SalesCarousel } from '@widgets/sales-carousel';
 import { storeToRefs } from 'pinia';
 
 const viewStore = useViewStore();
@@ -48,16 +50,42 @@ const benefits = [
       </Block>
       <h3>Чат-бот помощник ЛАССО</h3>
       <ChatBot />
+      <div class="section-heading">
+        <h3>Льготы для тебя</h3>
+        <img src="@shared/assets/icons/arrow.svg" />
+      </div>
+      <BenefitsCarousel />
+      <div class="section-heading">
+        <h3>Акции для тебя</h3>
+        <img src="@shared/assets/icons/arrow.svg" />
+      </div>
+      <SalesCarousel />
     </div>
   </div>
   <QrSheetComponent v-if="isQrSheetVisible" />
 </template>
 
 <style lang="scss" scoped>
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  img {
+    transform: rotate(180deg);
+  }
+}
+
 h3 {
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 32px;
+}
+
+.home {
+  &__content {
+    display: grid;
+    gap: 32px;
+  }
 }
 
 .qr {
