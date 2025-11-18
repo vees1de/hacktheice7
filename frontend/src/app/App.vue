@@ -23,7 +23,7 @@ onMounted(() => (appIsMounted.value = true));
     <main>
       <RouterView />
     </main>
-    <Menu v-if="isAuthenticated" />
+    <Menu v-if="!isAuthenticated" />
   </div>
   <Loader v-if="isLoading" />
 </template>
