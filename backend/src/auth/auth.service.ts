@@ -54,12 +54,6 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     try {
-      console.log('[AUTH] register attempt', {
-        phone: dto.phone,
-        regionId: dto.regionId,
-        hasEmail: Boolean(dto.email),
-        hasSnils: Boolean(dto.snils)
-      });
       const existingUser = await this.prisma.user.findFirst({
         where: {
           phone: dto.phone
@@ -97,7 +91,6 @@ export class AuthService {
 
       return { userId: user.id };
     } catch (error) {
-      console.error('[AUTH] register error', error);
       if (error.code === 'P2002') {
         throw new BadRequestException(
           'Unique constraint violation: email, phone or SNILS already exists'
@@ -184,6 +177,7 @@ export class AuthService {
       const tokens = this.issueTokens(user.id);
 
       return {
+        result: true,
         user: {
           ...safeUser,
           commercialOffersAvailable: Boolean(user.isEsiaVerified)

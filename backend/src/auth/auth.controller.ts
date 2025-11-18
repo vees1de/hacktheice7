@@ -55,7 +55,8 @@ export class AuthController {
       await this.authService.verifyPhone(dto.phone);
       return {
         message:
-          'Телефон подтвержден. Теперь можно войти, а офферы партнеров откроются после входа через Госуслуги.'
+          'Телефон подтвержден. Теперь можно войти, а офферы партнеров откроются после входа через Госуслуги.',
+        result: true
       };
     } catch (error) {
       if (
