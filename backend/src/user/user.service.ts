@@ -324,7 +324,10 @@ export class UserService {
 
     await this.prisma.user.update({
       where: { id: userId },
-      data: { isEsiaVerified: categories.length > 0 }
+      data: {
+        isEsiaVerified: categories.length > 0,
+        onboardingStep: 'COMPLETE'
+      }
     });
 
     return this.getProfile(userId);

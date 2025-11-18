@@ -35,16 +35,6 @@ const benefits = [
             alt="qr-code"
           />
         </div>
-        <div class="qr__locked">
-          <img
-            src="@shared/assets/icons/locked.svg"
-            alt=""
-          />
-          <p>
-            Подтвердите аккаунт госулсуг, чтобы использовать цифровое
-            удостоверение льготника
-          </p>
-        </div>
       </Block>
       <h3>Чат-бот помощник ЛАССО</h3>
       <ChatBot />
