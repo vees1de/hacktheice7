@@ -54,9 +54,15 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     try {
+      console.log('[AUTH] register attempt', {
+        phone: dto.phone,
+        regionId: dto.regionId,
+        hasEmail: Boolean(dto.email),
+        hasSnils: Boolean(dto.snils)
+      });
       const existingUser = await this.prisma.user.findFirst({
         where: {
-          OR: [{ phone: dto.phone }]
+          phone: dto.phone
         }
       });
 
@@ -70,14 +76,12 @@ export class AuthService {
 
       const user = await this.prisma.user.create({
         data: {
-          email: dto.email || null,
           passwordHash: hashedPassword,
           firstName: dto.firstName,
           lastName: dto.lastName,
           patronymic: dto.patronymic,
           dateOfBirth: dto.dateOfBirth,
           phone: dto.phone,
-          snils: dto.snils || null,
           regionId: dto.regionId,
           authProvider: 'email',
           consentGiven: true,
@@ -87,12 +91,13 @@ export class AuthService {
           onboardingStep: 'SMS_VERIFICATION'
         }
       });
-
+      console.log('userdata:', user);
       // Отправка SMS с кодом подтверждения (в реальности)
       // this.smsService.sendVerificationCode(dto.phone, '4444');
 
       return { userId: user.id };
     } catch (error) {
+      console.error('[AUTH] register error', error);
       if (error.code === 'P2002') {
         throw new BadRequestException(
           'Unique constraint violation: email, phone or SNILS already exists'
