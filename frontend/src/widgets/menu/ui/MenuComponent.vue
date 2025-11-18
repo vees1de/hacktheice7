@@ -13,9 +13,9 @@ const items = [
   { title: 'профиль', icon: 'user', link: '/user' }
 ];
 
-const onMenuItem = (index: number) => {
+const onMenuItem = async (index: number) => {
   activeMenuItem.value = index;
-  router.push(items[index].link);
+  await router.push(items[index].link);
 };
 
 effect(() => {
@@ -41,13 +41,8 @@ effect(() => {
         @click="onMenuItem(index)"
       >
         <img
-          v-if="item.title"
           class="item__icon"
-          :src="`/src/shared/assets/icons/${index === activeMenuItem ? 'bold-' : ''}${item.icon}-icon.svg`"
-        />
-        <img
-          v-else
-          class="item__icon"
+          :class="{ item__icon_active: index === activeMenuItem }"
           :src="`/src/shared/assets/icons/${item.icon}-icon.svg`"
         />
         <div
@@ -76,7 +71,11 @@ effect(() => {
 
 .item {
   text-align: center;
-  line-height: 17px;
   font-size: 0.625rem;
+
+  &__icon_active {
+    filter: brightness(0) saturate(100%) invert(37%) sepia(60%) saturate(3622%)
+      hue-rotate(202deg) brightness(93%) contrast(95%);
+  }
 }
 </style>

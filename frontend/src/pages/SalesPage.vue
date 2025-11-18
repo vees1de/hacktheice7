@@ -1,9 +1,5 @@
-<script setup lang="ts">
-import { Heading } from '@shared/ui';
-</script>
+<script setup lang="ts"></script>
 <template>
-  <div class="sales">
-    <Heading>Акции</Heading>
-  </div>
+  <div class="sales"></div>
 </template>
 <style lang="scss" scoped></style>

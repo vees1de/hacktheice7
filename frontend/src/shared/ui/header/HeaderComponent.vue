@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -6,9 +7,15 @@ const router = useRouter();
 const path = computed(() => router.currentRoute.value.path);
 
 const headers: Record<string, string> = {
-  '/auth': 'Вход',
-  '/registration': 'Регистрация',
-  '/confirm-phone': 'Введите код'
+  [ROUTE_NAMES.AUTH]: 'Вход',
+  [ROUTE_NAMES.REGISTRATION]: 'Регистрация',
+  [ROUTE_NAMES.HOME]: 'Главная',
+  [ROUTE_NAMES.USER]: 'Профиль',
+  [ROUTE_NAMES.CHAT]: 'Чат',
+  [ROUTE_NAMES.SALES]: 'Продажи',
+  [ROUTE_NAMES.BENEFITS]: 'Преимущества',
+  [ROUTE_NAMES.ADMIN]: 'Админка',
+  [ROUTE_NAMES.ROOT]: 'Главная'
 };
 </script>
 

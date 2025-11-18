@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useViewStore } from '@shared/stores/view.store';
-import { Block, Heading } from '@shared/ui';
+import { Block } from '@shared/ui';
 import { BenefitElement } from '@widgets/benefit-element';
 import { QrSheetComponent } from '@widgets/qr-sheet';
 import { storeToRefs } from 'pinia';
@@ -23,7 +23,6 @@ const benefits = [
 
 <template>
   <div class="home">
-    <Heading>Главная</Heading>
     <div class="home__content">
       <Block class="qr">
         <div class="qr__title">Единый кошелек льготника</div>

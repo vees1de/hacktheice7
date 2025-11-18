@@ -1,12 +1,14 @@
-<script setup lang="ts">
+<template>Account</template>
+
+<!-- <script setup lang="ts">
 import { beneficiaryCategoryApi } from '@entities/beneficiary/api/beneficiaryCategory';
 import type {
   BeneficiaryCategory,
   BeneficiaryCategoryType
 } from '@entities/beneficiary/types/beneficiary.types';
-import { userApi, type UserProfile } from '@entities/user';
-import { Block, Button, Heading } from '@shared/ui';
-import { onMounted, ref, computed } from 'vue';
+import { type UserProfile, userApi } from '@entities/user';
+import { Block, Button } from '@shared/ui';
+import { computed, onMounted, ref } from 'vue';
 
 const loading = ref(false);
 const saving = ref(false);
@@ -35,7 +37,8 @@ const fetchData = async () => {
       )
     );
   } catch (e: any) {
-    error.value = e?.response?.data?.message || 'Не удалось загрузить данные профиля';
+    error.value =
+      e?.response?.data?.message || 'Не удалось загрузить данные профиля';
   } finally {
     loading.value = false;
   }
@@ -78,7 +81,8 @@ const saveCategories = async () => {
         : 'Все льготы очищены, подтверждение Госуслуг снято.';
   } catch (e: any) {
     error.value =
-      e?.response?.data?.message || 'Не удалось сохранить выбор льгот. Попробуйте снова.';
+      e?.response?.data?.message ||
+      'Не удалось сохранить выбор льгот. Попробуйте снова.';
   } finally {
     saving.value = false;
   }
@@ -87,16 +91,28 @@ const saveCategories = async () => {
 
 <template>
   <div class="account">
-    <Heading>Профиль</Heading>
-
     <div class="status-bar">
-      <div class="badge" :class="{ 'badge--success': isEsiaVerified, 'badge--warning': !isEsiaVerified }">
-        <span class="dot" :class="{ 'dot--green': isEsiaVerified, 'dot--yellow': !isEsiaVerified }" />
-        {{ isEsiaVerified ? 'Госуслуги подтверждены' : 'Госуслуги не подтверждены' }}
+      <div
+        class="badge"
+        :class="{
+          'badge--success': isEsiaVerified,
+          'badge--warning': !isEsiaVerified
+        }"
+      >
+        <span
+          class="dot"
+          :class="{
+            'dot--green': isEsiaVerified,
+            'dot--yellow': !isEsiaVerified
+          }"
+        />
+        {{
+          isEsiaVerified
+            ? 'Госуслуги подтверждены'
+            : 'Госуслуги не подтверждены'
+        }}
       </div>
-      <div class="badge">
-        Выбрано льгот: {{ selectedCount }}
-      </div>
+      <div class="badge">Выбрано льгот: {{ selectedCount }}</div>
     </div>
 
     <Block class="card">
@@ -104,16 +120,30 @@ const saveCategories = async () => {
         <div>
           <p class="card__title">Ваши льготы</p>
           <p class="card__subtitle">
-            Отметьте категории, чтобы активировать льготы и статус на Госуслугах.
-            Пустой список снимет подтверждение.
+            Отметьте категории, чтобы активировать льготы и статус на
+            Госуслугах. Пустой список снимет подтверждение.
           </p>
         </div>
-        <Button kind="secondary" @click="clearCategories">Очистить выбор</Button>
+        <Button
+          kind="secondary"
+          @click="clearCategories"
+          >Очистить выбор</Button
+        >
       </div>
 
-      <div v-if="loading" class="status">Загрузка данных...</div>
+      <div
+        v-if="loading"
+        class="status"
+      >
+        Загрузка данных...
+      </div>
       <div v-else>
-        <div v-if="error" class="status status--error">{{ error }}</div>
+        <div
+          v-if="error"
+          class="status status--error"
+        >
+          {{ error }}
+        </div>
         <div class="grid">
           <label
             v-for="category in categories"
@@ -134,13 +164,22 @@ const saveCategories = async () => {
         </div>
 
         <div class="actions">
-          <Button :loading="saving" :disabled="saving" @click="saveCategories">
+          <Button
+            :loading="saving"
+            :disabled="saving"
+            @click="saveCategories"
+          >
             Сохранить льготы
           </Button>
           <span class="hint">Изменения вступают в силу сразу.</span>
         </div>
 
-        <div v-if="success" class="status status--success">{{ success }}</div>
+        <div
+          v-if="success"
+          class="status status--success"
+        >
+          {{ success }}
+        </div>
       </div>
     </Block>
   </div>
@@ -236,7 +275,9 @@ const saveCategories = async () => {
   border-radius: 12px;
   cursor: pointer;
   background: #fff;
-  transition: border 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border 0.2s ease,
+    box-shadow 0.2s ease;
 
   input {
     margin-top: 4px;
@@ -292,4 +333,4 @@ const saveCategories = async () => {
   color: #64748b;
   font-size: 14px;
 }
-</style>
+</style> -->
