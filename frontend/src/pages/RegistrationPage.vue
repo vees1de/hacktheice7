@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   AuthRegisterRequest,
+  VerifyPhoneRequest,
   authApi,
   toAuthRegisterDto
 } from '@entities/auth';
@@ -89,11 +90,18 @@ const goToStep2 = async () => {
   toggleLoader();
 };
 
-const handleFinal = async () => {
+const handleFinal = async (code: string) => {
   toggleLoader();
-
-  await router.push('/home');
-  toggleLoader();
+  const phone = '+79' + form.phone.value;
+  const payload: VerifyPhoneRequest = { code, phone };
+  try {
+    await authApi.verifyPhone(payload);
+    await router.push('/home');
+  } catch (error) {
+    console.log(error);
+  } finally {
+    toggleLoader();
+  }
 };
 
 const redirectToAuthPage = async () => {
@@ -206,7 +214,7 @@ const redirectToAuthPage = async () => {
       v-if="step === 2"
       class="auth__form code-wrapper"
     >
-      <CodeInput @success="handleFinal()" />
+      <CodeInput @success="handleFinal" />
     </form>
 
     <!-- <Button

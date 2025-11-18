@@ -5,7 +5,6 @@ import { required } from '@shared/lib/validators';
 import { useViewStore } from '@shared/stores/view.store';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
 import { Button, Input } from '@shared/ui';
-import { CodeInput } from '@widgets/code-input';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -29,17 +28,17 @@ const goToPhoneConfirmationStep = async () => {
   const formHasError = checkValidation();
   if (!formHasError) {
     viewStore.toggleLoader();
-    const body = getValue() as AuthLoginRequest;
-    body.phone = '+79' + body.phone;
-    await authStore.login(body);
-    step.value = 2;
-    viewStore.toggleLoader();
-  }
-};
-
-const handleFinal = async (code: string) => {
-  if (code === '4444') {
-    await router.push('/home');
+    try {
+      const body = getValue() as AuthLoginRequest;
+      body.phone = '+79' + body.phone;
+      await authStore.login(body);
+      await router.push('/home');
+      step.value = 2;
+    } catch (error) {
+      console.log(error);
+    } finally {
+      viewStore.toggleLoader();
+    }
   }
 };
 
@@ -64,10 +63,7 @@ const redirectToRegisterPage = async () => {
     </div>
 
     <!-- ШАГ 1 -->
-    <form
-      v-if="step === 1"
-      class="auth__form"
-    >
+    <form class="auth__form">
       <Input
         v-model="form.phone.value"
         label="Телефон"
@@ -105,13 +101,6 @@ const redirectToRegisterPage = async () => {
         Нет аккаунта
       </Button>
     </div>
-
-    <form
-      v-if="step === 2"
-      class="auth__form code-wrapper"
-    >
-      <CodeInput @success="handleFinal" />
-    </form>
   </div>
 </template>
 

@@ -17,7 +17,6 @@ export const useAuthStore = defineStore('auth', () => {
   const router = useRouter();
 
   const setAuth = (data: AuthSuccess | null) => {
-    console.log('setAuth');
     isAuthenticated.value = Boolean(data);
     if (data) {
       setTokens(data.accessToken, data.refreshToken);
