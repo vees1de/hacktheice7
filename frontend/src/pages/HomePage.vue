@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { useViewStore } from '@shared/stores/view.store';
 import { Block } from '@shared/ui';
-import { BenefitElement } from '@widgets/benefit-element';
+import { ChatBot } from '@widgets/chatbot';
 import { QrSheetComponent } from '@widgets/qr-sheet';
 import { storeToRefs } from 'pinia';
 
@@ -46,19 +46,8 @@ const benefits = [
           </p>
         </div>
       </Block>
-      <h3>Категории льгот для пенсионера</h3>
-      <section class="benefits-grid">
-        <template
-          v-for="(benefit, index) in benefits"
-          :key="benefit.icon"
-        >
-          <BenefitElement
-            :icon="benefit.icon"
-            :name="benefit.name"
-          />
-        </template>
-      </section>
-      <h3></h3>
+      <h3>Чат-бот помощник ЛАССО</h3>
+      <ChatBot />
     </div>
   </div>
   <QrSheetComponent v-if="isQrSheetVisible" />
@@ -68,13 +57,7 @@ const benefits = [
 h3 {
   font-size: 20px;
   font-weight: 600;
-  margin-bottom: 24px;
-}
-
-.benefits-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
+  margin-bottom: 32px;
 }
 
 .qr {
