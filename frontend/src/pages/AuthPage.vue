@@ -42,6 +42,10 @@ const handleFinal = async (code: string) => {
     await router.push('/home');
   }
 };
+
+const redirectToRegisterPage = async () => {
+  await router.push('/registration');
+};
 </script>
 
 <template>
@@ -57,10 +61,6 @@ const handleFinal = async (code: string) => {
         src="@shared/assets/icons/russia-icon.svg"
         alt=""
       />
-    </div>
-
-    <div class="auth__title">
-      {{ step === 1 ? 'Регистрация' : 'Подтвердить регистрацию по СМС' }}
     </div>
 
     <!-- ШАГ 1 -->
@@ -88,13 +88,23 @@ const handleFinal = async (code: string) => {
       </Input>
     </form>
 
-    <Button
-      v-if="step === 1"
-      class="submit"
-      @click="goToPhoneConfirmationStep"
-    >
-      Продолжить
-    </Button>
+    <div class="auth__buttons">
+      <Button
+        v-if="step === 1"
+        class="submit"
+        @click="goToPhoneConfirmationStep"
+      >
+        Продолжить
+      </Button>
+      <Button
+        v-if="step === 1"
+        class="submit"
+        kind="secondary"
+        @click="redirectToRegisterPage()"
+      >
+        Нет аккаунта
+      </Button>
+    </div>
 
     <form
       v-if="step === 2"
@@ -152,10 +162,6 @@ const handleFinal = async (code: string) => {
   }
 }
 
-.submit {
-  margin-bottom: 12px;
-}
-
 .logo {
   display: flex;
   width: 100%;
@@ -163,6 +169,11 @@ const handleFinal = async (code: string) => {
   align-items: center;
   gap: 10px;
   margin-bottom: 32px;
+
+  img {
+    filter: brightness(0) saturate(100%) invert(30%) sepia(84%) saturate(1600%)
+      hue-rotate(197deg) brightness(101%) contrast(90%);
+  }
 
   img:first-child {
     width: 55px;
@@ -185,15 +196,22 @@ const handleFinal = async (code: string) => {
 }
 
 .auth {
-  display: block;
-  justify-content: center;
-  margin-bottom: 80px;
+  position: relative;
+  height: 90dvh;
 
   &__title {
     font-size: 1.5rem;
     font-weight: 600;
     text-align: center;
     margin-bottom: 24px;
+  }
+
+  &__buttons {
+    width: 100%;
+    display: grid;
+    gap: 12px;
+    position: absolute;
+    bottom: 16px;
   }
 
   &__form {

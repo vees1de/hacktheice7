@@ -168,13 +168,13 @@ const handleInput = (event: CustomEvent<MaskaDetail>) => {
 
 .custom-input {
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 1rem; // увеличен правый отступ для иконки
+  padding: 12px 16px;
   font-size: 1rem;
-  line-height: 1.5;
+
   color: #111827;
-  background-color: #f2f7fe;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
+  background-color: #e5f0ff;
+  border: 2px solid #c6ddfd;
+  border-radius: 12px;
   transition: all 0.2s ease-in-out;
   outline: none;
 
@@ -187,7 +187,7 @@ const handleInput = (event: CustomEvent<MaskaDetail>) => {
   }
 
   &:focus {
-    border-color: #96bae6;
+    border-color: #1a73e8;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 
@@ -202,12 +202,8 @@ const handleInput = (event: CustomEvent<MaskaDetail>) => {
   }
 
   &[aria-invalid='true'] {
-    border-color: #ef4444;
-
-    &:focus {
-      border-color: #ef4444;
-      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-    }
+    border-color: #ffb7be;
+    background-color: #fee2e5;
   }
 
   &.date-input {

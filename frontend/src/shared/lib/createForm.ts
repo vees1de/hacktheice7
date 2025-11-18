@@ -43,7 +43,7 @@ export function createForm<T extends Record<string, FieldMetaData<any>>>(
       });
     },
     checkValidation: () => {
-      let isFormValid = false;
+      let isFormInvalid = false;
       for (const fieldKey of Object.keys(reactiveForm)) {
         const validators = reactiveForm[fieldKey].validators;
 
@@ -55,7 +55,7 @@ export function createForm<T extends Record<string, FieldMetaData<any>>>(
               !validator(reactiveForm[fieldKey].value)
             ) {
               hasError = true;
-              isFormValid = true;
+              isFormInvalid = true;
               break;
             }
           }
@@ -63,7 +63,7 @@ export function createForm<T extends Record<string, FieldMetaData<any>>>(
         }
       }
 
-      return isFormValid;
+      return isFormInvalid;
     },
     hasError: () => {
       let hasError = false;

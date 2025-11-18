@@ -38,14 +38,12 @@ export interface AuthSuccess {
 }
 
 export interface AuthRegisterRequest {
-  email?: string;
   password: string;
   firstName: string;
   lastName: string;
   patronymic?: string;
   dateOfBirth: string;
   phone: string;
-  snils?: string;
   regionId: string;
 }
 

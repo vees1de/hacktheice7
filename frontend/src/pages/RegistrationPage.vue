@@ -2,8 +2,7 @@
 import {
   AuthRegisterRequest,
   authApi,
-  toAuthRegisterDto,
-  useAuthStore
+  toAuthRegisterDto
 } from '@entities/auth';
 import { regionApi } from '@entities/region';
 import { createForm } from '@shared/lib/createForm';
@@ -28,6 +27,7 @@ export type Account = {
   regionId: string;
   dateOfBirth: string;
   password: string;
+  passwordSecond: string;
 };
 
 const router = useRouter();
@@ -52,33 +52,52 @@ const createdForm = createForm<AccountForm>({
   patronymic: { value: '', validators: [required(), onlyString()] },
   dateOfBirth: { value: '', validators: [required(), date()] },
   password: { value: '', validators: [required(), minSymbols(6)] },
+  passwordSecond: { value: '', validators: [required(), minSymbols(6)] },
   regionId: { value: '', validators: [required()] }
 });
 
 const { form, getValue, checkValidation } = createdForm;
 
-const goToStep2 = () => {
+const goToStep2 = async () => {
+  toggleLoader();
   const formHasError = checkValidation();
-  if (!formHasError) {
-    step.value = 2;
+  if (form.password.value !== form.passwordSecond.value) {
+    form.passwordSecond.error = true;
+    toggleLoader();
+    return;
   }
+
+  if (!formHasError) {
+    const formValue = getValue() as Account;
+    let body: AuthRegisterRequest = {
+      dateOfBirth: formValue.dateOfBirth,
+      firstName: formValue.firstName,
+      lastName: formValue.lastName,
+      patronymic: formValue.patronymic,
+      password: formValue.password,
+      regionId: formValue.regionId,
+      phone: formValue.phone
+    };
+    body = toAuthRegisterDto(body);
+    try {
+      await authApi.register(body);
+      step.value = 2;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  toggleLoader();
 };
 
 const handleFinal = async () => {
   toggleLoader();
-  const body = getValue() as AuthRegisterRequest;
-  if (!body.email) {
-    delete body.email;
-  }
-  if (!body.snils) {
-    delete body.snils;
-  }
-  toAuthRegisterDto(body);
-  await authApi.register(body);
 
-  useAuthStore().isAuthenticated = true;
   await router.push('/home');
   toggleLoader();
+};
+
+const redirectToAuthPage = async () => {
+  await router.push('/auth');
 };
 </script>
 
@@ -97,15 +116,18 @@ const handleFinal = async () => {
       />
     </div>
 
-    <div class="auth__title">
-      {{ step === 1 ? 'Регистрация' : 'Подтвердить регистрацию по СМС' }}
-    </div>
-
     <!-- ШАГ 1 -->
     <form
       v-if="step === 1"
       class="auth__form"
     >
+      <Input
+        v-model="form.lastName.value"
+        label="Фамилия"
+        type="text"
+        :error="form.lastName.error"
+        ><template v-slot:error>Неверно заполнено</template>
+      </Input>
       <Input
         v-model="form.firstName.value"
         label="Имя"
@@ -113,13 +135,6 @@ const handleFinal = async () => {
         :error="form.firstName.error"
       >
         <template v-slot:error>Неверно заполнено</template>
-      </Input>
-      <Input
-        v-model="form.lastName.value"
-        label="Фамилия"
-        type="text"
-        :error="form.lastName.error"
-        ><template v-slot:error>Неверно заполнено</template>
       </Input>
       <Input
         v-model="form.patronymic.value"
@@ -154,6 +169,14 @@ const handleFinal = async () => {
       >
         <template v-slot:error>Пароль не может быть меньше 6 символов</template>
       </Input>
+      <Input
+        v-model="form.passwordSecond.value"
+        label="Подтверждение пароля"
+        type="password"
+        :error="form.passwordSecond.error"
+      >
+        <template v-slot:error>Пароли не совпадают</template>
+      </Input>
       <Dropdown
         label="Регион"
         v-model="form.regionId.value"
@@ -161,13 +184,23 @@ const handleFinal = async () => {
       ></Dropdown>
     </form>
 
-    <Button
-      v-if="step === 1"
-      class="submit"
-      @click="goToStep2"
-    >
-      Продолжить
-    </Button>
+    <div class="auth__buttons">
+      <Button
+        v-if="step === 1"
+        class="submit"
+        @click="goToStep2"
+      >
+        Продолжить
+      </Button>
+      <Button
+        v-if="step === 1"
+        class="submit"
+        kind="secondary"
+        @click="redirectToAuthPage"
+      >
+        Уже есть аккаунт
+      </Button>
+    </div>
 
     <form
       v-if="step === 2"
@@ -192,6 +225,33 @@ const handleFinal = async () => {
   margin-top: 32px;
 }
 
+.code-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.code-inputs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.code-box {
+  width: 56px;
+  height: 64px;
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 12px;
+  border: 1.5px solid #d0d5dd;
+  outline: none;
+  transition: 0.2s border;
+
+  &:focus {
+    border-color: #1a73e8;
+  }
+}
+
 .submit[disabled] {
   opacity: 0.5;
   pointer-events: none;
@@ -207,10 +267,6 @@ const handleFinal = async () => {
   }
 }
 
-.submit {
-  margin-bottom: 12px;
-}
-
 .logo {
   display: flex;
   width: 100%;
@@ -218,6 +274,11 @@ const handleFinal = async () => {
   align-items: center;
   gap: 10px;
   margin-bottom: 32px;
+
+  img {
+    filter: brightness(0) saturate(100%) invert(30%) sepia(84%) saturate(1600%)
+      hue-rotate(197deg) brightness(101%) contrast(90%);
+  }
 
   img:first-child {
     width: 55px;
@@ -240,15 +301,20 @@ const handleFinal = async () => {
 }
 
 .auth {
-  display: block;
-  justify-content: center;
-  margin-bottom: 80px;
+  height: fit-content;
 
   &__title {
     font-size: 1.5rem;
     font-weight: 600;
     text-align: center;
     margin-bottom: 24px;
+  }
+
+  &__buttons {
+    width: 100%;
+    display: grid;
+    gap: 12px;
+    margin-block: 36px 24px;
   }
 
   &__form {

@@ -33,8 +33,16 @@ const handleClick = (event: MouseEvent) => {
 </script>
 
 <template>
-  <button :type="type" :disabled="disabled || loading" :class="classes" @click="handleClick">
-    <span v-if="loading" class="spinner" />
+  <button
+    :type="type"
+    :disabled="disabled || loading"
+    :class="classes"
+    @click="handleClick"
+  >
+    <span
+      v-if="loading"
+      class="spinner"
+    />
     <slot />
   </button>
 </template>
@@ -56,7 +64,7 @@ const handleClick = (event: MouseEvent) => {
 }
 
 .btn--primary {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background-color: #1a73e8;
   color: #fff;
 }
 

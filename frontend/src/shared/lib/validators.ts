@@ -54,8 +54,7 @@ export const maxSymbols = (max: number) => {
 export const minSymbols = (min: number) => {
   return (value: string | null): boolean => {
     value = value ? value : '';
-
-    if (value.length >= min) {
+    if (value.length <= min) {
       return false;
     } else {
       return true;

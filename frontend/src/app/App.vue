@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '@entities/auth';
 import { useViewStore } from '@shared/stores/view.store';
-import { Loader } from '@shared/ui';
+import { Header, Loader } from '@shared/ui';
 import { Menu } from '@widgets/menu';
 import { storeToRefs } from 'pinia';
 import { onMounted, ref } from 'vue';
@@ -19,6 +19,7 @@ onMounted(() => (appIsMounted.value = true));
     v-if="appIsMounted"
     class="wrapper"
   >
+    <Header />
     <main>
       <RouterView />
     </main>
@@ -29,6 +30,6 @@ onMounted(() => (appIsMounted.value = true));
 
 <style scoped lang="scss">
 main {
-  padding: 16px 16px var(--menu-height);
+  padding: 0 16px var(--menu-height);
 }
 </style>
