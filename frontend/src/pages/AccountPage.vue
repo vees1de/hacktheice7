@@ -16,11 +16,18 @@ const { user } = storeToRefs(useUserStore());
     </div>
     <div class="profile__edit">
       <div class="edit-button">
+        <div>
+          <img
+            class="btn-icon"
+            src="@shared/assets/icons/chat-icon.svg"
+            alt=""
+          />
+          <span>Выбрать льготы</span>
+        </div>
         <img
-          src="@shared/assets/icons/chat-icon.svg"
-          alt=""
+          class="arrow"
+          src="@shared/assets/icons/arrow.svg"
         />
-        <span>Выбрать льготы</span>
       </div>
     </div>
   </div>
@@ -34,11 +41,26 @@ const { user } = storeToRefs(useUserStore());
   &__edit {
     display: flex;
     align-items: flex-start;
+    width: 100%;
     .edit-button {
+      width: 100%;
       display: flex;
-      gap: 8px;
-      align-items: center;
+
+      justify-content: space-between;
       font-weight: 500;
+
+      > div {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        font-weight: 500;
+      }
+
+      .arrow {
+        transform: rotate(180deg);
+        filter: brightness(0) saturate(100%) invert(33%) sepia(57%)
+          saturate(2127%) hue-rotate(195deg) brightness(99%) contrast(90%);
+      }
     }
   }
 
