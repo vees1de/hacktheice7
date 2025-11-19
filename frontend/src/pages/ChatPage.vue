@@ -53,14 +53,19 @@ const handleSmartSearchResponse = (payload: SmartSearchResponse) => {
     role: 'bot',
     text,
     items: payload.items || [],
-    meta: payload.items?.length ? 'Топ подходящих льгот' : undefined
+    meta: payload.items?.length ? 'Топ подходящих льгот' : undefined,
+    id: 0
   });
 };
 
 const sendMessage = async () => {
   if (!inputValue.value.trim() || isSending.value) return;
   const text = inputValue.value.trim();
-  appendMessage({ role: 'user', text });
+  appendMessage({
+    role: 'user',
+    text,
+    id: 0
+  });
   inputValue.value = '';
   isSending.value = true;
 
@@ -72,7 +77,8 @@ const sendMessage = async () => {
       role: 'bot',
       text:
         error?.response?.data?.message ||
-        'Не удалось выполнить поиск. Попробуйте позже.'
+        'Не удалось выполнить поиск. Попробуйте позже.',
+      id: 0
     });
   } finally {
     isSending.value = false;
