@@ -190,6 +190,7 @@ const redirectToAuthPage = async () => {
         label="Регион"
         v-model="form.regionId.value"
         :options="regionOptions"
+        :error="form.regionId.error"
       ></Dropdown>
     </form>
 

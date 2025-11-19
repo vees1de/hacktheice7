@@ -1,6 +1,13 @@
 @font-face {
-    font-family: "Geologica Roman";
-    src: url('/assets/fonts/Geologica-Regular.ttf') format("truetype");
+    font-family: "Inter";
+    src: url('/assets/fonts/Inter_18pt.ttf') format("truetype");
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Inter dev";
+    src: url('/src/shared/assets/fonts/Inter_18pt.ttf') format("truetype");
     font-weight: 400;
     font-style: normal;
 }

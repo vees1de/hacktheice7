@@ -12,9 +12,15 @@ interface Props {
   type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'date';
   error?: boolean;
   helperText?: string;
+  readonly?: boolean;
 }
 const props = defineProps<Props>();
-const emit = defineEmits(['update:modelValue', 'clickOutside']);
+const emit = defineEmits([
+  'update:modelValue',
+  'clickOutside',
+  'focIn',
+  'focOut'
+]);
 const isPasswordVisible = ref(false);
 
 const inputType = computed(() => {
@@ -85,7 +91,10 @@ const handleInput = (event: CustomEvent<MaskaDetail>) => {
         class="custom-input"
         :class="{ 'date-input': type === 'date' }"
         v-maska="inputMask"
+        :readonly="readonly"
         @maska="handleInput"
+        @focusin="emit('focIn')"
+        @focusOut="emit('focOut')"
       />
       <div
         class="input-icon"
@@ -95,8 +104,8 @@ const handleInput = (event: CustomEvent<MaskaDetail>) => {
         <img
           :src="
             isPasswordVisible
-              ? 'src/shared/assets/icons/russia-icon.svg'
-              : 'src/shared/assets/icons/sale-icon.svg'
+              ? 'src/shared/assets/icons/eye-opened-icon.svg'
+              : 'src/shared/assets/icons/eye-closed-icon.svg'
           "
           :alt="isPasswordVisible ? 'Скрыть пароль' : 'Показать пароль'"
         />

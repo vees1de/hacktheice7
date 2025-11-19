@@ -10,7 +10,7 @@ interface Props {
   label?: string;
   placeholder?: string;
   disabled?: boolean;
-  error?: string;
+  error?: boolean;
   helperText?: string;
 }
 
@@ -58,9 +58,12 @@ onUnmounted(() => {
       :disabled="disabled"
       :error="!!error"
       :helper-text="helperText"
-      @click="isOpen = !isOpen"
-      readonly
-    />
+      @foc-in="isOpen = true"
+      @foc-out="isOpen = false"
+      :readonly="true"
+    >
+      <template v-slot:error>Заполните поле</template>
+    </InputComponent>
 
     <div
       v-if="isOpen"
