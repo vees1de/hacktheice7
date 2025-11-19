@@ -23,13 +23,6 @@ body {
   min-height: 100vh;
 }
 
-/* GRID PAGE */
-.page {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  min-height: 100vh;
-}
-
 /* CARDS */
 .card {
   background: rgba(255, 255, 255, 0.03);

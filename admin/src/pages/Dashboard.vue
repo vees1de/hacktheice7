@@ -1,8 +1,7 @@
 <script setup>
-import { computed, onBeforeUnmount, ref } from "vue";
-import { BrowserQRCodeReader } from "@zxing/browser";
+import { onMounted, onBeforeUnmount, ref, computed } from "vue";
+import { Html5Qrcode } from "html5-qrcode";
 import Sidebar from "../components/Sidebar.vue";
-import HeaderBar from "../components/HeaderBar.vue";
 import { authApi } from "../api/auth";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from "vue-router";
@@ -10,12 +9,9 @@ import { useRouter } from "vue-router";
 const auth = useAuthStore();
 const router = useRouter();
 
-const videoRef = ref(null);
+const html5Qr = ref(null);
 const scanning = ref(false);
 const scannerError = ref("");
-const devices = ref([]);
-const selectedDeviceId = ref("");
-const qrReader = ref(null);
 
 const manualToken = ref("");
 const lastToken = ref("");
@@ -25,68 +21,9 @@ const client = ref(null);
 
 const adminName = computed(() => auth.adminName || "Админ");
 
-const startScanner = async () => {
-  scannerError.value = "";
-  fetchError.value = "";
-  client.value = null;
-
-  try {
-    const available = await BrowserQRCodeReader.listVideoInputDevices();
-    devices.value = available;
-    selectedDeviceId.value = selectedDeviceId.value || available[0]?.deviceId;
-
-    if (!selectedDeviceId.value) {
-      scannerError.value = "Камера не найдена.";
-      return;
-    }
-
-    qrReader.value = new BrowserQRCodeReader();
-    scanning.value = true;
-
-    qrReader.value.decodeFromVideoDevice(
-      selectedDeviceId.value,
-      videoRef.value,
-      (result, err) => {
-        if (result) {
-          stopScanner();
-          handleToken(result.getText());
-        }
-        if (err && !err.message?.includes("No MultiFormat Readers")) {
-          scannerError.value = "Ошибка при считывании QR.";
-        }
-      }
-    );
-  } catch (error) {
-    scannerError.value =
-      error?.message || "Ошибка инициализации камеры. Проверьте доступ.";
-  }
-};
-
-const stopScanner = () => {
-  scanning.value = false;
-  if (qrReader.value) {
-    qrReader.value.reset();
-    qrReader.value = null;
-  }
-};
-
-onBeforeUnmount(() => stopScanner());
-
-const handleToken = (tokenText) => {
-  const cleaned = tokenText?.trim();
-  if (!cleaned) {
-    fetchError.value = "Пустой токен.";
-    return;
-  }
-  manualToken.value = cleaned;
-  lastToken.value = cleaned;
-  resolveClient(cleaned);
-};
-
 const resolveClient = async (token) => {
   fetchError.value = "";
   clientLoading.value = true;
-  client.value = null;
 
   try {
     const { data } = await authApi.resolveShareToken(token);
@@ -99,28 +36,79 @@ const resolveClient = async (token) => {
   }
 };
 
+const handleToken = (tokenText) => {
+  const cleaned = tokenText.trim();
+  if (!cleaned) return;
+
+  manualToken.value = cleaned;
+  lastToken.value = cleaned;
+  resolveClient(cleaned);
+};
+
+const startScanner = async () => {
+  scannerError.value = "";
+  client.value = null;
+  scanning.value = true;
+
+  if (!html5Qr.value) {
+    html5Qr.value = new Html5Qrcode("qr-box"); // контейнер
+  }
+
+  try {
+    await html5Qr.value.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: 250,
+      },
+      (decodedText) => {
+        stopScanner();
+        handleToken(decodedText);
+      },
+      (errorMessage) => {
+        // ошибки чтения игнорируем
+      }
+    );
+  } catch (err) {
+    scannerError.value =
+      err?.message || "Не удалось запустить сканер. Проверьте камеру.";
+    scanning.value = false;
+  }
+};
+
+const stopScanner = () => {
+  scanning.value = false;
+  if (html5Qr.value) {
+    html5Qr.value.stop().catch(() => {});
+    html5Qr.value.clear();
+  }
+};
+
+onBeforeUnmount(() => {
+  stopScanner();
+});
+
 const logout = () => {
   auth.clearAuth();
-  router.push("/login");
+  router.push({ name: "Login" });
 };
 </script>
 
 <template>
   <div class="page">
-    <Sidebar />
-    <main class="content">
-      <HeaderBar :admin-name="adminName" :on-logout="logout" />
+    <Sidebar :admin-name="adminName" :on-logout="logout" />
 
+    <main class="content">
       <div class="grid">
         <section class="card">
           <div class="card__title">
             <span>Сканер QR</span>
-            <span class="pill">{{ scanning ? "Сканирование" : "Ожидание" }}</span>
+            <span class="pill">{{
+              scanning ? "Сканирование" : "Ожидание"
+            }}</span>
           </div>
-          <p class="muted">
-            Запустите камеру или вставьте токен вручную. После успешного считывания
-            карточка с данными клиента появится справа.
-          </p>
+
+          <p class="muted">Работает стабильно на iPhone и Android.</p>
 
           <div class="stack">
             <div class="token-input">
@@ -129,48 +117,29 @@ const logout = () => {
                 v-model="manualToken"
                 placeholder="Хеш токена"
               />
-              <button class="btn btn--primary" @click="handleToken(manualToken)">
-                Запросить
-              </button>
             </div>
 
-            <div class="stack">
-              <div class="actions-row">
-                <button
-                  class="btn btn--primary"
-                  :disabled="scanning"
-                  @click="startScanner"
-                >
-                  {{ scanning ? "Камера активна" : "Запустить камеру" }}
-                </button>
-                <button class="btn" :disabled="!scanning" @click="stopScanner">
-                  Стоп
-                </button>
+            <button class="btn btn--primary" @click="handleToken(manualToken)">
+              Запросить
+            </button>
 
-                <select
-                  class="input"
-                  style="max-width: 220px"
-                  v-model="selectedDeviceId"
-                  :disabled="scanning"
-                >
-                  <option disabled value="">Выберите камеру</option>
-                  <option
-                    v-for="d in devices"
-                    :key="d.deviceId"
-                    :value="d.deviceId"
-                  >
-                    {{ d.label || "Камера" }}
-                  </option>
-                </select>
-              </div>
+            <button
+              class="btn btn--primary"
+              :disabled="scanning"
+              @click="startScanner"
+            >
+              {{ scanning ? "Камера активна" : "Запустить камеру" }}
+            </button>
 
-              <div class="video-wrap" v-if="scanning">
-                <video ref="videoRef" autoplay muted playsinline></video>
-              </div>
+            <button class="btn" :disabled="!scanning" @click="stopScanner">
+              Стоп
+            </button>
 
-              <div v-if="scannerError" class="status status--error">
-                {{ scannerError }}
-              </div>
+            <!-- 🔥 html5-qrcode контейнер -->
+            <div id="qr-box" class="video-wrap" v-show="scanning"></div>
+
+            <div v-if="scannerError" class="status status--error">
+              {{ scannerError }}
             </div>
 
             <div class="status">
@@ -179,6 +148,7 @@ const logout = () => {
           </div>
         </section>
 
+        <!-- Данные клиента — твой код без изменений -->
         <section class="card" v-if="client || clientLoading || fetchError">
           <div class="card__title">
             <span>Данные клиента</span>
@@ -212,7 +182,9 @@ const logout = () => {
 
             <div class="benefits">
               <p class="muted">Подтвержденные льготы</p>
-              <div v-if="!client.benefits?.length" class="status">Нет льгот</div>
+              <div v-if="!client.benefits?.length" class="status">
+                Нет льгот
+              </div>
               <div v-else class="stack">
                 <div class="chip" v-for="b in client.benefits" :key="b.id">
                   {{ b.title }} ({{ b.code }})
@@ -234,7 +206,6 @@ const logout = () => {
 }
 
 .grid {
-  display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: 16px;
   align-items: start;
@@ -243,6 +214,15 @@ const logout = () => {
 .stack {
   display: grid;
   gap: 12px;
+}
+
+#qr-box {
+  width: 100%;
+  max-width: 350px;
+  height: 350px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .token-input {

@@ -1,16 +1,36 @@
+<script lang="ts" setup>
+const props = defineProps({
+  adminName: {
+    type: String,
+    default: "Админ",
+  },
+  onLogout: {
+    type: Function,
+    default: () => {},
+  },
+});
+</script>
+
 <template>
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand__logo">QR</div>
       <div>
-        <div class="brand__name">Admin Desk</div>
-        <div class="brand__muted">Проверка клиентов</div>
+        <div class="user-chip">
+          <div class="avatar">
+            {{ adminName.slice(0, 2).toUpperCase() }}
+          </div>
+          <div>
+            <p style="margin: 0; font-weight: 600">{{ adminName }}</p>
+            <p class="muted" style="margin: 2px 0 0">Доступ разрешён</p>
+          </div>
+          <button @click="onLogout()" class="btn">Выйти</button>
+        </div>
       </div>
     </div>
 
     <nav class="nav">
       <router-link to="/" class="nav__link" active-class="is-active">
-        QR Сканер
+        QR Сканерь
       </router-link>
 
       <router-link to="/analytics" class="nav__link" active-class="is-active">
@@ -23,6 +43,31 @@
 </template>
 
 <style scoped>
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+}
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #1e293b;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  border: 1px solid var(--border);
+}
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .sidebar {
   background: linear-gradient(180deg, #0f172a 0%, #0b1021 100%);
   border-right: 1px solid var(--border);
