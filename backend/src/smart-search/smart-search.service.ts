@@ -15,7 +15,8 @@ export class SmartSearchService {
     this.logger.log(`Smart search spawn for query="${query}"`);
 
     return new Promise((resolve, reject) => {
-      const proc = spawn('python3', [scriptPath, query], {
+      const pythonBinary = process.env.SMART_SEARCH_PYTHON || 'python3';
+      const proc = spawn(pythonBinary, [scriptPath, query], {
         env: process.env
       });
 
