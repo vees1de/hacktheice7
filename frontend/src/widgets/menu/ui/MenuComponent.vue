@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { effect, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -10,7 +11,7 @@ const items = [
   { title: 'льготы', icon: 'shield', link: '/benefits' },
   { icon: 'lasso', link: '/chat' },
   { title: 'акции', icon: 'sale', link: '/sales' },
-  { title: 'выгода', icon: 'ruble-bold', link: '/user' }
+  { title: 'выгода', icon: 'ruble-bold', link: ROUTE_NAMES.PROFITS }
 ];
 
 const onMenuItem = async (index: number) => {

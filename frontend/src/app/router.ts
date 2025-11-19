@@ -5,6 +5,7 @@ import AuthPage from '@pages/AuthPage.vue';
 import BenefintsPage from '@pages/BenefitsPage.vue';
 import ChatPage from '@pages/ChatPage.vue';
 import HomePage from '@pages/HomePage.vue';
+import ProfitPage from '@pages/ProfitPage.vue';
 import RegistrationPage from '@pages/RegistrationPage.vue';
 import SalesPage from '@pages/SalesPage.vue';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
@@ -20,7 +21,8 @@ const routes: Array<RouteRecordRaw> = [
   { path: ROUTE_NAMES.SALES, component: SalesPage },
   { path: ROUTE_NAMES.BENEFITS, component: BenefintsPage },
   { path: ROUTE_NAMES.ADMIN, component: AdminPage },
-  { path: ROUTE_NAMES.ROOT, redirect: ROUTE_NAMES.AUTH }
+  { path: ROUTE_NAMES.ROOT, redirect: ROUTE_NAMES.AUTH },
+  {path: ROUTE_NAMES.PROFITS, component: ProfitPage }
 ];
 const router = createRouter({
   history: createWebHistory(),

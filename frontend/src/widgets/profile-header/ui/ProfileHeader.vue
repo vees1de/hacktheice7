@@ -1,12 +1,29 @@
 <script setup lang="ts">
 import { useUserStore } from '@entities/user';
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const { user } = storeToRefs(useUserStore());
+const redirectToProfile = async () => {
+  await router.push(ROUTE_NAMES.USER);
+};
+
+const isShow = computed(
+  () => router.currentRoute.value.path !== ROUTE_NAMES.USER
+);
 </script>
 <template>
-  <div class="profile-header">
-    <div class="left">
+  <div
+    v-if="isShow"
+    class="profile-header"
+  >
+    <div
+      class="left"
+      @click="redirectToProfile"
+    >
       <img
         class="profile-icon"
         src="@shared/assets/icons/profile-icon.svg"

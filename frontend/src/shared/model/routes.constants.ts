@@ -7,5 +7,6 @@ export const ROUTE_NAMES = {
   SALES: '/sales',
   BENEFITS: '/benefits',
   ADMIN: '/admin',
+  PROFITS: '/profits',
   ROOT: '/'
 } as const;
