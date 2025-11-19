@@ -36,7 +36,7 @@ const handleDigitInput = (index: number, e: Event) => {
 <template>
   <div class="code-inputs">
     <input
-      v-for="(digit, i) in codeDigits"
+      v-for="(_digit, i) in codeDigits"
       :key="i"
       :id="`digit-${i}`"
       class="code-box"

@@ -56,7 +56,7 @@ onUnmounted(() => {
       :label="label"
       :placeholder="placeholder"
       :disabled="disabled"
-      :error="error"
+      :error="!!error"
       :helper-text="helperText"
       @click="isOpen = !isOpen"
       readonly

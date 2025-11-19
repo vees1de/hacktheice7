@@ -22,14 +22,14 @@ const routes: Array<RouteRecordRaw> = [
   { path: ROUTE_NAMES.BENEFITS, component: BenefintsPage },
   { path: ROUTE_NAMES.ADMIN, component: AdminPage },
   { path: ROUTE_NAMES.ROOT, redirect: ROUTE_NAMES.AUTH },
-  {path: ROUTE_NAMES.PROFITS, component: ProfitPage }
+  { path: ROUTE_NAMES.PROFITS, component: ProfitPage }
 ];
 const router = createRouter({
   history: createWebHistory(),
   routes
 });
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
   const { isAuthenticated } = storeToRefs(authStore);
 
