@@ -17,3 +17,18 @@ html {
     box-sizing: border-box;
     font-family: inherit;
 }
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    img {
+        transform: rotate(180deg);
+    }
+}

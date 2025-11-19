@@ -72,16 +72,6 @@ const benefits = [
 </template>
 
 <style lang="scss" scoped>
-.section-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  img {
-    transform: rotate(180deg);
-  }
-}
-
 h3 {
   font-size: 20px;
   font-weight: 600;
