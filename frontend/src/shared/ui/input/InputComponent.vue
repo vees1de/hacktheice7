@@ -40,7 +40,7 @@ const inputMask = computed(() => {
   }
 
   if (props.type === 'tel') {
-    return '+7(9##)-###-##-##';
+    return '7(9##)-###-##-##';
   }
 
   return null;

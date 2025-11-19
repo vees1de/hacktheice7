@@ -141,7 +141,7 @@ async function main() {
 
   const { user: admin } = await createStaffUser({
     email: 'admin@demo.ru',
-    phone: '+79990000000',
+    phone: '79990000000',
     firstName: 'Админ',
     lastName: 'Админов',
     role: StaffRole.ADMIN,
@@ -150,7 +150,7 @@ async function main() {
 
   const { user: partner, staff: partnerStaff } = await createStaffUser({
     email: 'partner@demo.ru',
-    phone: '+79991110000',
+    phone: '79991110000',
     firstName: 'Партнер',
     lastName: 'Партнеров',
     role: StaffRole.PARTNER,
@@ -159,7 +159,7 @@ async function main() {
 
   const { user: manager } = await createStaffUser({
     email: 'manager@demo.ru',
-    phone: '+79992220000',
+    phone: '79992220000',
     firstName: 'Менеджер',
     lastName: 'Менеджеров',
     role: StaffRole.MANAGER,
@@ -170,14 +170,14 @@ async function main() {
   const cashiers = [
     {
       email: 'cashier1@demo.ru',
-      phone: '+79993330000',
+      phone: '79993330000',
       firstName: 'Кассир',
       lastName: 'Иванова',
       snils: '93300000000'
     },
     {
       email: 'cashier2@demo.ru',
-      phone: '+79994440000',
+      phone: '79994440000',
       firstName: 'Кассир',
       lastName: 'Петров',
       snils: '94400000000'

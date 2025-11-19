@@ -7,7 +7,7 @@ import { useAuthStore } from "../stores/auth";
 const router = useRouter();
 const auth = useAuthStore();
 
-const phone = ref("+7");
+const phone = ref("79");
 const password = ref("");
 const error = ref("");
 const loading = ref(false);
@@ -40,7 +40,7 @@ const login = async () => {
       <div class="badge">QR Control</div>
       <h1>Панель кассира</h1>
       <p>Сканируйте QR-токен клиента и мгновенно получайте его льготы.</p>
-      test: +79990000000
+      test: 79990000000
     </div>
 
     <div class="card login-card">
@@ -54,7 +54,7 @@ const login = async () => {
       <div class="form">
         <label class="label">
           Телефон
-          <input class="input" v-model="phone" placeholder="+7 999 ..." />
+          <input class="input" v-model="phone" placeholder="79 999 ..." />
         </label>
         <label class="label">
           Пароль

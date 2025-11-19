@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString, Matches } from 'class-validator';
 export class VerifyPhoneDto {
   @IsNotEmpty()
   @IsString()
-  @Matches(/^\+7\d{10}$/, { message: 'Phone must be in format +7XXXXXXXXXX' })
+  @Matches(/^79\d{9}$/, { message: 'Phone must be in format 79XXXXXXXXX' })
   phone: string;
 
   @IsNotEmpty()

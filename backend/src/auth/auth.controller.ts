@@ -48,11 +48,7 @@ export class AuthController {
   @Post('verify-phone')
   async verifyPhone(@Body() dto: VerifyPhoneDto) {
     try {
-      if (dto.code !== '4444') {
-        throw new BadRequestException('Invalid verification code');
-      }
-
-      await this.authService.verifyPhone(dto.phone);
+      await this.authService.verifyPhone(dto.phone, dto.code);
       return {
         message:
           'Телефон подтвержден. Теперь можно войти, а офферы партнеров откроются после входа через Госуслуги.',

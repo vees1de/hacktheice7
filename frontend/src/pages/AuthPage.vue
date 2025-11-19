@@ -32,7 +32,7 @@ const goToPhoneConfirmationStep = async () => {
     viewStore.toggleLoader();
     try {
       const body = getValue() as AuthLoginRequest;
-      body.phone = '+79' + body.phone;
+      body.phone = '79' + body.phone;
       await authStore.login(body);
       await userStore.getUser();
       await router.push('/home');
@@ -72,7 +72,7 @@ const redirectToRegisterPage = async () => {
         label="Телефон"
         type="tel"
         inputmode="tel"
-        placeholder="+7"
+        placeholder="79XXXXXXXXX"
         :error="form.phone.error"
       >
         <template v-slot:error>Заполните телефон верно</template>

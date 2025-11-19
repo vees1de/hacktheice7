@@ -10,10 +10,14 @@ import {
 
 export const authApi = {
   async register(payload: AuthRegisterRequest) {
-    const { data } = await apiRequest<{ userId: string; message?: string }>(
-      '/auth/register',
-      { method: 'POST', data: payload }
-    );
+    const { data } = await apiRequest<{
+      result: boolean;
+      message?: string;
+      data: { phone: string };
+    }>('/auth/register', {
+      method: 'POST',
+      data: payload
+    });
     return data;
   },
 

@@ -1026,7 +1026,7 @@
     },
     {
       "key": "testUserPhone",
-      "value": "+79995554433",
+      "value": "79995554433",
       "type": "string",
       "description": "Phone for the demo citizen account"
     },
@@ -1080,7 +1080,7 @@
     },
     {
       "key": "adminPhone",
-      "value": "+79990000000",
+      "value": "79990000000",
       "type": "string",
       "description": "Seed admin phone"
     },
@@ -1092,7 +1092,7 @@
     },
     {
       "key": "partnerPhone",
-      "value": "+79991110000",
+      "value": "79991110000",
       "type": "string",
       "description": "Seed partner phone"
     },
@@ -1104,7 +1104,7 @@
     },
     {
       "key": "managerPhone",
-      "value": "+79992220000",
+      "value": "79992220000",
       "type": "string",
       "description": "Seed manager phone"
     },
@@ -1134,13 +1134,13 @@
     },
     {
       "key": "cashier1Phone",
-      "value": "+79993330000",
+      "value": "79993330000",
       "type": "string",
       "description": "Seed cashier phone 1"
     },
     {
       "key": "cashier2Phone",
-      "value": "+79994440000",
+      "value": "79994440000",
       "type": "string",
       "description": "Seed cashier phone 2"
     },

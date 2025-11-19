@@ -93,7 +93,7 @@ const goToStep2 = async () => {
 
 const handleFinal = async (code: string) => {
   toggleLoader();
-  const phone = '+79' + form.phone.value;
+  const phone = '79' + form.phone.value;
   const payload: VerifyPhoneRequest = { code, phone };
   try {
     await authApi.verifyPhone(payload);
@@ -158,7 +158,7 @@ const redirectToAuthPage = async () => {
         label="Телефон"
         inputmode="tel"
         type="tel"
-        placeholder="+7"
+        placeholder="79XXXXXXXXX"
         :error="form.phone.error"
         ><template v-slot:error>Неверно заполнено</template></Input
       >

@@ -1,7 +1,7 @@
 import { AuthRegisterRequest } from '../types/auth.types';
 
 export const toAuthRegisterDto = (form: AuthRegisterRequest) => {
-  form.phone = '+79' + form.phone;
+  form.phone = '79' + form.phone;
   form.dateOfBirth = parseDateFromString(form.dateOfBirth).toISOString();
 
   return form;

@@ -12,6 +12,18 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { PrismaService } from '../prisma.service';
 
+type PendingRegistrationData = {
+  firstName: string;
+  lastName: string;
+  patronymic?: string | null;
+  dateOfBirth: string;
+  phone: string;
+  regionId: string;
+  email?: string | null;
+  snils?: string | null;
+  passwordHash: string;
+};
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -66,30 +78,45 @@ export class AuthService {
         );
       }
 
-      const hashedPassword = await hash(dto.password);
+      const dateOfBirth = new Date(dto.dateOfBirth);
+      if (isNaN(dateOfBirth.getTime())) {
+        throw new BadRequestException('Invalid date of birth');
+      }
 
-      const user = await this.prisma.user.create({
-        data: {
-          passwordHash: hashedPassword,
-          firstName: dto.firstName,
-          lastName: dto.lastName,
-          patronymic: dto.patronymic,
-          dateOfBirth: dto.dateOfBirth,
+      const hashedPassword = await hash(dto.password);
+      const verificationCode = '4444';
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+      const pendingData: PendingRegistrationData = {
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        patronymic: dto.patronymic || null,
+        phone: dto.phone,
+        regionId: dto.regionId,
+        email: dto.email || null,
+        snils: dto.snils || null,
+        dateOfBirth: dateOfBirth.toISOString(),
+        passwordHash: hashedPassword
+      };
+
+      await this.prisma.registrationRequest.upsert({
+        where: { phone: dto.phone },
+        update: {
+          data: pendingData,
+          verificationCode,
+          expiresAt
+        },
+        create: {
           phone: dto.phone,
-          regionId: dto.regionId,
-          authProvider: 'email',
-          consentGiven: true,
-          consentDate: new Date(),
-          verificationCode: '4444',
-          status: 'PENDING',
-          onboardingStep: 'SMS_VERIFICATION'
+          data: pendingData,
+          verificationCode,
+          expiresAt
         }
       });
-      console.log('userdata:', user);
-      // Отправка SMS с кодом подтверждения (в реальности)
-      // this.smsService.sendVerificationCode(dto.phone, '4444');
 
-      return { userId: user.id };
+      // Отправка SMS с кодом подтверждения (в реальности)
+      // this.smsService.sendVerificationCode(dto.phone, verificationCode);
+
+      return { phone: dto.phone };
     } catch (error) {
       if (error.code === 'P2002') {
         throw new BadRequestException(
@@ -100,37 +127,61 @@ export class AuthService {
     }
   }
 
-  async verifyPhone(phone: string) {
+  async verifyPhone(phone: string, code: string) {
     try {
-      const user = await this.prisma.user.findUnique({
+      const request = await this.prisma.registrationRequest.findUnique({
         where: { phone }
       });
 
-      if (!user) {
-        throw new NotFoundException('User not found');
+      if (!request) {
+        throw new NotFoundException('Registration request not found');
       }
 
-      if (user.status !== 'PENDING') {
-        throw new BadRequestException(
-          'Phone already verified or user in another status'
-        );
+      if (request.verificationCode !== code) {
+        throw new BadRequestException('Invalid verification code');
       }
 
-      if (!user.verificationCode) {
-        throw new BadRequestException(
-          'No verification code found for this user'
-        );
+      if (request.expiresAt < new Date()) {
+        throw new BadRequestException('Verification code expired');
       }
 
-      await this.prisma.user.update({
-        where: { id: user.id },
+      const pendingData = request.data as PendingRegistrationData;
+
+      if (!pendingData?.passwordHash) {
+        throw new BadRequestException('Incorrect registration data');
+      }
+
+      const existingUser = await this.prisma.user.findFirst({
+        where: { phone }
+      });
+
+      if (existingUser) {
+        throw new BadRequestException('User with this phone already exists');
+      }
+
+      await this.prisma.user.create({
         data: {
-          verificationCode: null,
+          passwordHash: pendingData.passwordHash,
+          firstName: pendingData.firstName,
+          lastName: pendingData.lastName,
+          patronymic: pendingData.patronymic || null,
+          dateOfBirth: new Date(pendingData.dateOfBirth),
+          phone,
+          regionId: pendingData.regionId,
+          email: pendingData.email || null,
+          snils: pendingData.snils || null,
+          authProvider: 'email',
+          consentGiven: true,
+          consentDate: new Date(),
           onboardingStep: 'ESIA_AUTH',
           status: 'ACTIVE',
           isVerified: true,
           isEsiaVerified: false
         }
+      });
+
+      await this.prisma.registrationRequest.delete({
+        where: { id: request.id }
       });
 
       // Здесь можно инициировать следующий шаг — авторизацию через ЕСИА
