@@ -32,6 +32,7 @@ const { user } = storeToRefs(useUserStore());
   align-items: center;
   padding-inline: 16px;
   margin-top: 8px;
+  margin-bottom: 22px;
 
   .left {
     display: flex;

@@ -24,8 +24,8 @@ import { DocumentsCarousel } from '@widgets/documents-carousel';
 </template>
 <style lang="scss" scoped>
 .benefits {
-  margin-top: 24px;
   display: grid;
   gap: 32px;
+  margin-bottom: 36px;
 }
 </style>
