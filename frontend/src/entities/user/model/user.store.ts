@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
+import { userApi } from '../api/user';
 import { UserProfile } from '../types/user.types';
 
 export const useUserStore = defineStore('user', () => {
@@ -21,5 +22,10 @@ export const useUserStore = defineStore('user', () => {
     user.value = setUser;
   };
 
-  return { setUser, user };
+  const getUser = async () => {
+    const response = await userApi.getProfile();
+    setUser(response.data);
+  };
+
+  return { setUser, user, getUser };
 });

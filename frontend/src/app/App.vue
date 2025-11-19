@@ -21,11 +21,11 @@ onMounted(() => (appIsMounted.value = true));
     class="wrapper"
   >
     <Header />
-    <ProfileHeader />
+    <ProfileHeader v-if="isAuthenticated" />
     <main>
       <RouterView />
     </main>
-    <Menu v-if="!isAuthenticated" />
+    <Menu v-if="isAuthenticated" />
   </div>
   <Loader v-if="isLoading" />
 </template>

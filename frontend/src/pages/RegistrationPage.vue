@@ -60,6 +60,7 @@ const createdForm = createForm<AccountForm>({
 const { form, getValue, checkValidation } = createdForm;
 
 const goToStep2 = async () => {
+  console.log(getValue());
   toggleLoader();
   const formHasError = checkValidation();
   if (form.password.value !== form.passwordSecond.value) {
