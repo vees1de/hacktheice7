@@ -70,7 +70,7 @@ const createAPIInstance = (): AxiosInstance => {
           if (!refreshToken) throw new Error('No refresh token');
 
           const res = await axios.post(
-            `${API_BASE}/auth/refresh`,
+            `${API_BASE}auth/refresh`,
             { refreshToken },
             { headers: { 'Content-Type': 'application/json' } }
           );
