@@ -3,6 +3,7 @@ import { useAuthStore } from '@entities/auth';
 import { useViewStore } from '@shared/stores/view.store';
 import { Header, Loader } from '@shared/ui';
 import { Menu } from '@widgets/menu';
+import { ProfileHeader } from '@widgets/profile-header';
 import { storeToRefs } from 'pinia';
 import { onMounted, ref } from 'vue';
 
@@ -20,6 +21,7 @@ onMounted(() => (appIsMounted.value = true));
     class="wrapper"
   >
     <Header />
+    <ProfileHeader />
     <main>
       <RouterView />
     </main>

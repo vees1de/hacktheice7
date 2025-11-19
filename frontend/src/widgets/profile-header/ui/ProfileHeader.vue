@@ -1,0 +1,53 @@
+<script setup lang="ts">
+import { useUserStore } from '@entities/user';
+import { storeToRefs } from 'pinia';
+
+const { user } = storeToRefs(useUserStore());
+</script>
+<template>
+  <div class="profile-header">
+    <div class="left">
+      <img
+        class="profile-icon"
+        src="@shared/assets/icons/profile-icon.svg"
+        alt="Профиль"
+      />
+      <span>{{ user?.lastName }}</span>
+      <img
+        class="arrow-icon"
+        src="@shared/assets/icons/arrow.svg"
+      />
+    </div>
+    <img
+      class="right"
+      src="@shared/assets/icons/bell-icon.svg"
+      alt=""
+    />
+  </div>
+</template>
+<style lang="scss" scoped>
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-inline: 16px;
+  margin-top: 8px;
+
+  .left {
+    display: flex;
+    align-items: center;
+    .profile-icon {
+      margin-right: 8px;
+    }
+
+    span {
+      font-weight: 600;
+      margin-right: 12px;
+    }
+
+    .arrow-icon {
+      transform: rotate(180deg);
+    }
+  }
+}
+</style>
