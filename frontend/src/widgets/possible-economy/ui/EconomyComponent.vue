@@ -78,6 +78,7 @@ const { type = 'both' } = defineProps<{
 }
 
 .shops {
+  text-align: center;
   display: grid;
   place-items: center;
 
