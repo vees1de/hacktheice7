@@ -6,7 +6,7 @@ import { sk } from '../locales/sk';
 
 const availableLangs = ['ru', 'sk'] as const;
 
-type keys = keyof typeof ru;
+// type keys = keyof typeof ru;
 
 export type AvailableLang = (typeof availableLangs)[number];
 

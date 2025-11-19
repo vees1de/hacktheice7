@@ -14,14 +14,14 @@ const openQrSheet = () => {
   viewStore.toggleQrVisible();
 };
 
-const benefits = [
-  { icon: 'bus', name: 'Транспорт' },
-  { icon: 'heart', name: 'Медицина' },
-  { icon: 'bus', name: 'ЖКХ' },
-  { icon: 'cash', name: 'Социальные выплаты' },
-  { icon: 'wheel', name: 'Образование и досуг' },
-  { icon: 'document', name: 'Налоговые льготы' }
-];
+// const benefits = [
+//   { icon: 'bus', name: 'Транспорт' },
+//   { icon: 'heart', name: 'Медицина' },
+//   { icon: 'bus', name: 'ЖКХ' },
+//   { icon: 'cash', name: 'Социальные выплаты' },
+//   { icon: 'wheel', name: 'Образование и досуг' },
+//   { icon: 'document', name: 'Налоговые льготы' }
+// ];
 </script>
 
 <template>
