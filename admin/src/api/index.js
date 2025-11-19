@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const API_BASE = "https://bims14.ru/api";
+
 const api = axios.create({
-  baseURL: "https://bims14.ru/api",
+  baseURL: API_BASE,
   withCredentials: true,
 });
 
@@ -19,8 +21,9 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err?.response?.status === 401) {
-      localStorage.removeItem("adminAccessToken");
-      window.location.href = "/admin/login";
+      console.log("error gg");
+      //   localStorage.removeItem("adminAccessToken");
+      //   window.location.href = "/admin/login";
     }
     throw err;
   }
