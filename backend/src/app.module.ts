@@ -8,6 +8,7 @@ import { AdminModule } from './admin/admin.module';
 import { OfferModule } from './offer/offer.module';
 import { BenefitModule } from './benefit/benefit.module';
 import { BeneficiaryCategoryModule } from './beneficiary-category/beneficiary-category.module';
+import { SmartSearchModule } from './smart-search/smart-search.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { BeneficiaryCategoryModule } from './beneficiary-category/beneficiary-ca
     AdminModule,
     OfferModule,
     BenefitModule,
-    BeneficiaryCategoryModule
+    BeneficiaryCategoryModule,
+    SmartSearchModule
   ]
 })
 export class AppModule {}
