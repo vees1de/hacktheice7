@@ -50,7 +50,7 @@ const benefits = [
         </div> -->
       </Block>
       <div class="section-heading">
-        <h3>Льготы для тебя</h3>
+        <h3>Вы сэкономили</h3>
         <img src="@shared/assets/icons/arrow.svg" />
       </div>
       <Economy />
@@ -78,6 +78,7 @@ h3 {
 }
 
 .home {
+  margin-bottom: 36px;
   &__content {
     display: grid;
     gap: 32px;
@@ -87,7 +88,6 @@ h3 {
 .qr {
   display: flex;
   justify-content: space-between;
-  margin-top: 22px;
   background: #1a73e8 url('/src/shared/assets/images/intersect.svg');
   background-repeat: repeat-x;
   background-position: 0 calc(100% + 20px);

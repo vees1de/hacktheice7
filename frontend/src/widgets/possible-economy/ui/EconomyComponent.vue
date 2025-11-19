@@ -1,6 +1,11 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const { type = 'both' } = defineProps<{
+  type?: 'both' | 'sales' | 'benefits';
+}>();
+</script>
 <template>
   <div
+    v-if="type === 'sales' || type === 'both'"
     class="economy"
     style="margin-bottom: 24px"
   >
@@ -20,7 +25,10 @@
     </div>
   </div>
 
-  <div class="economy">
+  <div
+    v-if="type === 'benefits' || type === 'both'"
+    class="economy"
+  >
     <div class="money">
       <div class="money__sum">4.000₽</div>
       <div class="money__date">11.02.2024-10.01.2025</div>
