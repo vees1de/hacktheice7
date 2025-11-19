@@ -30,7 +30,7 @@ const props = defineProps({
 
     <nav class="nav">
       <router-link to="/" class="nav__link" active-class="is-active">
-        QR Сканерь
+        QR Сканер
       </router-link>
 
       <router-link to="/analytics" class="nav__link" active-class="is-active">

@@ -20,8 +20,12 @@ const login = async () => {
       phone: phone.value.trim(),
       password: password.value,
     });
-    auth.setAuth(data.accessToken, data.user?.firstName || "Админ");
-    router.push("/");
+    if (data.user.staffProfile.role !== "Admin") {
+      auth.setAuth(data.accessToken, data.user?.firstName || "Админ");
+      router.push("/");
+    } else {
+      throw "Не удалось войти";
+    }
   } catch (e) {
     error.value = e?.response?.data?.message || "Не удалось войти";
   } finally {
@@ -36,6 +40,7 @@ const login = async () => {
       <div class="badge">QR Control</div>
       <h1>Панель кассира</h1>
       <p>Сканируйте QR-токен клиента и мгновенно получайте его льготы.</p>
+      test: +79990000000
     </div>
 
     <div class="card login-card">
@@ -72,13 +77,16 @@ const login = async () => {
 
 <style scoped>
 .login-layout {
-  min-height: 100vh;
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: 32px;
   align-items: center;
   padding: 60px 80px;
-  background: radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.2), transparent 30%),
+  background: radial-gradient(
+      circle at 20% 20%,
+      rgba(124, 58, 237, 0.2),
+      transparent 30%
+    ),
     radial-gradient(circle at 80% 0, rgba(34, 197, 94, 0.18), transparent 25%),
     #0b1021;
 }
@@ -106,7 +114,11 @@ const login = async () => {
 .login-card {
   padding: 28px;
   border: 1px solid var(--border);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.02)
+  );
   border-radius: 18px;
   box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
 }

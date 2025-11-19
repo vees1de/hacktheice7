@@ -1,10 +1,7 @@
 <script setup>
 import { onMounted, onBeforeUnmount, ref, computed } from "vue";
-import {
-  Html5Qrcode,
-  Html5QrcodeScanner,
-  Html5QrcodeSupportedFormats,
-} from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
+
 import Sidebar from "../components/Sidebar.vue";
 import { authApi } from "../api/auth";
 import { useAuthStore } from "../stores/auth";
@@ -13,11 +10,12 @@ import { useRouter } from "vue-router";
 const auth = useAuthStore();
 const router = useRouter();
 
+/* STATE */
 const html5Qr = ref(null);
 const scanning = ref(false);
-const scannerError = ref("");
 const cameras = ref([]);
 const selectedCameraId = ref("");
+const scannerError = ref("");
 
 const manualToken = ref("");
 const lastToken = ref("");
@@ -27,45 +25,56 @@ const client = ref(null);
 
 const adminName = computed(() => auth.adminName || "Админ");
 
+/* API */
 const resolveClient = async (token) => {
   fetchError.value = "";
   clientLoading.value = true;
+  console.log("resolve token -> backend", token);
 
   try {
     const { data } = await authApi.resolveShareToken(token);
     client.value = data;
-  } catch (error) {
+  } catch (err) {
     fetchError.value =
-      error?.response?.data?.message || "Не удалось получить данные.";
+      err?.response?.data?.message || "Не удалось получить данные.";
   } finally {
     clientLoading.value = false;
   }
 };
 
+/* TOKEN HANDLER */
 const handleToken = (text) => {
   const cleaned = text.trim();
+  console.log("text", text);
+  console.log("TOKEN:", cleaned);
+
   lastToken.value = cleaned;
   manualToken.value = cleaned;
+
   resolveClient(cleaned);
 };
 
+/* CAMERA LIST */
 const loadCameras = async () => {
-  const list = await Html5Qrcode.getCameras();
-  cameras.value = list;
-  selectedCameraId.value = list[0]?.id || null;
+  try {
+    const list = await Html5Qrcode.getCameras();
+    cameras.value = list;
+    selectedCameraId.value = list[0]?.id || null;
+  } catch (e) {
+    scannerError.value = "Не удалось получить камеры";
+  }
 };
 
-onMounted(() => {
-  loadCameras();
-});
-
+/* START SCANNING */
 const startScanner = async () => {
   scannerError.value = "";
   client.value = null;
   scanning.value = true;
 
   if (!html5Qr.value) {
-    html5Qr.value = new Html5Qrcode("qr-box");
+    html5Qr.value = new Html5Qrcode("qr-box", {
+      formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+    });
   }
 
   try {
@@ -77,46 +86,57 @@ const startScanner = async () => {
       { fps: 12, qrbox: { width: 260, height: 260 } },
 
       (decodedText) => {
-        stopScanner();
+        console.log("QR FOUND:", decodedText);
         handleToken(decodedText);
+        stopScanner();
       },
+
       () => {}
     );
   } catch (err) {
-    scannerError.value = "Ошибка запуска камеры: " + err?.message;
+    scannerError.value = "Ошибка камеры: " + err?.message;
     scanning.value = false;
   }
 };
 
+/* STOP SCANNER */
 const stopScanner = () => {
   scanning.value = false;
+
   if (html5Qr.value) {
     html5Qr.value.stop().catch(() => {});
     html5Qr.value.clear();
   }
 };
 
+/* SCAN FROM PHOTO */
 const scanFromImage = async (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
-  const qr = new Html5Qrcode("qr-box");
+  if (!html5Qr.value) {
+    html5Qr.value = new Html5Qrcode("qr-box");
+  }
+
   try {
-    const result = await qr.scanFile(file, true);
+    const result = await html5Qr.value.scanFile(file, true);
+    console.log("IMAGE QR:", result);
+
     handleToken(result);
   } catch (e) {
     scannerError.value = "QR не найден на изображении.";
   }
 };
 
-onBeforeUnmount(() => stopScanner());
-
+/* LOGOUT */
 const logout = () => {
   auth.clearAuth();
   router.push({ name: "Login" });
 };
-</script>
 
+onMounted(loadCameras);
+onBeforeUnmount(stopScanner);
+</script>
 <template>
   <div class="page">
     <Sidebar :admin-name="adminName" :on-logout="logout" />
@@ -133,11 +153,11 @@ const logout = () => {
           </div>
 
           <p class="muted">
-            Работает на iPhone / Android. Можно сканировать и из фото.
+            Работает на мобильных устройствах. Можно выбрать фото.
           </p>
 
           <div class="stack">
-            <!-- Ввод токена -->
+            <!-- token input -->
             <div class="token-input">
               <input
                 class="input"
@@ -150,7 +170,7 @@ const logout = () => {
               Запросить
             </button>
 
-            <!-- Выбор камеры если есть -->
+            <!-- cameras -->
             <select
               class="input"
               v-if="cameras.length > 1"
@@ -158,11 +178,10 @@ const logout = () => {
               :disabled="scanning"
             >
               <option v-for="c in cameras" :key="c.id" :value="c.id">
-                {{ c.label || "Камера" }}
+                {{ c.label }}
               </option>
             </select>
 
-            <!-- Кнопки камеры -->
             <div class="actions-row">
               <button
                 class="btn btn--primary"
@@ -187,7 +206,7 @@ const logout = () => {
               </label>
             </div>
 
-            <!-- Сканер -->
+            <!-- QR BOX -->
             <div id="qr-box" class="qr-frame" v-show="scanning">
               <div class="scan-line"></div>
             </div>
@@ -202,7 +221,7 @@ const logout = () => {
           </div>
         </section>
 
-        <!-- ДАННЫЕ КЛИЕНТА — как у тебя было -->
+        <!-- CLIENT -->
         <section class="card" v-if="client || clientLoading || fetchError">
           <div class="card__title">
             <span>Данные клиента</span>
