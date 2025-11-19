@@ -15,7 +15,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory("/admin"),
   routes,
 });
 
@@ -23,10 +23,10 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore();
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return next("/login");
+    return next({ name: "Login" });
   }
   if (to.name === "Login" && auth.isAuthenticated) {
-    return next("/");
+    return next({ name: "Admin" });
   }
   next();
 });

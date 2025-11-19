@@ -20,7 +20,7 @@ api.interceptors.response.use(
   (err) => {
     if (err?.response?.status === 401) {
       localStorage.removeItem("adminAccessToken");
-      window.location.href = "/login";
+      window.location.href = "/admin/login";
     }
     throw err;
   }

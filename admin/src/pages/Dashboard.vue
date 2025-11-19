@@ -2,7 +2,6 @@
 import { computed, onBeforeUnmount, ref } from "vue";
 import { BrowserQRCodeReader } from "@zxing/browser";
 import Sidebar from "../components/Sidebar.vue";
-import HeaderBar from "../components/HeaderBar.vue";
 import { authApi } from "../api/auth";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from "vue-router";
@@ -101,25 +100,25 @@ const resolveClient = async (token) => {
 
 const logout = () => {
   auth.clearAuth();
-  router.push("/login");
+  router.push({ name: "Login" });
 };
 </script>
 
 <template>
   <div class="page">
-    <Sidebar />
+    <Sidebar :admin-name="adminName" :on-logout="logout" />
     <main class="content">
-      <HeaderBar :admin-name="adminName" :on-logout="logout" />
-
       <div class="grid">
         <section class="card">
           <div class="card__title">
             <span>Сканер QR</span>
-            <span class="pill">{{ scanning ? "Сканирование" : "Ожидание" }}</span>
+            <span class="pill">{{
+              scanning ? "Сканирование" : "Ожидание"
+            }}</span>
           </div>
           <p class="muted">
-            Запустите камеру или вставьте токен вручную. После успешного считывания
-            карточка с данными клиента появится справа.
+            Запустите камеру или вставьте токен вручную. После успешного
+            считывания карточка с данными клиента появится справа.
           </p>
 
           <div class="stack">
@@ -129,10 +128,10 @@ const logout = () => {
                 v-model="manualToken"
                 placeholder="Хеш токена"
               />
-              <button class="btn btn--primary" @click="handleToken(manualToken)">
-                Запросить
-              </button>
             </div>
+            <button class="btn btn--primary" @click="handleToken(manualToken)">
+              Запросить
+            </button>
 
             <div class="stack">
               <div class="actions-row">
@@ -212,7 +211,9 @@ const logout = () => {
 
             <div class="benefits">
               <p class="muted">Подтвержденные льготы</p>
-              <div v-if="!client.benefits?.length" class="status">Нет льгот</div>
+              <div v-if="!client.benefits?.length" class="status">
+                Нет льгот
+              </div>
               <div v-else class="stack">
                 <div class="chip" v-for="b in client.benefits" :key="b.id">
                   {{ b.title }} ({{ b.code }})
@@ -234,7 +235,6 @@ const logout = () => {
 }
 
 .grid {
-  display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: 16px;
   align-items: start;
