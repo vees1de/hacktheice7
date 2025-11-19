@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from 'vue';
 import {
-  smartSearchApi,
   type SmartSearchItem,
-  type SmartSearchResponse
+  type SmartSearchResponse,
+  smartSearchApi
 } from '@entities/smart-search/api/smart-search.api';
+import { computed, nextTick, ref } from 'vue';
 
 type ChatMessage = {
   id: number;
@@ -97,15 +97,25 @@ const handleKeyPress = (event: KeyboardEvent) => {
     </header>
 
     <div class="chat-area">
-      <div class="chat-body" ref="chatBody">
+      <div
+        class="chat-body"
+        ref="chatBody"
+      >
         <template v-if="hasMessages">
           <div
             v-for="message in messages"
             :key="message.id"
             class="chat-message"
-            :class="message.role === 'user' ? 'chat-message--user' : 'chat-message--bot'"
+            :class="
+              message.role === 'user'
+                ? 'chat-message--user'
+                : 'chat-message--bot'
+            "
           >
-            <p class="chat-message__text" v-html="message.text.replace(/\n/g, '<br/>')" />
+            <p
+              class="chat-message__text"
+              v-html="message.text.replace(/\n/g, '<br/>')"
+            />
 
             <div
               v-if="message.items && message.items.length"
@@ -122,7 +132,10 @@ const handleKeyPress = (event: KeyboardEvent) => {
                 <p class="benefit-card__hint">
                   Действует до {{ item.valid_to || '—' }}
                 </p>
-                <p v-if="item.categories?.length" class="benefit-card__tags">
+                <p
+                  v-if="item.categories?.length"
+                  class="benefit-card__tags"
+                >
                   {{ item.categories.join(', ') }}
                 </p>
               </article>
@@ -139,7 +152,11 @@ const handleKeyPress = (event: KeyboardEvent) => {
           rows="2"
           @keydown="handleKeyPress"
         />
-        <button class="send-btn" :disabled="isSending" @click="sendMessage">
+        <button
+          class="send-btn"
+          :disabled="isSending"
+          @click="sendMessage"
+        >
           {{ isSending ? '...' : 'Отправить' }}
         </button>
       </div>
@@ -153,7 +170,7 @@ const handleKeyPress = (event: KeyboardEvent) => {
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  height: calc(100vh - 100px);
+  height: calc(100vh - 140px);
 }
 
 .chat-header {
@@ -314,7 +331,7 @@ const handleKeyPress = (event: KeyboardEvent) => {
 @media (max-width: 768px) {
   .chat-page {
     padding: 8px;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 180px);
   }
 
   .chat-message {

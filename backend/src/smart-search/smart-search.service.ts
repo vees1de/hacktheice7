@@ -12,11 +12,22 @@ export class SmartSearchService {
       'smartsearch/python/benefit_search.py'
     );
 
-    this.logger.log(`Smart search spawn for query="${query}"`);
+    // Python из окружения
+    const pythonBinary =
+      process.env.SMART_SEARCH_PYTHON ||
+      path.resolve(process.cwd(), 'smartsearch/python/venv/bin/python');
+
+    this.logger.log(`SmartSearch: using python = ${pythonBinary}`);
+    this.logger.log(`SmartSearch: script = ${scriptPath}`);
+    this.logger.log(`SmartSearch: query = "${query}"`);
 
     return new Promise((resolve, reject) => {
-      const proc = spawn('python3', [scriptPath, query], {
-        env: process.env
+      const proc = spawn(pythonBinary, [scriptPath, query], {
+        cwd: path.dirname(scriptPath),
+        env: {
+          ...process.env,
+          PYTHONUNBUFFERED: '1'
+        }
       });
 
       let stdout = '';
@@ -31,7 +42,7 @@ export class SmartSearchService {
       });
 
       proc.on('error', err => {
-        reject(
+        return reject(
           new BadRequestException(
             `Failed to start smart search: ${err.message}`
           )
@@ -40,13 +51,13 @@ export class SmartSearchService {
 
       proc.on('close', code => {
         if (stderr.trim()) {
-          this.logger.error(`Smart search stderr: ${stderr}`);
+          this.logger.error(`SmartSearch stderr: ${stderr}`);
         }
 
         if (code !== 0) {
           return reject(
             new BadRequestException(
-              `Smart search exited with code ${code}: ${stderr || stdout}`
+              `SmartSearch exited with code ${code}: ${stderr || stdout}`
             )
           );
         }
@@ -55,16 +66,14 @@ export class SmartSearchService {
           const parsed = JSON.parse(stdout.trim());
           if (parsed.ok === false) {
             return reject(
-              new BadRequestException(
-                parsed.error || 'Smart search reported an error'
-              )
+              new BadRequestException(parsed.error || 'Smart search error')
             );
           }
           resolve(parsed);
         } catch (err) {
           reject(
             new BadRequestException(
-              `Smart search returned invalid JSON: ${stdout}`
+              `SmartSearch returned invalid JSON: ${stdout}`
             )
           );
         }
