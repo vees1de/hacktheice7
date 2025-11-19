@@ -3,6 +3,7 @@ import { useViewStore } from '@shared/stores/view.store';
 import { Block } from '@shared/ui';
 import { BenefitsCarousel } from '@widgets/benefits-carousel';
 import { ChatBot } from '@widgets/chatbot';
+import { Economy } from '@widgets/possible-economy';
 import { QrSheetComponent } from '@widgets/qr-sheet';
 import { SalesCarousel } from '@widgets/sales-carousel';
 import { storeToRefs } from 'pinia';
@@ -37,7 +38,22 @@ const benefits = [
             alt="qr-code"
           />
         </div>
+        <!-- <div class="qr__locked">
+          <img
+            src="@shared/assets/icons/locked.svg"
+            alt=""
+          />
+          <p>
+            Подтвердите аккаунт госулсуг, чтобы использовать цифровое
+            удостоверение льготника
+          </p>
+        </div> -->
       </Block>
+      <div class="section-heading">
+        <h3>Льготы для тебя</h3>
+        <img src="@shared/assets/icons/arrow.svg" />
+      </div>
+      <Economy />
       <h3>Чат-бот помощник ЛАССО</h3>
       <ChatBot />
       <div class="section-heading">

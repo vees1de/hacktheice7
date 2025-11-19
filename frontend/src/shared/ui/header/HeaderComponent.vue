@@ -40,7 +40,6 @@ header {
   font-weight: 700;
   width: 100%;
   height: 48px;
-  margin-bottom: 24px;
   text-align: center;
   position: relative;
 
