@@ -166,6 +166,7 @@ const redirectToAuthPage = async () => {
         v-model="form.dateOfBirth.value"
         label="День рождения"
         type="date"
+        inputmode="tel"
         :error="form.dateOfBirth.error"
       >
         <template v-slot:error>Неверная дата</template>
