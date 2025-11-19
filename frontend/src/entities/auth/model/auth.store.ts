@@ -1,3 +1,4 @@
+import { useUserStore } from '@entities/user';
 import { userApi } from '@entities/user/api/user';
 import { clearTokens, setTokens } from '@shared/api/token.service';
 import { defineStore } from 'pinia';
@@ -15,6 +16,7 @@ import {
 export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false);
   const router = useRouter();
+  const userStore = useUserStore();
 
   const setAuth = (data: AuthSuccess | null) => {
     isAuthenticated.value = Boolean(data);
@@ -26,6 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
   const checkToken = async () => {
     if (!isAuthenticated.value) {
       const response = await userApi.getProfile();
+      userStore.setUser(response.data);
       if (response.status === 200) {
         isAuthenticated.value = true;
       }

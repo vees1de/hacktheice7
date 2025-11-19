@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { AuthLoginRequest, useAuthStore } from '@entities/auth';
+import { useUserStore } from '@entities/user';
 import { createForm } from '@shared/lib/createForm';
 import { required } from '@shared/lib/validators';
 import { useViewStore } from '@shared/stores/view.store';
@@ -15,6 +16,7 @@ export type AuthForm = {
 const router = useRouter();
 const authStore = useAuthStore();
 const viewStore = useViewStore();
+const userStore = useUserStore();
 
 const createdForm = createForm<AuthForm>({
   phone: { value: '', validators: [required()] },
@@ -32,6 +34,7 @@ const goToPhoneConfirmationStep = async () => {
       const body = getValue() as AuthLoginRequest;
       body.phone = '+79' + body.phone;
       await authStore.login(body);
+      await userStore.getUser();
       await router.push('/home');
       step.value = 2;
     } catch (error) {

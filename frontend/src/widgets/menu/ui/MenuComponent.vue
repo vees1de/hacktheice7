@@ -10,7 +10,7 @@ const items = [
   { title: 'льготы', icon: 'shield', link: '/benefits' },
   { icon: 'lasso', link: '/chat' },
   { title: 'акции', icon: 'sale', link: '/sales' },
-  { title: 'профиль', icon: 'user', link: '/user' }
+  { title: 'выгода', icon: 'ruble-bold', link: '/user' }
 ];
 
 const onMenuItem = async (index: number) => {
