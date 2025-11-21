@@ -12,7 +12,7 @@ const redirectToProfile = async () => {
 };
 
 const isShow = computed(
-  () => router.currentRoute.value.path !== ROUTE_NAMES.USER
+  () => !router.currentRoute.value.path.includes(ROUTE_NAMES.USER)
 );
 </script>
 <template>

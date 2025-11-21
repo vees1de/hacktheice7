@@ -4,7 +4,11 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-const path = computed(() => router.currentRoute.value.path);
+const path = computed(() => {
+  console.log(router.currentRoute.value.path);
+  console.log(headers[router.currentRoute.value.path]);
+  return router.currentRoute.value.path;
+});
 
 const headers: Record<string, string> = {
   [ROUTE_NAMES.AUTH]: 'Вход',
@@ -15,13 +19,17 @@ const headers: Record<string, string> = {
   [ROUTE_NAMES.SALES]: 'Продажи',
   [ROUTE_NAMES.BENEFITS]: 'Преимущества',
   [ROUTE_NAMES.ADMIN]: 'Админка',
-  [ROUTE_NAMES.ROOT]: 'Главная'
+  [ROUTE_NAMES.ROOT]: 'Главная',
+  [ROUTE_NAMES.EDIT_BENEFITS]: 'Выбрать льготы'
 };
 </script>
 
 <template>
   <header>
-    <div class="back-button">
+    <div
+      class="back-button"
+      @click="router.back()"
+    >
       <img
         src="@shared/assets/icons/arrow.svg"
         alt="Назад"

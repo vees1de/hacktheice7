@@ -10,7 +10,7 @@ import { onMounted, ref } from 'vue';
 const { isAuthenticated } = storeToRefs(useAuthStore());
 const appIsMounted = ref(false);
 
-const { isLoading } = storeToRefs(useViewStore());
+const { isLoading, showMenu } = storeToRefs(useViewStore());
 
 onMounted(() => (appIsMounted.value = true));
 </script>
@@ -25,7 +25,7 @@ onMounted(() => (appIsMounted.value = true));
     <main>
       <RouterView />
     </main>
-    <Menu v-if="isAuthenticated" />
+    <Menu v-if="showMenu" />
   </div>
   <Loader v-if="isLoading" />
 </template>

@@ -14,7 +14,7 @@ import {
 } from '../types/auth.types';
 
 export const useAuthStore = defineStore('auth', () => {
-  const isAuthenticated = ref(false);
+  const isAuthenticated = ref(!false);
   const router = useRouter();
   const userStore = useUserStore();
 
