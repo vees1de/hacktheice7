@@ -1,36 +1,44 @@
 <script setup lang="ts">
 import { useUserStore } from '@entities/user';
 import { storeToRefs } from 'pinia';
+import { RouterView, useRouter } from 'vue-router';
 
 const { user } = storeToRefs(useUserStore());
+const router = useRouter();
+const redirectTo = () => {
+  router.push('/user/edit-benefits');
+};
 </script>
 <template>
-  <div class="profile">
-    <div class="profile__info">
-      <img
-        src="@shared/assets/icons/profile-icon.svg"
-        alt="иконка профиля"
-      />
-      <div class="name">{{ user.firstName }} {{ user.lastName }}</div>
-      <div class="phone">{{ user.phone }}</div>
-    </div>
-    <div class="profile__edit">
-      <div class="edit-button">
-        <div>
-          <img
-            class="btn-icon"
-            src="@shared/assets/icons/chat-icon.svg"
-            alt=""
-          />
-          <span>Выбрать льготы</span>
-        </div>
+  <template v-if="router.currentRoute.value.path === '/user'">
+    <div class="profile">
+      <div class="profile__info">
         <img
-          class="arrow"
-          src="@shared/assets/icons/arrow.svg"
+          src="@shared/assets/icons/profile-icon.svg"
+          alt="иконка профиля"
         />
+        <div class="name">{{ user.firstName }} {{ user.lastName }}</div>
+        <div class="phone">{{ user.phone }}</div>
+      </div>
+      <div class="profile__edit">
+        <div class="edit-button">
+          <div @click="redirectTo">
+            <img
+              class="btn-icon"
+              src="@shared/assets/icons/chat-icon.svg"
+              alt=""
+            />
+            <span>Выбрать льготы</span>
+          </div>
+          <img
+            class="arrow"
+            src="@shared/assets/icons/arrow.svg"
+          />
+        </div>
       </div>
     </div>
-  </div>
+  </template>
+  <RouterView v-else></RouterView>
 </template>
 <style lang="scss" scoped>
 .profile {

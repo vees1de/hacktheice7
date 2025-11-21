@@ -5,6 +5,7 @@ export const ROUTE_NAMES = {
   REGISTRATION: '/auth/register',
   HOME: '/home',
   USER: '/user',
+  EDIT_BENEFITS: '/user/edit-benefits',
   CHAT: '/chat',
   SALES: '/sales',
   BENEFITS: '/benefits',

@@ -1,5 +1,4 @@
 import { useAuthStore } from '@entities/auth';
-import AccountPage from '@pages/AccountPage.vue';
 import AdminPage from '@pages/AdminPage.vue';
 import AuthPage from '@pages/AuthPage.vue';
 import AuthSberPage from '@pages/AuthSberPage.vue';
@@ -10,6 +9,8 @@ import HomePage from '@pages/HomePage.vue';
 import ProfitPage from '@pages/ProfitPage.vue';
 import RegistrationPage from '@pages/RegistrationPage.vue';
 import SalesPage from '@pages/SalesPage.vue';
+import UserPage from '@pages/UserPage/UserPage.vue';
+import EditBenefits from '@pages/UserPage/childs/editBenefits.vue';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { storeToRefs } from 'pinia';
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
@@ -20,7 +21,16 @@ const routes: Array<RouteRecordRaw> = [
   { path: ROUTE_NAMES.SBER, component: AuthSberPage },
   { path: ROUTE_NAMES.REGISTRATION, component: RegistrationPage },
   { path: ROUTE_NAMES.HOME, component: HomePage },
-  { path: ROUTE_NAMES.USER, component: AccountPage },
+  {
+    path: ROUTE_NAMES.USER,
+    component: UserPage,
+    children: [
+      {
+        path: ROUTE_NAMES.EDIT_BENEFITS,
+        component: EditBenefits
+      }
+    ]
+  },
   { path: ROUTE_NAMES.CHAT, component: ChatPage },
   { path: ROUTE_NAMES.SALES, component: SalesPage },
   { path: ROUTE_NAMES.BENEFITS, component: BenefintsPage },
