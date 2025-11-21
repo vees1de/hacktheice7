@@ -8,6 +8,7 @@ import {
 import { regionApi } from '@entities/region';
 import { createForm } from '@shared/lib/createForm';
 import { date, minSymbols, onlyString, required } from '@shared/lib/validators';
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { useViewStore } from '@shared/stores/view.store';
 import { Option } from '@shared/types/dropdownOption';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
@@ -106,7 +107,7 @@ const handleFinal = async (code: string) => {
 };
 
 const redirectToAuthPage = async () => {
-  await router.push('/auth');
+  await router.push(ROUTE_NAMES.WELCOME);
 };
 </script>
 

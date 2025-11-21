@@ -50,3 +50,11 @@ npm run dev           # http://localhost:3001
 - Локально backend должен разрешать CORS с `http://localhost:3001`.
 - Токен админа лежит в `localStorage` под ключом `adminAccessToken`; для сброса
   достаточно очистить storage или выйти из учётной записи.
+
+## Troubleshooting
+- **Видите только белый экран** — убедитесь, что приложение доступно по
+  `http://localhost:3001/admin/`. При другом base-path обновите `vite.config.js`.
+- **401 сразу после логина** — проверьте правильность `VITE_ADMIN_API_BASE` и
+  что backend раздаёт CORS/сессии для данного origin.
+- **API запросы идут на прод URL** — удалите старый `dist/` перед сборкой или
+  задайте переменную окружения перед `npm run build` (`VITE_ADMIN_API_BASE=...`).

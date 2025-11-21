@@ -55,3 +55,12 @@ npm run dev           # http://localhost:3000
   `shared/ui/InputComponent`.
 - При работе с PWA/кэшем после замены API стоит очистить service worker
   (DevTools → Application → Service Workers).
+
+## Troubleshooting
+- **401/403 после логина** — убедитесь, что backend слушает `http://localhost:8000`
+  и в `.env` указан правильный `VITE_API_BASE` (со слэшем в конце).
+- **Вечный лоадер на регистрации** — проверьте, что региональный список
+  возвращает данные (`regionApi.getAll`). Без активного backend шаг 1 не
+  завершится.
+- **Не подхватываются новые env** — остановите `npm run dev` и запустите его
+  заново; Vite читает `.env` только при старте сервера.

@@ -104,3 +104,12 @@ python benefit_search.py "Льготы для многодетной семьи 
 - `prisma/` — схема, миграции и сиды.
 - `smartsearch/` — Python сервис (скрипты, requirements, .env).
 - `docker-compose.yaml` — пример прод/локального стека с БД.
+
+## Troubleshooting
+- **`Error: SmartSearch exited with code 1`** — проверьте, что Python окружение
+  активировано, указаны `YANDEX_*` переменные и `SMART_SEARCH_PYTHON` смотрит на
+  правильный бинарь.
+- **`P1001: Can't reach database server`** — неверно указан `DATABASE_URL` или
+  PostgreSQL не запущен/порт не проброшен из Docker.
+- **401 при обращении к API** — убедитесь, что в `.env` заполнен `JWT_SECRET`,
+  а seed загрузил хотя бы одного пользователя (`npm run prisma:seed`).

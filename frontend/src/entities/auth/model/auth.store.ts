@@ -4,6 +4,7 @@ import { clearTokens, setTokens } from '@shared/api/token.service';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 
 import { authApi } from '../api/auth';
 import {
@@ -48,7 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = () => {
     clearTokens();
     isAuthenticated.value = false;
-    router.push('/auth');
+    router.push(ROUTE_NAMES.WELCOME);
   };
 
   const mobileConfirm = async (verifyBody: VerifyPhoneRequest) => {

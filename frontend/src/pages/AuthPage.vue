@@ -3,15 +3,13 @@ import { AuthLoginRequest, useAuthStore } from '@entities/auth';
 import { useUserStore } from '@entities/user';
 import { createForm } from '@shared/lib/createForm';
 import { required } from '@shared/lib/validators';
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { useViewStore } from '@shared/stores/view.store';
-import { FieldMetaData } from '@shared/types/formFieldMetaData';
-import { Button, Input } from '@shared/ui';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-export type AuthForm = {
-  [K in keyof AuthLoginRequest]: FieldMetaData<string>;
-};
+import SmsAuthForm from './AuthPage/SmsAuthForm.vue';
+import type { AuthForm } from './AuthPage/types';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -25,6 +23,9 @@ const createdForm = createForm<AuthForm>({
 const { form, getValue, checkValidation } = createdForm;
 
 const step = ref(1);
+const goBackToWelcome = () => {
+  router.push(ROUTE_NAMES.WELCOME);
+};
 
 const goToPhoneConfirmationStep = async () => {
   const formHasError = checkValidation();
@@ -35,7 +36,7 @@ const goToPhoneConfirmationStep = async () => {
       body.phone = '79' + body.phone;
       await authStore.login(body);
       await userStore.getUser();
-      await router.push('/home');
+      await router.push(ROUTE_NAMES.HOME);
       step.value = 2;
     } catch (error) {
       console.log(error);
@@ -46,7 +47,7 @@ const goToPhoneConfirmationStep = async () => {
 };
 
 const redirectToRegisterPage = async () => {
-  await router.push('/registration');
+  await router.push(ROUTE_NAMES.REGISTRATION);
 };
 </script>
 
@@ -56,106 +57,20 @@ const redirectToRegisterPage = async () => {
       <img src="@shared/assets/icons/lasso-icon.svg" />
       <img src="@shared/assets/icons/lasso-title.svg" />
     </div>
-
-    <div class="language">
-      <span>Русский язык</span>
-      <img
-        src="@shared/assets/icons/russia-icon.svg"
-        alt=""
-      />
-    </div>
-
-    <!-- ШАГ 1 -->
-    <form class="auth__form">
-      <Input
-        v-model="form.phone.value"
-        label="Телефон"
-        type="tel"
-        inputmode="tel"
-        placeholder="79XXXXXXXXX"
-        :error="form.phone.error"
-      >
-        <template v-slot:error>Заполните телефон верно</template>
-      </Input>
-      <Input
-        v-model="form.password.value"
-        label="Пароль"
-        type="password"
-        :error="form.password.error"
-      >
-        <template v-slot:error>Обязательное поле</template>
-      </Input>
-    </form>
-
-    <div class="auth__buttons">
-      <Button
-        v-if="step === 1"
-        class="submit"
-        @click="goToPhoneConfirmationStep"
-      >
-        Продолжить
-      </Button>
-      <Button
-        v-if="step === 1"
-        class="submit"
-        kind="secondary"
-        @click="redirectToRegisterPage()"
-      >
-        Нет аккаунта
-      </Button>
-    </div>
+    <SmsAuthForm
+      :form="form"
+      :step="step"
+      @submit="goToPhoneConfirmationStep"
+      @register="redirectToRegisterPage"
+      @back="goBackToWelcome"
+    />
   </div>
 </template>
 
 <style scoped lang="scss">
-.button__step2 {
-  margin-top: 32px;
-}
-
-.code-wrapper {
-  display: flex;
-  justify-content: center;
-}
-
-.code-inputs {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-.code-box {
-  width: 56px;
-  height: 64px;
-  font-size: 2rem;
-  font-weight: 600;
-  text-align: center;
-  border-radius: 12px;
-  border: 1.5px solid #d0d5dd;
-  outline: none;
-  transition: 0.2s border;
-
-  &:focus {
-    border-color: #1a73e8;
-  }
-}
-
-.submit[disabled] {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.has-account {
-  text-align: center;
-  font-size: 1rem;
-
-  a {
-    text-decoration: none;
-    color: #1a73e8;
-  }
-}
-
 .logo {
   display: flex;
+
   width: 100%;
   justify-content: center;
   align-items: center;
@@ -178,49 +93,11 @@ const redirectToRegisterPage = async () => {
   }
 }
 
-.language {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  margin-bottom: 32px;
-}
-
 .auth {
-  position: relative;
-  height: 90dvh;
-
-  &__title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    text-align: center;
-    margin-bottom: 24px;
-  }
-
-  &__buttons {
-    width: 100%;
-    display: grid;
-    gap: 12px;
-    position: absolute;
-    bottom: 16px;
-  }
-
-  &__form {
-    // Mobile first (default)
-    width: 100%;
-
-    @include tablet {
-      width: 70%;
-    }
-
-    @include desktop-md {
-      width: 50%;
-    }
-
-    @include desktop-lg {
-      width: 40%;
-    }
-  }
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 24px 32px;
 }
 </style>

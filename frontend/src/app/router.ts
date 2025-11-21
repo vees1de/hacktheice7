@@ -2,6 +2,8 @@ import { useAuthStore } from '@entities/auth';
 import AccountPage from '@pages/AccountPage.vue';
 import AdminPage from '@pages/AdminPage.vue';
 import AuthPage from '@pages/AuthPage.vue';
+import AuthSberPage from '@pages/AuthSberPage.vue';
+import AuthWelcomePage from '@pages/AuthWelcomePage.vue';
 import BenefintsPage from '@pages/BenefitsPage.vue';
 import ChatPage from '@pages/ChatPage.vue';
 import HomePage from '@pages/HomePage.vue';
@@ -13,7 +15,9 @@ import { storeToRefs } from 'pinia';
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
 
 const routes: Array<RouteRecordRaw> = [
+  { path: ROUTE_NAMES.WELCOME, component: AuthWelcomePage },
   { path: ROUTE_NAMES.AUTH, component: AuthPage },
+  { path: ROUTE_NAMES.SBER, component: AuthSberPage },
   { path: ROUTE_NAMES.REGISTRATION, component: RegistrationPage },
   { path: ROUTE_NAMES.HOME, component: HomePage },
   { path: ROUTE_NAMES.USER, component: AccountPage },
@@ -21,7 +25,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: ROUTE_NAMES.SALES, component: SalesPage },
   { path: ROUTE_NAMES.BENEFITS, component: BenefintsPage },
   { path: ROUTE_NAMES.ADMIN, component: AdminPage },
-  { path: ROUTE_NAMES.ROOT, redirect: ROUTE_NAMES.AUTH },
+  { path: ROUTE_NAMES.ROOT, redirect: ROUTE_NAMES.WELCOME },
   { path: ROUTE_NAMES.PROFITS, component: ProfitPage }
 ];
 const router = createRouter({
@@ -29,24 +33,27 @@ const router = createRouter({
   routes
 });
 
+const PUBLIC_ROUTES = new Set<string>([
+  ROUTE_NAMES.WELCOME,
+  ROUTE_NAMES.AUTH,
+  ROUTE_NAMES.SBER,
+  ROUTE_NAMES.REGISTRATION
+]);
+
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
   const { isAuthenticated } = storeToRefs(authStore);
 
   try {
-    if (to.path !== '/auth' && to.path !== '/registration') {
+    if (!PUBLIC_ROUTES.has(to.path)) {
       await authStore.checkToken();
     }
   } catch {
     // space
   }
 
-  if (
-    !isAuthenticated.value &&
-    to.path !== '/auth' &&
-    to.path !== '/registration'
-  ) {
-    next({ path: '/auth' });
+  if (!isAuthenticated.value && !PUBLIC_ROUTES.has(to.path)) {
+    next({ path: ROUTE_NAMES.WELCOME });
   } else {
     next();
   }

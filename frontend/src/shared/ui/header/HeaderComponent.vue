@@ -7,7 +7,9 @@ const router = useRouter();
 const path = computed(() => router.currentRoute.value.path);
 
 const headers: Record<string, string> = {
+  [ROUTE_NAMES.WELCOME]: '',
   [ROUTE_NAMES.AUTH]: 'Вход',
+  [ROUTE_NAMES.SBER]: 'Сбер ID',
   [ROUTE_NAMES.REGISTRATION]: 'Регистрация',
   [ROUTE_NAMES.HOME]: 'Главная',
   [ROUTE_NAMES.USER]: 'Профиль',
