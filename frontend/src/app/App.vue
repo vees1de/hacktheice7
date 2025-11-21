@@ -10,7 +10,7 @@ import { onMounted, ref } from 'vue';
 const { isAuthenticated } = storeToRefs(useAuthStore());
 const appIsMounted = ref(false);
 
-const { isLoading, showMenu } = storeToRefs(useViewStore());
+const { isLoading, showMenu, showHeader } = storeToRefs(useViewStore());
 
 onMounted(() => (appIsMounted.value = true));
 </script>
@@ -20,7 +20,7 @@ onMounted(() => (appIsMounted.value = true));
     v-if="appIsMounted"
     class="wrapper"
   >
-    <Header />
+    <Header v-if="showHeader" />
     <ProfileHeader v-if="isAuthenticated" />
     <main>
       <RouterView />
