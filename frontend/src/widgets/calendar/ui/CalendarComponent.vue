@@ -1,5 +1,27 @@
 <script setup lang="ts">
+import ganzaImage from '@shared/assets/images/ganza.png';
+import hozImage from '@shared/assets/images/hoz.png';
+import sladImage from '@shared/assets/images/slad.png';
+
 const days = ['Сегодня', 'Завтра', '21.11', '22.11', '23.11', '24.11'];
+
+const calendarItems = [
+  {
+    image: ganzaImage,
+    title: 'Скидка 5% в Ганзе',
+    subtitle: 'На всю бытовую химию и посуду'
+  },
+  {
+    image: hozImage,
+    title: 'Скидка 5% в ХозМаркете',
+    subtitle: 'На новогодние вещи'
+  },
+  {
+    image: sladImage,
+    title: 'Акция в Сладких мечтах',
+    subtitle: 'Бесплатный торт для инвалидов 1,2 группы'
+  }
+];
 </script>
 <template>
   <div class="calendar carousel">
@@ -14,27 +36,15 @@ const days = ['Сегодня', 'Завтра', '21.11', '22.11', '23.11', '24.1
     </div>
   </div>
   <div class="shops">
-    <div class="shops__item">
-      <img src="@shared/assets/images/ganza.png" />
+    <div
+      v-for="item in calendarItems"
+      :key="item.title"
+      class="shops__item"
+    >
+      <img :src="item.image" />
       <div class="info">
-        <div class="info__title">Скидка 5% в Ганзе</div>
-        <div class="info__subtitle">На всю бытовую химию и посуду</div>
-      </div>
-    </div>
-    <div class="shops__item">
-      <img src="@shared/assets/images/hoz.png" />
-      <div class="info">
-        <div class="info__title">Скидка 5% в ХозМаркете</div>
-        <div class="info__subtitle">На новогодние вещи</div>
-      </div>
-    </div>
-    <div class="shops__item">
-      <img src="@shared/assets/images/slad.png" />
-      <div class="info">
-        <div class="info__title">Акция в Сладких мечтах</div>
-        <div class="info__subtitle">
-          Бесплатный торт для инвалидов 1,2 группы
-        </div>
+        <div class="info__title">{{ item.title }}</div>
+        <div class="info__subtitle">{{ item.subtitle }}</div>
       </div>
     </div>
   </div>

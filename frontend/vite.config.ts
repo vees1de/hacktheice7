@@ -45,7 +45,6 @@ export default defineConfig({
   server: {
     port: 3000
   },
-  publicDir: '/frontend/src/shared/assets/',
   resolve: {
     alias: {
       '@app': resolve(__dirname, './src/app'),
