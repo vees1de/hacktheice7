@@ -5,7 +5,6 @@ import { useViewStore } from '@shared/stores/view.store';
 import { Block } from '@shared/ui';
 import { BenefitsCarousel } from '@widgets/benefits-carousel';
 import { ChatBot } from '@widgets/chatbot';
-import { Economy } from '@widgets/possible-economy';
 import { QrSheetComponent } from '@widgets/qr-sheet';
 import { SalesCarousel } from '@widgets/sales-carousel';
 import { storeToRefs } from 'pinia';
@@ -108,7 +107,7 @@ const redirect = async (route: string) => {
         <h3>Вы сэкономили</h3>
         <img src="/assets/icons/arrow.svg" />
       </div>
-      <Economy />
+      <!-- <Economy /> -->
       <h3>Чат-бот помощник ЛАССО</h3>
       <ChatBot @click="redirect(ROUTE_NAMES.CHAT)" />
       <div
