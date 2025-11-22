@@ -6,6 +6,7 @@ export const ROUTE_NAMES = {
   HOME: '/home',
   USER: '/user',
   EDIT_BENEFITS: '/user/edit-benefits',
+  USER_SETTINGS: '/user/settings',
   CHAT: '/chat',
   SALES: '/sales',
   BENEFITS: '/benefits',

@@ -278,7 +278,7 @@ const pluralizeOperation = (count: number) => {
 
 .summary {
   background: linear-gradient(135deg, #1a73e8, #2563eb);
-  color: #fff;
+
   border-radius: 20px;
   padding: 20px;
   display: flex;
@@ -288,12 +288,14 @@ const pluralizeOperation = (count: number) => {
   &__label {
     margin: 0;
     opacity: 0.8;
+    color: #fff;
   }
 
   &__value {
     margin: 0;
     font-size: 32px;
     font-weight: 700;
+    color: #fff;
   }
 }
 

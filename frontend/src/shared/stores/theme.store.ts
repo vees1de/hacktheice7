@@ -1,20 +1,47 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
-type Theme = 'light' | 'dark';
+type ThemeMode = 'default' | 'accessible';
 
-const body = document.body;
+const STORAGE_KEY = 'lasso-ui-theme';
+
+const readInitialTheme = (): ThemeMode => {
+  if (typeof window === 'undefined') return 'default';
+  const saved = window.localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
+  return saved === 'accessible' ? 'accessible' : 'default';
+};
+
+const applyThemeToDocument = (mode: ThemeMode) => {
+  if (typeof document === 'undefined') return;
+  document.documentElement.setAttribute('data-theme', mode);
+  document.body.setAttribute('data-theme', mode);
+};
 
 export const useThemeStore = defineStore('theme', () => {
-  const currentTheme = ref<Theme>('light');
+  const theme = ref<ThemeMode>(readInitialTheme());
 
-  function setDefaultTheme() {
-    body.classList.add('app', currentTheme.value);
-  }
+  const setTheme = (mode: ThemeMode) => {
+    theme.value = mode;
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(STORAGE_KEY, mode);
+    }
+  };
 
-  function setTheme(newTheme: Theme) {
-    body.classList.replace(currentTheme.value, newTheme);
-  }
+  const init = () => {
+    applyThemeToDocument(theme.value);
+  };
 
-  return { setTheme, currentTheme, setDefaultTheme };
+  watch(
+    theme,
+    mode => {
+      applyThemeToDocument(mode);
+    },
+    { immediate: true }
+  );
+
+  return {
+    theme,
+    setTheme,
+    init
+  };
 });

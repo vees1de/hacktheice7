@@ -13,6 +13,7 @@ import RegistrationPage from '@pages/RegistrationPage.vue';
 import SalesPage from '@pages/SalesPage.vue';
 import UserPage from '@pages/UserPage/UserPage.vue';
 import EditBenefits from '@pages/UserPage/childs/EditBenefits.vue';
+import AppSettings from '@pages/UserPage/childs/AppSettings.vue';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { storeToRefs } from 'pinia';
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
@@ -30,6 +31,10 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: ROUTE_NAMES.EDIT_BENEFITS,
         component: EditBenefits
+      },
+      {
+        path: ROUTE_NAMES.USER_SETTINGS,
+        component: AppSettings
       }
     ]
   },

@@ -10,6 +10,9 @@ const router = useRouter();
 const redirectTo = () => {
   router.push('/user/edit-benefits');
 };
+const goToSettings = () => {
+  router.push('/user/settings');
+};
 
 const exit = async () => {
   await clearTokens();
@@ -56,7 +59,7 @@ const downloadCertificate = async () => {
           />
         </div>
         <div class="edit-button">
-          <div @click="redirectTo">
+          <div @click="goToSettings">
             <img
               class="btn-icon"
               src="/assets/icons/chat-icon.svg"
