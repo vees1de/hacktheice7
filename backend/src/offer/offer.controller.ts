@@ -30,6 +30,12 @@ export class OfferController {
     return this.offerService.getAll();
   }
 
+  @Get('public')
+  @Auth()
+  getPublicOffers() {
+    return this.offerService.getAll();
+  }
+
   @Get(':id')
   @Auth()
   @StaffRoles(StaffRole.ADMIN, StaffRole.MANAGER, StaffRole.PARTNER)

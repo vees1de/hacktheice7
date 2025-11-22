@@ -137,7 +137,7 @@ const redirectToAuthPage = async () => {
 };
 
 const goToHome = async () => {
-  await router.push(ROUTE_NAMES.EDIT_BENEFITS);
+  await router.push(ROUTE_NAMES.HOME);
 };
 </script>
 

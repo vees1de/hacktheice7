@@ -42,6 +42,52 @@ export class BenefitService {
     return benefit;
   }
 
+  async getForUser(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        regionId: true,
+        userBeneficiaryCategories: {
+          where: { confirmed: true },
+          select: { categoryId: true }
+        }
+      }
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const categoryIds = user.userBeneficiaryCategories.map(
+      category => category.categoryId
+    );
+
+    if (categoryIds.length === 0) {
+      return [];
+    }
+
+    return this.prisma.benefit.findMany({
+      where: {
+        benefitRegions: {
+          some: {
+            regionId: user.regionId
+          }
+        },
+        benefitCategories: {
+          some: {
+            categoryId: {
+              in: categoryIds
+            }
+          }
+        }
+      },
+      include: this.benefitInclude,
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+  }
+
   async create(dto: CreateBenefitDto) {
     return this.prisma.benefit.create({
       data: {

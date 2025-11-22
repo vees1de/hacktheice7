@@ -10,6 +10,20 @@ export const benefitApi = {
     return data;
   },
 
+  async getPublic() {
+    const { data } = await apiRequest<Benefit[]>('/benefits/public', {
+      method: 'GET'
+    });
+    return data;
+  },
+
+  async getAvailableForUser() {
+    const { data } = await apiRequest<Benefit[]>('/benefits/available', {
+      method: 'GET'
+    });
+    return data;
+  },
+
   async getById(id: string) {
     const { data } = await apiRequest<Benefit>(`/benefits/${id}`, {
       method: 'GET'

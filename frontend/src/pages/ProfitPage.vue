@@ -30,7 +30,7 @@
       </div>
 
       <!-- Donut chart -->
-      <div class="chart-container">
+      <!-- <div class="chart-container">
         <div class="donut-chart">
           <div class="chart-ring">
             <div class="chart-segment segment-1"></div>
@@ -43,7 +43,7 @@
             <div class="center-circle"></div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Categories list -->
       <div class="categories-section">

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useUserStore } from '@entities/user';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
+import { useCatalogStore } from '@shared/stores/catalog.store';
 import { useViewStore } from '@shared/stores/view.store';
 import { Block } from '@shared/ui';
 import { BenefitsCarousel } from '@widgets/benefits-carousel';
@@ -9,19 +10,28 @@ import { Economy } from '@widgets/possible-economy';
 import { QrSheetComponent } from '@widgets/qr-sheet';
 import { SalesCarousel } from '@widgets/sales-carousel';
 import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const viewStore = useViewStore();
 const { isQrSheetVisible } = storeToRefs(viewStore);
 const { user } = storeToRefs(useUserStore());
+const catalogStore = useCatalogStore();
+const { benefits, offers, benefitsLoading, offersLoading } =
+  storeToRefs(catalogStore);
+
+onMounted(() => {
+  catalogStore.fetchBenefits();
+  catalogStore.fetchOffers();
+});
 
 const userBenefitTitles = computed(() => {
-  const categories = user.value.userBeneficiaryCategories ?? [];
-  return categories
-    .filter(category => category.confirmed)
-    .map(category => category.beneficiaryCategory?.title || '')
-    .filter((title): title is string => Boolean(title));
+  return (
+    user.value.userBeneficiaryCategories
+      ?.filter(category => category.confirmed)
+      .map(category => category.beneficiaryCategory?.title || '')
+      .filter((title): title is string => Boolean(title)) ?? []
+  );
 });
 
 const visibleBenefitTitles = computed(() =>
@@ -105,7 +115,7 @@ const redirect = async (route: string) => {
         @click="redirect(ROUTE_NAMES.PROFITS)"
         class="section-heading"
       >
-        <h3>Вы сэкономили</h3>
+        <h3>Вы могли сэкономить</h3>
         <img src="/assets/icons/arrow.svg" />
       </div>
       <Economy />
@@ -118,7 +128,12 @@ const redirect = async (route: string) => {
         <h3>Льготы для тебя</h3>
         <img src="/assets/icons/arrow.svg" />
       </div>
-      <BenefitsCarousel />
+
+      <BenefitsCarousel
+        :benefits="benefits"
+        :loading="benefitsLoading"
+      />
+
       <div
         @click="redirect(ROUTE_NAMES.SALES)"
         class="section-heading"
@@ -126,7 +141,10 @@ const redirect = async (route: string) => {
         <h3>Акции для тебя</h3>
         <img src="/assets/icons/arrow.svg" />
       </div>
-      <SalesCarousel />
+      <SalesCarousel
+        :offers="offers"
+        :loading="offersLoading"
+      />
     </div>
   </div>
   <QrSheetComponent v-if="isQrSheetVisible" />
@@ -140,10 +158,12 @@ h3 {
 
 .home {
   margin-bottom: 36px;
+  overflow-x: hidden;
 
   &__content {
     display: grid;
     gap: 32px;
+    width: 100%;
   }
 }
 
@@ -153,7 +173,7 @@ h3 {
   background: #1a73e8 url('/assets/images/intersect.svg');
   background-repeat: repeat-x;
   background-position: 0 calc(100% + 20px);
-  max-width: calc(100dvw - 32px);
+  width: 100%;
   margin-bottom: 32px;
   position: relative;
 

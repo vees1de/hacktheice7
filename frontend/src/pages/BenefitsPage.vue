@@ -2,6 +2,16 @@
 import { BenefitsCarousel } from '@widgets/benefits-carousel';
 import { CategoriesComponent } from '@widgets/categories';
 import { DocumentsCarousel } from '@widgets/documents-carousel';
+import { useCatalogStore } from '@shared/stores/catalog.store';
+import { onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
+
+const catalogStore = useCatalogStore();
+const { benefits, benefitsLoading } = storeToRefs(catalogStore);
+
+onMounted(() => {
+  catalogStore.fetchBenefits();
+});
 </script>
 <template>
   <div class="benefits">
@@ -19,7 +29,10 @@ import { DocumentsCarousel } from '@widgets/documents-carousel';
       <h3>Самые популярные льготы</h3>
       <img src="/assets/icons/arrow.svg" />
     </div>
-    <BenefitsCarousel />
+    <BenefitsCarousel
+      :benefits="benefits"
+      :loading="benefitsLoading"
+    />
   </div>
 </template>
 <style lang="scss" scoped>

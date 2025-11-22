@@ -8,6 +8,13 @@ export const offerApi = {
     return data;
   },
 
+  async getPublic() {
+    const { data } = await apiRequest<Offer[]>('/offers/public', {
+      method: 'GET'
+    });
+    return data;
+  },
+
   async getById(id: string) {
     const { data } = await apiRequest<Offer>(`/offers/${id}`, {
       method: 'GET'

@@ -15,6 +15,7 @@ import { StaffRoles } from '../auth/decorators/staff-roles.decorator';
 import { StaffRole } from '@prisma/client';
 import { CreateBenefitDto } from './dto/create-benefit.dto';
 import { UpdateBenefitDto } from './dto/update-benefit.dto';
+import { CurrentUser } from 'src/auth/decorators/user.decorator';
 
 @Controller('benefits')
 export class BenefitController {
@@ -25,6 +26,18 @@ export class BenefitController {
   @StaffRoles(StaffRole.ADMIN, StaffRole.MANAGER, StaffRole.PARTNER)
   getBenefits() {
     return this.benefitService.getAll();
+  }
+
+  @Get('public')
+  @Auth()
+  getPublicBenefits() {
+    return this.benefitService.getAll();
+  }
+
+  @Get('available')
+  @Auth()
+  getUserBenefits(@CurrentUser('id') userId: string) {
+    return this.benefitService.getForUser(userId);
   }
 
   @Get(':id')
