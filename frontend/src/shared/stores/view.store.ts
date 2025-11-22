@@ -1,5 +1,4 @@
 import { useAuthStore } from '@entities/auth';
-import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { defineStore, storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
