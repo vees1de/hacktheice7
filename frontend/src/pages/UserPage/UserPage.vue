@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useUserStore } from '@entities/user';
+import { clearTokens } from '@shared/api/token.service';
 import { storeToRefs } from 'pinia';
 import { RouterView, useRouter } from 'vue-router';
 
@@ -7,6 +8,11 @@ const { user } = storeToRefs(useUserStore());
 const router = useRouter();
 const redirectTo = () => {
   router.push('/user/edit-benefits');
+};
+
+const exit = () => {
+  clearTokens();
+  router.push('/auth');
 };
 </script>
 <template>
@@ -35,6 +41,32 @@ const redirectTo = () => {
             src="@shared/assets/icons/arrow.svg"
           />
         </div>
+        <div class="edit-button">
+          <div @click="redirectTo">
+            <img
+              class="btn-icon"
+              src="@shared/assets/icons/chat-icon.svg"
+              alt=""
+            />
+            <span>Настройки приложения</span>
+          </div>
+          <img
+            class="arrow"
+            src="@shared/assets/icons/arrow.svg"
+          />
+        </div>
+      </div>
+      <div class="profile__actions">
+        <div class="edit-button">
+          <div @click="exit">
+            <img
+              class="btn-icon"
+              src="@shared/assets/icons/exit-icon.svg"
+              alt=""
+            />
+            <span>Выйти</span>
+          </div>
+        </div>
       </div>
     </div>
   </template>
@@ -46,29 +78,37 @@ const redirectTo = () => {
   flex-direction: column;
   align-items: center;
 
-  &__edit {
-    display: flex;
-    align-items: flex-start;
+  &__actions {
+    margin-top: 300px;
+    display: grid;
+    gap: 16px;
     width: 100%;
-    .edit-button {
-      width: 100%;
+  }
+
+  &__edit {
+    display: grid;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .edit-button {
+    width: 100%;
+    display: flex;
+
+    justify-content: space-between;
+    font-weight: 500;
+
+    > div {
       display: flex;
-
-      justify-content: space-between;
+      gap: 4px;
+      align-items: center;
       font-weight: 500;
+    }
 
-      > div {
-        display: flex;
-        gap: 4px;
-        align-items: center;
-        font-weight: 500;
-      }
-
-      .arrow {
-        transform: rotate(180deg);
-        filter: brightness(0) saturate(100%) invert(33%) sepia(57%)
-          saturate(2127%) hue-rotate(195deg) brightness(99%) contrast(90%);
-      }
+    .arrow {
+      transform: rotate(180deg);
+      filter: brightness(0) saturate(100%) invert(33%) sepia(57%)
+        saturate(2127%) hue-rotate(195deg) brightness(99%) contrast(90%);
     }
   }
 
