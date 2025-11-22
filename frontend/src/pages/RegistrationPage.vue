@@ -144,14 +144,14 @@ const goToHome = async () => {
 <template>
   <div class="auth">
     <div class="logo">
-      <img src="@shared/assets/icons/lasso-icon.svg" />
-      <img src="@shared/assets/icons/lasso-title.svg" />
+      <img src="/assets/icons/lasso-icon.svg" />
+      <img src="/assets/icons/lasso-title.svg" />
     </div>
 
     <div class="language">
       <span>Русский язык</span>
       <img
-        src="@shared/assets/icons/russia-icon.svg"
+        src="/assets/icons/russia-icon.svg"
         alt=""
       />
     </div>

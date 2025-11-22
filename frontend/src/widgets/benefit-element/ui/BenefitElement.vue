@@ -3,7 +3,7 @@ defineProps<{ icon: string; name: string }>();
 </script>
 <template>
   <div class="benefit-element">
-    <img :src="`src/shared/assets/icons/${icon}-icon.svg`" />
+    <img :src="`/assets/icons/${icon}-icon.svg`" />
     <h5>{{ name }}</h5>
   </div>
 </template>

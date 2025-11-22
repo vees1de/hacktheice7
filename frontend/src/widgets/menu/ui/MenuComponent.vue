@@ -46,7 +46,7 @@ effect(() => {
           <img
             class="item__icon"
             :class="{ item__icon_active: index === activeMenuItem }"
-            :src="`/src/shared/assets/icons/${item.icon}-icon.svg`"
+            :src="`/assets/icons/${item.icon}-icon.svg`"
           />
           <div
             v-if="item.title"
@@ -59,7 +59,7 @@ effect(() => {
           <img
             class="item__icon"
             :class="{ item__icon_active: index === activeMenuItem }"
-            :src="`/src/shared/assets/icons/${item.icon}-icon.svg`"
+            :src="`/assets/icons/${item.icon}-icon.svg`"
           />
         </template>
       </div>

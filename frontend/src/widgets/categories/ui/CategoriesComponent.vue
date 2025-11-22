@@ -18,7 +18,7 @@ const items: { icon: string; name: string }[] = [
         class="category"
       >
         <div class="category__image">
-          <img :src="`/src/shared/assets/icons/${item.icon}-icon.svg`" />
+          <img :src="`/assets/icons/${item.icon}-icon.svg`" />
         </div>
         <div class="category__name">{{ item.name }}</div>
       </div>

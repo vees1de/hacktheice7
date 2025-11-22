@@ -11,12 +11,12 @@ const hints = [
   <section class="chatbot">
     <div class="chatbot__input">
       <img
-        src="@shared/assets/icons/lasso-icon.svg"
+        src="/assets/icons/lasso-icon.svg"
         alt=""
       />
       <span>Введите запрос...</span>
       <img
-        src="@shared/assets/icons/arrow-request-icon.svg"
+        src="/assets/icons/arrow-request-icon.svg"
         alt=""
       />
     </div>

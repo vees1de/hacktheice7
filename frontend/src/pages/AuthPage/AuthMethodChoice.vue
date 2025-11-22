@@ -14,7 +14,7 @@ const emit = defineEmits<{
         @click="emit('select-sms')"
       >
         <img
-          src="@shared/assets/icons/square-arrow-right.svg"
+          src="/assets/icons/square-arrow-right.svg"
           alt="SMS"
         />
 
@@ -29,7 +29,7 @@ const emit = defineEmits<{
         @click="emit('select-sber')"
       >
         <img
-          src="@shared/assets/icons/sber.svg"
+          src="/assets/icons/sber.svg"
           alt="Sber"
         />
 

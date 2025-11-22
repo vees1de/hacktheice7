@@ -34,13 +34,13 @@ const openQrSheet = () => {
           class="qr__image"
         >
           <img
-            src="@shared/assets/images/qrcode.png"
+            src="/assets/images/qrcode.png"
             alt="qr-code"
           />
         </div>
         <!-- <div class="qr__locked">
           <img
-            src="@shared/assets/icons/locked.svg"
+            src="/assets/icons/locked.svg"
             alt=""
           />
           <p>
@@ -51,19 +51,19 @@ const openQrSheet = () => {
       </Block>
       <div class="section-heading">
         <h3>Вы сэкономили</h3>
-        <img src="@shared/assets/icons/arrow.svg" />
+        <img src="/assets/icons/arrow.svg" />
       </div>
       <Economy />
       <h3>Чат-бот помощник ЛАССО</h3>
       <ChatBot />
       <div class="section-heading">
         <h3>Льготы для тебя</h3>
-        <img src="@shared/assets/icons/arrow.svg" />
+        <img src="/assets/icons/arrow.svg" />
       </div>
       <BenefitsCarousel />
       <div class="section-heading">
         <h3>Акции для тебя</h3>
-        <img src="@shared/assets/icons/arrow.svg" />
+        <img src="/assets/icons/arrow.svg" />
       </div>
       <SalesCarousel />
     </div>
@@ -88,7 +88,7 @@ h3 {
 .qr {
   display: flex;
   justify-content: space-between;
-  background: #1a73e8 url('/src/shared/assets/images/intersect.svg');
+  background: #1a73e8 url('/assets/images/intersect.svg');
   background-repeat: repeat-x;
   background-position: 0 calc(100% + 20px);
   margin-bottom: 32px;

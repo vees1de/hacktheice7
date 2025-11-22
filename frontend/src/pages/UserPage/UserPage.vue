@@ -20,7 +20,7 @@ const exit = () => {
     <div class="profile">
       <div class="profile__info">
         <img
-          src="@shared/assets/icons/profile-icon.svg"
+          src="/assets/icons/profile-icon.svg"
           alt="иконка профиля"
         />
         <div class="name">{{ user.firstName }} {{ user.lastName }}</div>
@@ -31,28 +31,28 @@ const exit = () => {
           <div @click="redirectTo">
             <img
               class="btn-icon"
-              src="@shared/assets/icons/chat-icon.svg"
+              src="/assets/icons/chat-icon.svg"
               alt=""
             />
             <span>Выбрать льготы</span>
           </div>
           <img
             class="arrow"
-            src="@shared/assets/icons/arrow.svg"
+            src="/assets/icons/arrow.svg"
           />
         </div>
         <div class="edit-button">
           <div @click="redirectTo">
             <img
               class="btn-icon"
-              src="@shared/assets/icons/chat-icon.svg"
+              src="/assets/icons/chat-icon.svg"
               alt=""
             />
             <span>Настройки приложения</span>
           </div>
           <img
             class="arrow"
-            src="@shared/assets/icons/arrow.svg"
+            src="/assets/icons/arrow.svg"
           />
         </div>
       </div>
@@ -61,7 +61,7 @@ const exit = () => {
           <div @click="exit">
             <img
               class="btn-icon"
-              src="@shared/assets/icons/exit-icon.svg"
+              src="/assets/icons/exit-icon.svg"
               alt=""
             />
             <span>Выйти</span>

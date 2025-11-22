@@ -7,17 +7,17 @@ import { DocumentsCarousel } from '@widgets/documents-carousel';
   <div class="benefits">
     <div class="section-heading">
       <h3>Категории</h3>
-      <img src="@shared/assets/icons/arrow.svg" />
+      <img src="/assets/icons/arrow.svg" />
     </div>
     <CategoriesComponent />
     <div class="section-heading">
       <h3>Где подать документы</h3>
-      <img src="@shared/assets/icons/arrow.svg" />
+      <img src="/assets/icons/arrow.svg" />
     </div>
     <DocumentsCarousel />
     <div class="section-heading">
       <h3>Самые популярные льготы</h3>
-      <img src="@shared/assets/icons/arrow.svg" />
+      <img src="/assets/icons/arrow.svg" />
     </div>
     <BenefitsCarousel />
   </div>

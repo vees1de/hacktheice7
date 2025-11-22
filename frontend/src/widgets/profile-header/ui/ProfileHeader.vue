@@ -28,18 +28,18 @@ const isShow = computed(
     >
       <img
         class="profile-icon"
-        src="@shared/assets/icons/profile-icon.svg"
+        src="/assets/icons/profile-icon.svg"
         alt="Профиль"
       />
       <span>{{ user?.lastName }}</span>
       <img
         class="arrow-icon"
-        src="@shared/assets/icons/arrow.svg"
+        src="/assets/icons/arrow.svg"
       />
     </div>
     <img
       class="right"
-      src="@shared/assets/icons/bell-icon.svg"
+      src="/assets/icons/bell-icon.svg"
       alt=""
     />
   </div>

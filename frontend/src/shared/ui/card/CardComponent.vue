@@ -8,7 +8,7 @@ defineProps<Card>();
     <div
       class="card__banner"
       :style="{
-        backgroundImage: `url(/src/shared/assets/images/card-banner${bannerName}.png)`
+        backgroundImage: `url(/assets/images/card-banner${bannerName}.png)`
       }"
     ></div>
     <div class="card__info">

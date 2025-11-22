@@ -59,7 +59,7 @@ onMounted(() => {
       <div class="shops__count">В 24 магазинах</div>
       <div class="shops__images">
         <img
-          src="@shared/assets/images/shops.png"
+          src="/assets/images/shops.png"
           alt=""
         />
         <div>...</div>

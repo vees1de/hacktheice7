@@ -104,8 +104,8 @@ const handleInput = (event: CustomEvent<MaskaDetail>) => {
         <img
           :src="
             isPasswordVisible
-              ? '/src/shared/assets/icons/eye-opened-icon.svg'
-              : '/src/shared/assets/icons/eye-closed-icon.svg'
+              ? '/assets/icons/eye-opened-icon.svg'
+              : '/assets/icons/eye-closed-icon.svg'
           "
           :alt="isPasswordVisible ? 'Скрыть пароль' : 'Показать пароль'"
         />

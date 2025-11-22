@@ -15,9 +15,9 @@ const goToSber = () => router.push(ROUTE_NAMES.SBER);
     <div class="logo">
       <img
         class="logo-img"
-        src="@shared/assets/icons/lasso-icon.svg"
+        src="/assets/icons/lasso-icon.svg"
       />
-      <img src="@shared/assets/icons/lasso-title.svg" />
+      <img src="/assets/icons/lasso-title.svg" />
     </div>
 
     <AuthMethodChoice

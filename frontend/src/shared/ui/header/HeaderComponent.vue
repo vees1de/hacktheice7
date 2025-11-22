@@ -34,7 +34,7 @@ const headers: Record<string, string> = {
       @click="router.back()"
     >
       <img
-        src="@shared/assets/icons/arrow.svg"
+        src="/assets/icons/arrow.svg"
         alt="Назад"
       />
     </div>
