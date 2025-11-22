@@ -26,7 +26,7 @@ export const authApi = {
       method: 'POST',
       data: payload
     });
-    setTokens(data.accessToken, data.refreshToken);
+    await setTokens(data.accessToken, data.refreshToken);
     return data;
   },
 
@@ -35,7 +35,7 @@ export const authApi = {
       method: 'POST',
       data: payload
     });
-    setTokens(data.accessToken, data.refreshToken);
+    await setTokens(data.accessToken, data.refreshToken);
     return data;
   },
 
@@ -44,7 +44,7 @@ export const authApi = {
       method: 'POST',
       data: { refreshToken }
     });
-    setTokens(data.accessToken, data.refreshToken);
+    await setTokens(data.accessToken, data.refreshToken);
     return data;
   }
 };

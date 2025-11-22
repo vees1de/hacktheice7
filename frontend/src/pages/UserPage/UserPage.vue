@@ -10,9 +10,9 @@ const redirectTo = () => {
   router.push('/user/edit-benefits');
 };
 
-const exit = () => {
-  clearTokens();
-  router.push('/auth');
+const exit = async () => {
+  await clearTokens();
+  await router.push('/auth');
 };
 </script>
 <template>

@@ -36,8 +36,8 @@ const createAPIInstance = (): AxiosInstance => {
     }
   });
 
-  apiInstance.interceptors.request.use(config => {
-    const token = getAccessToken();
+  apiInstance.interceptors.request.use(async config => {
+    const token = await getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -66,7 +66,7 @@ const createAPIInstance = (): AxiosInstance => {
         isRefreshing = true;
 
         try {
-          const refreshToken = getRefreshToken();
+          const refreshToken = await getRefreshToken();
           if (!refreshToken) throw new Error('No refresh token');
 
           const res = await axios.post(
@@ -86,7 +86,7 @@ const createAPIInstance = (): AxiosInstance => {
           }
           throw new Error('Failed to refresh');
         } catch (refreshError) {
-          clearTokens();
+          await clearTokens();
           processQueue(null);
           return Promise.reject(refreshError);
         } finally {
