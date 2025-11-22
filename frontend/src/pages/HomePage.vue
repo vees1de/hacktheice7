@@ -100,13 +100,13 @@ const redirect = async (route: string) => {
           </p>
         </div>
       </Block>
-      <div
+      <!-- <div
         @click="redirect(ROUTE_NAMES.PROFITS)"
         class="section-heading"
       >
         <h3>Вы сэкономили</h3>
         <img src="/assets/icons/arrow.svg" />
-      </div>
+      </div> -->
       <!-- <Economy /> -->
       <h3>Чат-бот помощник ЛАССО</h3>
       <ChatBot @click="redirect(ROUTE_NAMES.CHAT)" />
