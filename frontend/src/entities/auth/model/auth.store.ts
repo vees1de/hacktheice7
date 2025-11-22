@@ -19,10 +19,10 @@ export const useAuthStore = defineStore('auth', () => {
   const router = useRouter();
   const userStore = useUserStore();
 
-  const setAuth = (data: AuthSuccess | null) => {
+  const setAuth = async (data: AuthSuccess | null) => {
     isAuthenticated.value = Boolean(data);
     if (data) {
-      setTokens(data.accessToken, data.refreshToken);
+      await setTokens(data.accessToken, data.refreshToken);
     }
   };
 
@@ -46,8 +46,8 @@ export const useAuthStore = defineStore('auth', () => {
     return auth;
   };
 
-  const logout = () => {
-    clearTokens();
+  const logout = async () => {
+    await clearTokens();
     isAuthenticated.value = false;
     router.push(ROUTE_NAMES.WELCOME);
   };

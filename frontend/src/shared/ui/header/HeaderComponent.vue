@@ -5,8 +5,6 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const path = computed(() => {
-  console.log(router.currentRoute.value.path);
-  console.log(headers[router.currentRoute.value.path]);
   return router.currentRoute.value.path;
 });
 

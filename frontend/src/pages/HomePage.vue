@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useUserStore } from '@entities/user';
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { useViewStore } from '@shared/stores/view.store';
 import { Block } from '@shared/ui';
 import { BenefitsCarousel } from '@widgets/benefits-carousel';
@@ -9,6 +10,7 @@ import { QrSheetComponent } from '@widgets/qr-sheet';
 import { SalesCarousel } from '@widgets/sales-carousel';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
+import { useRouter } from 'vue-router';
 
 const viewStore = useViewStore();
 const { isQrSheetVisible } = storeToRefs(viewStore);
@@ -35,6 +37,20 @@ const remainingBenefitCount = computed(() =>
 const openQrSheet = () => {
   viewStore.toggleQrVisible();
 };
+
+const router = useRouter();
+const redirect = async (route: string) => {
+  await router.push(route);
+};
+
+// const benefits = [
+//   { icon: 'bus', name: 'Транспорт' },
+//   { icon: 'heart', name: 'Медицина' },
+//   { icon: 'bus', name: 'ЖКХ' },
+//   { icon: 'cash', name: 'Социальные выплаты' },
+//   { icon: 'wheel', name: 'Образование и досуг' },
+//   { icon: 'document', name: 'Налоговые льготы' }
+// ];
 </script>
 
 <template>
@@ -85,19 +101,28 @@ const openQrSheet = () => {
           </p>
         </div>
       </Block>
-      <div class="section-heading">
+      <div
+        @click="redirect(ROUTE_NAMES.PROFITS)"
+        class="section-heading"
+      >
         <h3>Вы сэкономили</h3>
         <img src="/assets/icons/arrow.svg" />
       </div>
       <Economy />
       <h3>Чат-бот помощник ЛАССО</h3>
-      <ChatBot />
-      <div class="section-heading">
+      <ChatBot @click="redirect(ROUTE_NAMES.CHAT)" />
+      <div
+        @click="redirect(ROUTE_NAMES.BENEFITS)"
+        class="section-heading"
+      >
         <h3>Льготы для тебя</h3>
         <img src="/assets/icons/arrow.svg" />
       </div>
       <BenefitsCarousel />
-      <div class="section-heading">
+      <div
+        @click="redirect(ROUTE_NAMES.SALES)"
+        class="section-heading"
+      >
         <h3>Акции для тебя</h3>
         <img src="/assets/icons/arrow.svg" />
       </div>

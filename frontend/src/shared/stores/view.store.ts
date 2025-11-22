@@ -1,4 +1,5 @@
 import { useAuthStore } from '@entities/auth';
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { defineStore, storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -31,7 +32,9 @@ export const useViewStore = defineStore('view', () => {
     return isOkRoute && isAuthenticated.value && !hideGlobalChrome.value;
   });
 
-  const showHeader = computed(() => !hideGlobalChrome.value);
+  const showHeader = computed(() => {
+    return router.currentRoute.value.path !== ROUTE_NAMES.WELCOME;
+  });
   return {
     isQrSheetVisible,
     toggleQrVisible,

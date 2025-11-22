@@ -21,7 +21,7 @@ const login = async () => {
       password: password.value,
     });
     if (data.user.staffProfile.role !== "Admin") {
-      auth.setAuth(data.accessToken, data.user?.firstName || "Админ");
+      await auth.setAuth(data.accessToken, data.user?.firstName || "Админ");
       router.push("/");
     } else {
       throw "Не удалось войти";
