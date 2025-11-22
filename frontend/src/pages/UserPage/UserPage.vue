@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { useUserStore } from '@entities/user';
+import { downloadCertificatePdf, useUserStore } from '@entities/user';
 import { clearTokens } from '@shared/api/token.service';
 import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
 import { RouterView, useRouter } from 'vue-router';
 
 const { user } = storeToRefs(useUserStore());
@@ -13,6 +14,19 @@ const redirectTo = () => {
 const exit = () => {
   clearTokens();
   router.push('/auth');
+};
+
+const isCertificateLoading = ref(false);
+const downloadCertificate = async () => {
+  if (isCertificateLoading.value) return;
+  isCertificateLoading.value = true;
+  try {
+    await downloadCertificatePdf();
+  } catch (error) {
+    console.error('Не удалось скачать удостоверение', error);
+  } finally {
+    isCertificateLoading.value = false;
+  }
 };
 </script>
 <template>
@@ -57,6 +71,15 @@ const exit = () => {
         </div>
       </div>
       <div class="profile__actions">
+        <div class="download-card">
+          <button
+            class="download-button"
+            :disabled="isCertificateLoading"
+            @click="downloadCertificate"
+          >
+            {{ isCertificateLoading ? 'Готовим PDF...' : 'Скачать бумажное удостоверение' }}
+          </button>
+        </div>
         <div class="edit-button">
           <div @click="exit">
             <img
@@ -79,7 +102,7 @@ const exit = () => {
   align-items: center;
 
   &__actions {
-    margin-top: 300px;
+    margin-top: 60px;
     display: grid;
     gap: 16px;
     width: 100%;
@@ -132,6 +155,30 @@ const exit = () => {
       font-size: 0.825rem;
       font-weight: 600;
       color: #d9d9d9;
+    }
+  }
+
+  .download-card {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    .download-button {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: none;
+      background-color: #1a73e8;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: default;
+      }
     }
   }
 }

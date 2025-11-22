@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Res,
   UsePipes,
   ValidationPipe
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import { Auth } from 'src/auth/decorators/auth.decorator';
 import { HideBenefitDto } from './dto/hide-benefit.dto';
 import { UserDto } from './dto/user.dto';
 import { UpdateUserCategoriesDto } from './dto/update-user-categories.dto';
+import { Response } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -25,6 +27,21 @@ export class UserController {
   @HttpCode(200)
   async getProfile(@CurrentUser('id') userId: string) {
     return this.userService.getProfile(userId);
+  }
+
+  @Get('report/pdf')
+  @Auth()
+  async exportProfilePdf(
+    @CurrentUser('id') userId: string,
+    @Res() res: Response
+  ) {
+    const buffer = await this.userService.generateUserReportPdf(userId);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename="lasso-user-report.pdf"',
+      'Content-Length': buffer.length
+    });
+    res.send(buffer);
   }
 
   @UsePipes(new ValidationPipe())

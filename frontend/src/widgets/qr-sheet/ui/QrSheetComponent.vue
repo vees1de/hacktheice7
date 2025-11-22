@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { shareTokenApi } from '@entities/auth/api/shareToken';
+import { downloadCertificatePdf } from '@entities/user';
 import { useViewStore } from '@shared/stores/view.store';
 import QRCode from 'qrcode';
 import { onMounted, ref, watch } from 'vue';
@@ -11,6 +12,8 @@ const qrDataUrl = ref<string | null>(null);
 const loading = ref(false);
 const error = ref('');
 const token = ref<string | null>(null);
+
+const isCertificateDownloading = ref(false);
 
 const generateQr = async () => {
   loading.value = true;
@@ -46,6 +49,18 @@ onMounted(() => {
     generateQr();
   }
 });
+
+const handleDownloadCertificate = async () => {
+  if (isCertificateDownloading.value) return;
+  isCertificateDownloading.value = true;
+  try {
+    await downloadCertificatePdf();
+  } catch (error) {
+    console.error('Не удалось скачать удостоверение', error);
+  } finally {
+    isCertificateDownloading.value = false;
+  }
+};
 </script>
 <template>
   <div class="over">
@@ -84,6 +99,17 @@ onMounted(() => {
         <p class="hint">
           Покажите QR кассиру. Токен одноразовый и действует ограниченное время.
         </p>
+        <button
+          class="certificate-btn"
+          :disabled="isCertificateDownloading"
+          @click="handleDownloadCertificate"
+        >
+          {{
+            isCertificateDownloading
+              ? 'Готовим PDF...'
+              : 'Скачать бумажное удостоверение'
+          }}
+        </button>
       </div>
     </div>
   </div>
@@ -151,5 +177,24 @@ onMounted(() => {
   margin-top: 12px;
   font-size: 0.9rem;
   color: #555;
+}
+
+.certificate-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: none;
+  background-color: #1a73e8;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
 }
 </style>

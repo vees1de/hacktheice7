@@ -39,5 +39,13 @@ export const userApi = {
       data: { categories }
     });
     return data;
+  },
+
+  async downloadPaperCertificate() {
+    const { data } = await apiRequest<ArrayBuffer>('/user/report/pdf', {
+      method: 'GET',
+      responseType: 'arraybuffer'
+    });
+    return data;
   }
 };

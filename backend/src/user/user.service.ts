@@ -8,6 +8,7 @@ import { RegisterDto } from '../auth/dto/register.dto';
 import { hash } from 'argon2';
 import { UserDto } from './dto/user.dto';
 import { BeneficiaryCategoryType } from '@prisma/client';
+import PDFDocument from 'pdfkit';
 
 @Injectable()
 export class UserService {
@@ -406,5 +407,167 @@ export class UserService {
     });
 
     return { success: true };
+  }
+
+  async generateUserReportPdf(userId: string): Promise<Buffer> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        region: true,
+        userBeneficiaryCategories: {
+          where: { confirmed: true },
+          include: { beneficiaryCategory: true }
+        }
+      }
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    let availableBenefits: { title: string; description?: string | null }[] = [];
+    try {
+      const benefits = await this.getAvailableBenefits(userId);
+      availableBenefits = benefits
+        .filter(benefit => !benefit.isHidden)
+        .map(benefit => ({
+          title: benefit.title,
+          description: benefit.description
+        }));
+    } catch {
+      availableBenefits = [];
+    }
+
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const buffers: Buffer[] = [];
+
+    doc.on('data', chunk => buffers.push(chunk));
+
+    const reportDate = new Date().toLocaleString('ru-RU');
+    const fullName = `${user.lastName || ''} ${user.firstName || ''} ${
+      user.patronymic || ''
+    }`.trim();
+    const categories =
+      user.userBeneficiaryCategories?.map(
+        category => category.beneficiaryCategory?.title || 'Без названия'
+      ) ?? [];
+
+    doc
+      .fontSize(18)
+      .fillColor('#1a73e8')
+      .text('ЛАССО — Индивидуальный отчёт', { align: 'center' })
+      .moveDown(1.5);
+
+    doc
+      .fontSize(12)
+      .fillColor('#000')
+      .text(`Дата формирования: ${reportDate}`)
+      .moveDown();
+
+    doc
+      .fontSize(14)
+      .fillColor('#1a73e8')
+      .text('1. Общая информация', { underline: true })
+      .moveDown(0.5);
+
+    doc
+      .fontSize(12)
+      .fillColor('#000')
+      .text(`ФИО: ${fullName || 'Не указано'}`)
+      .text(`Телефон: ${user.phone || 'Не указан'}`)
+      .text(`СНИЛС: ${user.snils || 'Не указан'}`)
+      .text(`Регион: ${user.region?.name || 'Не указан'}`)
+      .text(`Статус: ${user.status}`)
+      .text(
+        `Подтверждён ЕСИА: ${user.isEsiaVerified ? 'Да' : 'Нет'} (${
+          user.onboardingStep || 'нет данных'
+        })`
+      )
+      .moveDown();
+
+    doc
+      .fontSize(14)
+      .fillColor('#1a73e8')
+      .text('2. Подтверждённые категории', { underline: true })
+      .moveDown(0.5);
+
+    if (categories.length === 0) {
+      doc.fontSize(12).fillColor('#000').text('Категории отсутствуют.').moveDown();
+    } else {
+      categories.forEach((title, index) => {
+        doc
+          .fontSize(12)
+          .fillColor('#000')
+          .text(`${index + 1}. ${title}`);
+      });
+      doc.moveDown();
+    }
+
+    doc
+      .fontSize(14)
+      .fillColor('#1a73e8')
+      .text('3. Рекомендуемые льготы', { underline: true })
+      .moveDown(0.5);
+
+    if (availableBenefits.length === 0) {
+      doc.fontSize(12).fillColor('#000').text('Подходящих льгот пока нет.').moveDown();
+    } else {
+      availableBenefits.slice(0, 10).forEach((benefit, index) => {
+        doc
+          .fontSize(12)
+          .fillColor('#000')
+          .text(`${index + 1}. ${benefit.title}`);
+        if (benefit.description) {
+          doc
+            .fontSize(10)
+            .fillColor('#4b5563')
+            .text(benefit.description, { indent: 12 });
+        }
+        doc.moveDown(0.5);
+      });
+      if (availableBenefits.length > 10) {
+        doc
+          .fontSize(11)
+          .fillColor('#4b5563')
+          .text(`...и ещё ${availableBenefits.length - 10} льгот`);
+        doc.moveDown();
+      }
+    }
+
+    doc
+      .fontSize(14)
+      .fillColor('#1a73e8')
+      .text('4. Подпись и печать', { underline: true })
+      .moveDown(0.5);
+
+    doc
+      .fontSize(12)
+      .fillColor('#000')
+      .text('Ответственный: Экосистема ЛАССО')
+      .text(`Электронная подпись: ${fullName || 'Пользователь'}`)
+      .moveDown(2);
+
+    const stampX = doc.page.width - 200;
+    const stampY = doc.y;
+    doc
+      .save()
+      .circle(stampX + 70, stampY + 70, 60)
+      .lineWidth(2)
+      .stroke('#1a73e8')
+      .fontSize(12)
+      .fillColor('#1a73e8')
+      .text('ЛАССО', stampX + 20, stampY + 40, { width: 100, align: 'center' })
+      .fontSize(9)
+      .text('Электронная печать', stampX + 20, stampY + 60, {
+        width: 100,
+        align: 'center'
+      })
+      .restore();
+
+    return await new Promise<Buffer>((resolve, reject) => {
+      doc.on('end', () => resolve(Buffer.concat(buffers)));
+      doc.on('error', reject);
+      doc.end();
+    });
   }
 }

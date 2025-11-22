@@ -137,7 +137,7 @@ const redirectToAuthPage = async () => {
 };
 
 const goToHome = async () => {
-  await router.push(ROUTE_NAMES.HOME);
+  await router.push(ROUTE_NAMES.EDIT_BENEFITS);
 };
 </script>
 
@@ -248,6 +248,7 @@ const goToHome = async () => {
       v-if="step === 2"
       class="auth__form code-wrapper"
     >
+      <h2>Код 4444</h2>
       <CodeInput
         :key="codeInputKey"
         @success="handleFinal"

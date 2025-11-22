@@ -9,9 +9,13 @@ const emit = defineEmits<{
 <template>
   <div class="sber">
     <h2>Вход через Сбер ID</h2>
-    <p>Мы перенаправим вас на страницу Сбер ID для подтверждения личности.</p>
+    <p>Временно авторизация через Сбер ID недоступна</p>
     <div class="auth__buttons">
-      <Button class="submit" kind="secondary" @click="emit('back')">
+      <Button
+        class="submit"
+        kind="secondary"
+        @click="emit('back')"
+      >
         Назад
       </Button>
     </div>
