@@ -157,7 +157,7 @@ onMounted(() => {
   text-align: center;
   display: grid;
   place-items: center;
-  max-width: 200px;
+  width: 200px;
 
   &__count {
     font-size: 0.875rem;
