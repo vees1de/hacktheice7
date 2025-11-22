@@ -46,6 +46,7 @@ onMounted(() => {
   }
 });
 </script>
+
 <template>
   <div
     v-if="type === 'sales' || type === 'both'"
@@ -109,13 +110,16 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
 <style lang="scss" scoped>
 .economy {
   display: flex;
+  flex-wrap: wrap; // ← позволяет переноситься на малых экранах
   justify-content: space-around;
-  gap: 36px;
+  gap: 16px; // ← уменьшено для компактности
   padding-inline: 14px;
   margin-bottom: 24px;
+  box-sizing: border-box;
 }
 
 .sales {
@@ -123,7 +127,8 @@ onMounted(() => {
 }
 
 .money {
-  width: 160px;
+  min-width: 0;
+  flex: 1 1 140px; // ← гибкая ширина, но не сжимается слишком сильно
   min-height: 100px;
   background-color: #e5f0ff;
   border: 2px solid #c6ddfd;
@@ -132,18 +137,21 @@ onMounted(() => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 8px;
 
   &__sum {
     font-weight: 600;
     font-size: 1.5rem;
-    line-height: 17px;
+    line-height: 1.2; // ← исправлено: было 17px, что слишком мало
     margin-bottom: 6px;
+    word-break: break-word;
   }
 
   &__date {
     text-decoration: underline;
     color: #a2a2a2;
     font-size: 0.75rem;
+    white-space: nowrap;
   }
 
   &__secondary {
@@ -154,25 +162,30 @@ onMounted(() => {
 }
 
 .shops {
+  min-width: 0;
+  flex: 1 1 160px; // ← гибкая ширина
   text-align: center;
-  display: grid;
-  place-items: center;
-  width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
   &__count {
     font-size: 0.875rem;
     font-weight: 600;
+    padding: 0 4px;
   }
 
   &__images {
     display: flex;
     gap: 6px;
-
     align-items: center;
+    margin-top: 8px;
 
     img {
-      width: auto;
-      height: 32px;
+      max-width: 100%;
+      height: auto;
+      max-height: 32px;
     }
   }
 }
@@ -183,10 +196,11 @@ onMounted(() => {
   flex-direction: column;
   gap: 6px;
   font-size: 0.85rem;
-  max-width: 80px;
+  max-width: 180px; // ← увеличено, чтобы не обрезалось
   color: #475467;
   list-style: none;
   padding: 0;
+  text-align: center;
 }
 
 .loss-empty {
@@ -194,5 +208,6 @@ onMounted(() => {
   font-size: 0.85rem;
   color: #98a2b3;
   text-align: center;
+  padding: 0 8px;
 }
 </style>
