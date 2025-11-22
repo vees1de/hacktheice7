@@ -1,290 +1,462 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+
+type Category = {
+  name: string;
+  value: number;
+  operations: number;
+  icon: string;
+  color: string;
+};
+
+const activeTab = ref<'planned' | 'actual'>('planned');
+const month = ref('Ноябрь');
+
+const tabData: Record<'planned' | 'actual', Category[]> = {
+  planned: [
+    {
+      name: 'Льгота ЖКХ',
+      value: 4200,
+      operations: 1,
+      icon: '🏠',
+      color: '#2563eb'
+    },
+    {
+      name: 'Медицина',
+      value: 2800,
+      operations: 2,
+      icon: '💊',
+      color: '#7c3aed'
+    },
+    {
+      name: 'Продукты (Ганза)',
+      value: 1900,
+      operations: 3,
+      icon: '🛒',
+      color: '#f97316'
+    },
+    {
+      name: 'Сладкие мечты',
+      value: 1250,
+      operations: 2,
+      icon: '🍭',
+      color: '#ec4899'
+    },
+    {
+      name: 'ХозМаркет',
+      value: 900,
+      operations: 1,
+      icon: '🧹',
+      color: '#0ea5e9'
+    }
+  ],
+  actual: [
+    {
+      name: 'Льгота ЖКХ',
+      value: 3600,
+      operations: 1,
+      icon: '🏠',
+      color: '#2563eb'
+    },
+    {
+      name: 'Медицина',
+      value: 1500,
+      operations: 1,
+      icon: '💊',
+      color: '#7c3aed'
+    },
+    {
+      name: 'Продукты (Ганза)',
+      value: 2100,
+      operations: 4,
+      icon: '🛒',
+      color: '#f97316'
+    },
+    {
+      name: 'Сладкие мечты',
+      value: 700,
+      operations: 1,
+      icon: '🍭',
+      color: '#ec4899'
+    },
+    {
+      name: 'ХозМаркет',
+      value: 450,
+      operations: 1,
+      icon: '🧹',
+      color: '#0ea5e9'
+    }
+  ]
+};
+
+const currentCategories = computed(() => tabData[activeTab.value]);
+const totalValue = computed(() =>
+  currentCategories.value.reduce((acc, item) => acc + item.value, 0)
+);
+
+const formatter = new Intl.NumberFormat('ru-RU');
+const currentMonth = computed(() => `${month.value}`);
+const formattedTotal = computed(() => formatCurrency(totalValue.value));
+
+function formatCurrency(value: number) {
+  return `${formatter.format(value)} ₽`;
+}
+
+const chartSegments = computed(() => {
+  const denominator = totalValue.value || 1;
+  let cumulative = 0;
+
+  return currentCategories.value.map(item => {
+    const percent = Number(((item.value / denominator) * 100).toFixed(2));
+    const dashArray = `${percent} ${100 - percent}`;
+    const dashOffset = 25 - cumulative;
+    cumulative += percent;
+
+    return {
+      ...item,
+      dashArray,
+      dashOffset
+    };
+  });
+});
+
+const pluralizeOperation = (count: number) => {
+  if (count % 10 === 1 && count % 100 !== 11) return 'операция';
+  if ([2, 3, 4].includes(count % 10) && ![12, 13, 14].includes(count % 100))
+    return 'операции';
+  return 'операций';
+};
+</script>
+
 <template>
-  <div class="app-container">
-    <!-- Header with tabs -->
+  <div class="profit">
     <div class="header-tabs">
       <button
-        class="tab-button active"
+        class="tab-button"
+        :class="{ active: activeTab === 'planned' }"
+        type="button"
         @click="activeTab = 'planned'"
       >
         Упущенная выгода
       </button>
       <button
         class="tab-button"
+        :class="{ active: activeTab === 'actual' }"
+        type="button"
         @click="activeTab = 'actual'"
       >
         Фактическая выгода
       </button>
     </div>
 
-    <!-- Main content -->
-    <div class="main-content">
-      <!-- Amount display -->
-      <div class="amount-display">
-        <h1>12645 ₽</h1>
-      </div>
+    <section class="summary">
+      <p class="summary__label">За {{ currentMonth }}</p>
+      <p class="summary__value">{{ formattedTotal }}</p>
+    </section>
 
-      <!-- Month selector -->
+    <section class="chart-card">
       <div class="month-selector">
-        <button class="back-button">‹</button>
-        <span class="month-label">Ноябрь</span>
+        <button
+          class="month-selector__button"
+          type="button"
+        >
+          ‹
+        </button>
+        <span class="month-selector__label">{{ currentMonth }}</span>
+        <button
+          class="month-selector__button"
+          type="button"
+        >
+          ›
+        </button>
       </div>
 
-      <!-- Donut chart -->
-      <!-- <div class="chart-container">
-        <div class="donut-chart">
-          <div class="chart-ring">
-            <div class="chart-segment segment-1"></div>
-            <div class="chart-segment segment-2"></div>
-            <div class="chart-segment segment-3"></div>
-            <div class="chart-segment segment-4"></div>
-            <div class="chart-segment segment-5"></div>
-          </div>
-          <div class="chart-center">
-            <div class="center-circle"></div>
-          </div>
-        </div>
-      </div> -->
+      <div class="chart-container">
+        <svg
+          class="donut"
+          viewBox="0 0 36 36"
+        >
+          <circle
+            class="donut__track"
+            cx="18"
+            cy="18"
+            r="15.915"
+          />
+          <circle
+            v-for="segment in chartSegments"
+            :key="segment.name"
+            class="donut__segment"
+            cx="18"
+            cy="18"
+            r="15.915"
+            :stroke="segment.color"
+            :stroke-dasharray="segment.dashArray"
+            :stroke-dashoffset="segment.dashOffset"
+          />
+        </svg>
 
-      <!-- Categories list -->
-      <div class="categories-section">
-        <h2>Категории</h2>
-        <div class="categories-list">
+        <div class="chart-center">
+          <p>Всего</p>
+          <strong>{{ formattedTotal }}</strong>
+        </div>
+      </div>
+
+      <ul class="chart-legend">
+        <li
+          v-for="segment in chartSegments"
+          :key="segment.name"
+        >
+          <span
+            class="dot"
+            :style="{ backgroundColor: segment.color }"
+          />
+          <span class="legend-label">{{ segment.name }}</span>
+          <span class="legend-value">{{ formatCurrency(segment.value) }}</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="categories-section">
+      <h2>Категории</h2>
+      <div class="categories-list">
+        <article
+          v-for="item in currentCategories"
+          :key="item.name"
+          class="category-card"
+        >
           <div
-            class="category-item"
-            v-for="(category, index) in categories"
-            :key="index"
+            class="category-card__icon"
+            :style="{ backgroundColor: item.color }"
           >
-            <div class="category-icon">
-              <div class="icon-placeholder">{{ category.icon }}</div>
-            </div>
-            <div class="category-info">
-              <div class="category-name">{{ category.name }}</div>
-              <div class="category-operations">
-                {{ category.operations }} операция
-              </div>
-            </div>
+            {{ item.icon }}
           </div>
-        </div>
+          <div class="category-card__body">
+            <div class="category-card__row">
+              <p class="category-card__name">{{ item.name }}</p>
+              <strong>{{ formatCurrency(item.value) }}</strong>
+            </div>
+            <p class="category-card__muted">
+              {{ item.operations }} {{ pluralizeOperation(item.operations) }}
+            </p>
+          </div>
+        </article>
       </div>
-    </div>
+    </section>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue';
-
-const activeTab = ref('planned');
-
-const categories = ref([
-  { name: 'Льгота ЖКУ', operations: 1, icon: '🏠' },
-  { name: 'Ганза', operations: 3, icon: '🛒' },
-  { name: 'Сладкие мечты', operations: 2, icon: '🍭' },
-  { name: 'Аптека', operations: 2, icon: '💊' },
-  { name: 'ХозМаркет', operations: 1, icon: '🧹' }
-]);
-</script>
-
-<style lang="scss" scoped>
-.app-container {
-  max-width: 400px;
-
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+<style scoped lang="scss">
+.profit {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
 .header-tabs {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
 
   .tab-button {
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: 500;
+    flex: 1;
+    border-radius: 999px;
+    padding: 10px 14px;
+    border: 1px solid #d0d5dd;
+    background: #f8f9ff;
+    color: #475467;
+    font-weight: 600;
+    transition: all 0.2s ease;
     cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
 
     &.active {
-      background-color: #1e88e5;
-      color: white;
-    }
-
-    &:not(.active) {
-      background-color: #e3f2fd;
-      color: #1e88e5;
+      background: #1a73e8;
+      color: #fff;
+      border-color: #1a73e8;
+      box-shadow: 0 4px 12px rgba(26, 115, 232, 0.25);
     }
   }
 }
 
-.main-content {
-  .amount-display {
-    h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #333;
-      margin-bottom: 15px;
-    }
+.summary {
+  background: linear-gradient(135deg, #1a73e8, #2563eb);
+  color: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__label {
+    margin: 0;
+    opacity: 0.8;
   }
 
-  .month-selector {
+  &__value {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+  }
+}
+
+.chart-card {
+  border: 1px solid #e4e7ec;
+  border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #fff;
+}
+
+.month-selector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+
+  &__button {
+    background: #f2f4f7;
+    border: none;
+    border-radius: 999px;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  &__label {
+    font-weight: 600;
+  }
+}
+
+.chart-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 220px;
+}
+
+.donut {
+  width: 200px;
+  height: 200px;
+  transform: rotate(-90deg);
+
+  &__track {
+    fill: transparent;
+    stroke: #f2f4f7;
+    stroke-width: 3;
+  }
+
+  &__segment {
+    fill: transparent;
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.3s ease;
+  }
+}
+
+.chart-center {
+  position: absolute;
+  text-align: center;
+
+  p {
+    margin: 0;
+    color: #475467;
+  }
+
+  strong {
+    font-size: 1.4rem;
+  }
+}
+
+.chart-legend {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .legend-label {
+    flex: 1;
+  }
+
+  .legend-value {
+    font-weight: 600;
+  }
+}
+
+.categories-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+}
+
+.categories-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category-card {
+  border: 1px solid #e4e7ec;
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  background: #fff;
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-
-    .back-button {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: #666;
-
-      &:hover {
-        color: #1e88e5;
-      }
-    }
-
-    .month-label {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #333;
-    }
+    font-size: 1.3rem;
   }
 
-  .chart-container {
+  &__body {
+    flex: 1;
     display: flex;
-    justify-content: center;
-    margin-bottom: 25px;
-
-    .donut-chart {
-      position: relative;
-      width: 180px;
-      height: 180px;
-
-      .chart-ring {
-        position: relative;
-        width: 100%;
-        height: 100%;
-
-        .chart-segment {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          clip-path: polygon(
-            50% 50%,
-            50% 0%,
-            100% 0%,
-            100% 100%,
-            0% 100%,
-            0% 0%
-          );
-          transform-origin: 50% 50%;
-
-          &.segment-1 {
-            background: linear-gradient(90deg, #1e88e5 0%, #42a5f5 100%);
-            transform: rotate(0deg) scale(0.8);
-          }
-
-          &.segment-2 {
-            background: linear-gradient(90deg, #42a5f5 0%, #64b5f6 100%);
-            transform: rotate(72deg) scale(0.8);
-          }
-
-          &.segment-3 {
-            background: linear-gradient(90deg, #64b5f6 0%, #90caf9 100%);
-            transform: rotate(144deg) scale(0.8);
-          }
-
-          &.segment-4 {
-            background: linear-gradient(90deg, #90caf9 0%, #bbdefb 100%);
-            transform: rotate(216deg) scale(0.8);
-          }
-
-          &.segment-5 {
-            background: linear-gradient(90deg, #bbdefb 0%, #e3f2fd 100%);
-            transform: rotate(288deg) scale(0.8);
-          }
-        }
-      }
-
-      .chart-center {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 120px;
-        height: 120px;
-        background-color: white;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        .center-circle {
-          width: 80px;
-          height: 80px;
-          background-color: #f8f9fa;
-          border-radius: 50%;
-        }
-      }
-    }
+    flex-direction: column;
+    gap: 6px;
   }
 
-  .categories-section {
-    h2 {
-      font-size: 1.3rem;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 15px;
-    }
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
 
-    .categories-list {
-      .category-item {
-        display: flex;
-        align-items: center;
-        padding: 15px 0;
-        border-bottom: 1px solid #eee;
+  &__name {
+    margin: 0;
+    font-weight: 600;
+  }
 
-        &:last-child {
-          border-bottom: none;
-        }
-
-        .category-icon {
-          width: 40px;
-          height: 40px;
-          background-color: #e3f2fd;
-          border-radius: 50%;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          margin-right: 15px;
-
-          .icon-placeholder {
-            font-size: 1.2rem;
-            color: #1e88e5;
-          }
-        }
-
-        .category-info {
-          flex-grow: 1;
-
-          .category-name {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-          }
-
-          .category-operations {
-            font-size: 0.9rem;
-            color: #666;
-          }
-        }
-      }
-    }
+  &__muted {
+    margin: 0;
+    color: #98a2b3;
+    font-size: 0.9rem;
   }
 }
 </style>

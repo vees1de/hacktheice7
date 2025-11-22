@@ -8,7 +8,23 @@ import { RegisterDto } from '../auth/dto/register.dto';
 import { hash } from 'argon2';
 import { UserDto } from './dto/user.dto';
 import { BeneficiaryCategoryType } from '@prisma/client';
-import PDFDocument from 'pdfkit';
+const PdfPrinter = require('pdfmake');
+import * as path from 'path';
+import * as QRCode from 'qrcode';
+
+const CERT_FONT_PATH = path.resolve(
+  process.cwd(),
+  'assets/fonts/Inter-Regular.ttf'
+);
+
+const pdfPrinter = new PdfPrinter({
+  Inter: {
+    normal: CERT_FONT_PATH,
+    bold: CERT_FONT_PATH,
+    italics: CERT_FONT_PATH,
+    bolditalics: CERT_FONT_PATH
+  }
+});
 
 @Injectable()
 export class UserService {
@@ -421,153 +437,133 @@ export class UserService {
       }
     });
 
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+    if (!user) throw new NotFoundException('User not found');
 
-    let availableBenefits: { title: string; description?: string | null }[] = [];
+    let availableBenefits: { title: string; description?: string | null }[] =
+      [];
+
     try {
       const benefits = await this.getAvailableBenefits(userId);
       availableBenefits = benefits
-        .filter(benefit => !benefit.isHidden)
-        .map(benefit => ({
-          title: benefit.title,
-          description: benefit.description
-        }));
+        .filter(b => !b.isHidden)
+        .map(b => ({ title: b.title, description: b.description }));
     } catch {
       availableBenefits = [];
     }
 
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
-    const buffers: Buffer[] = [];
-
-    doc.on('data', chunk => buffers.push(chunk));
-
+    const fullName =
+      `${user.lastName || ''} ${user.firstName || ''} ${user.patronymic || ''}`.trim();
     const reportDate = new Date().toLocaleString('ru-RU');
-    const fullName = `${user.lastName || ''} ${user.firstName || ''} ${
-      user.patronymic || ''
-    }`.trim();
     const categories =
       user.userBeneficiaryCategories?.map(
-        category => category.beneficiaryCategory?.title || 'Без названия'
+        c => c.beneficiaryCategory?.title ?? 'Категория'
       ) ?? [];
 
-    doc
-      .fontSize(18)
-      .fillColor('#1a73e8')
-      .text('ЛАССО — Индивидуальный отчёт', { align: 'center' })
-      .moveDown(1.5);
+    // --------- QR CODE GENERATION ----------
 
-    doc
-      .fontSize(12)
-      .fillColor('#000')
-      .text(`Дата формирования: ${reportDate}`)
-      .moveDown();
-
-    doc
-      .fontSize(14)
-      .fillColor('#1a73e8')
-      .text('1. Общая информация', { underline: true })
-      .moveDown(0.5);
-
-    doc
-      .fontSize(12)
-      .fillColor('#000')
-      .text(`ФИО: ${fullName || 'Не указано'}`)
-      .text(`Телефон: ${user.phone || 'Не указан'}`)
-      .text(`СНИЛС: ${user.snils || 'Не указан'}`)
-      .text(`Регион: ${user.region?.name || 'Не указан'}`)
-      .text(`Статус: ${user.status}`)
-      .text(
-        `Подтверждён ЕСИА: ${user.isEsiaVerified ? 'Да' : 'Нет'} (${
-          user.onboardingStep || 'нет данных'
-        })`
-      )
-      .moveDown();
-
-    doc
-      .fontSize(14)
-      .fillColor('#1a73e8')
-      .text('2. Подтверждённые категории', { underline: true })
-      .moveDown(0.5);
-
-    if (categories.length === 0) {
-      doc.fontSize(12).fillColor('#000').text('Категории отсутствуют.').moveDown();
-    } else {
-      categories.forEach((title, index) => {
-        doc
-          .fontSize(12)
-          .fillColor('#000')
-          .text(`${index + 1}. ${title}`);
-      });
-      doc.moveDown();
-    }
-
-    doc
-      .fontSize(14)
-      .fillColor('#1a73e8')
-      .text('3. Рекомендуемые льготы', { underline: true })
-      .moveDown(0.5);
-
-    if (availableBenefits.length === 0) {
-      doc.fontSize(12).fillColor('#000').text('Подходящих льгот пока нет.').moveDown();
-    } else {
-      availableBenefits.slice(0, 10).forEach((benefit, index) => {
-        doc
-          .fontSize(12)
-          .fillColor('#000')
-          .text(`${index + 1}. ${benefit.title}`);
-        if (benefit.description) {
-          doc
-            .fontSize(10)
-            .fillColor('#4b5563')
-            .text(benefit.description, { indent: 12 });
-        }
-        doc.moveDown(0.5);
-      });
-      if (availableBenefits.length > 10) {
-        doc
-          .fontSize(11)
-          .fillColor('#4b5563')
-          .text(`...и ещё ${availableBenefits.length - 10} льгот`);
-        doc.moveDown();
+    const qrCodeBase64 = await QRCode.toDataURL(userId, {
+      margin: 1,
+      scale: 5,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
       }
-    }
+    });
 
-    doc
-      .fontSize(14)
-      .fillColor('#1a73e8')
-      .text('4. Подпись и печать', { underline: true })
-      .moveDown(0.5);
+    // ----------- PDFMAKE DOCUMENT DEFINITION ------------------
 
-    doc
-      .fontSize(12)
-      .fillColor('#000')
-      .text('Ответственный: Экосистема ЛАССО')
-      .text(`Электронная подпись: ${fullName || 'Пользователь'}`)
-      .moveDown(2);
+    const docDefinition = {
+      defaultStyle: {
+        font: 'Inter',
+        fontSize: 11,
+        color: '#000'
+      },
+      content: [
+        {
+          text: 'ЛАССО — Индивидуальный отчёт',
+          alignment: 'center',
+          fontSize: 20,
+          bold: true,
+          color: '#1a73e8',
+          margin: [0, 0, 0, 20]
+        },
 
-    const stampX = doc.page.width - 200;
-    const stampY = doc.y;
-    doc
-      .save()
-      .circle(stampX + 70, stampY + 70, 60)
-      .lineWidth(2)
-      .stroke('#1a73e8')
-      .fontSize(12)
-      .fillColor('#1a73e8')
-      .text('ЛАССО', stampX + 20, stampY + 40, { width: 100, align: 'center' })
-      .fontSize(9)
-      .text('Электронная печать', stampX + 20, stampY + 60, {
-        width: 100,
-        align: 'center'
-      })
-      .restore();
+        { text: `Дата формирования: ${reportDate}`, margin: [0, 0, 0, 10] },
+
+        { text: '1. Общая информация', style: 'sectionHeader' },
+        {
+          ul: [
+            `ФИО: ${fullName || 'Не указано'}`,
+            `Телефон: ${user.phone || 'Не указан'}`,
+            `СНИЛС: ${user.snils || 'Не указан'}`,
+            `Регион: ${user.region?.name || 'Не указан'}`,
+            `Статус: ${user.status}`,
+            `ЕСИА подтверждена: ${user.isEsiaVerified ? 'Да' : 'Нет'} (${user.onboardingStep})`
+          ],
+          margin: [0, 0, 0, 15]
+        },
+
+        { text: '2. Подтверждённые категории', style: 'sectionHeader' },
+        categories.length
+          ? { ol: categories, margin: [0, 0, 0, 15] }
+          : { text: 'Категории отсутствуют', margin: [0, 0, 0, 15] },
+
+        availableBenefits.length > 10
+          ? {
+              text: `...и ещё ${availableBenefits.length - 10} льгот`,
+              fontSize: 10,
+              color: '#777',
+              margin: [0, 0, 0, 15]
+            }
+          : {},
+
+        { text: '3. Подпись и QR-код', style: 'sectionHeader' },
+
+        {
+          columns: [
+            [
+              { text: `Ответственный: Экосистема ЛАССО`, margin: [0, 0, 0, 2] },
+              { text: `Электронная подпись: ${fullName || 'Пользователь'}` },
+              {
+                text: `ID пользователя: ${userId}`,
+                fontSize: 10,
+                color: '#555',
+                margin: [0, 5, 0, 0]
+              }
+            ],
+
+            // ---- QR IN THE CORNER ----
+            {
+              width: 120,
+              image: qrCodeBase64,
+              fit: [100, 100],
+              alignment: 'right'
+            }
+          ],
+          margin: [0, 20, 0, 0]
+        }
+      ],
+      styles: {
+        sectionHeader: {
+          fontSize: 14,
+          bold: true,
+          color: '#1a73e8',
+          margin: [0, 10, 0, 10]
+        }
+      }
+    };
+
+    // ----- PDF GENERATION -----
 
     return await new Promise<Buffer>((resolve, reject) => {
-      doc.on('end', () => resolve(Buffer.concat(buffers)));
-      doc.on('error', reject);
-      doc.end();
+      const pdfDoc = pdfPrinter.createPdfKitDocument(docDefinition);
+
+      const chunks: any[] = [];
+      pdfDoc.on('data', chunk => chunks.push(chunk));
+      pdfDoc.on('end', () => resolve(Buffer.concat(chunks)));
+      pdfDoc.on('error', reject);
+
+      pdfDoc.end();
     });
   }
 }

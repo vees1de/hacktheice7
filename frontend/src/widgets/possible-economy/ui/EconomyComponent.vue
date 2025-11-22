@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { type UserLossResult, lossApi } from '@entities/loss';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
-import { computed, onMounted, ref, onBeforeUnmount, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const { type = 'both' } = defineProps<{
@@ -130,8 +130,8 @@ const handleBenefitKey = (event: KeyboardEvent, benefitId: string) => {
     @keydown="handleWidgetKey($event, 'sales')"
   >
     <div class="money">
-      <div class="money__sum">13.000₽</div>
-      <div class="money__date">11.02.2024-10.01.2025</div>
+      <div class="money__sum">11.050₽</div>
+      <div class="money__date">01.10.2025-01.11.2025</div>
     </div>
     <div class="shops">
       <div class="shops__count">В 24 магазинах</div>
@@ -277,7 +277,9 @@ const handleBenefitKey = (event: KeyboardEvent, benefitId: string) => {
   margin-bottom: 24px;
   box-sizing: border-box;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover,
   &:focus-visible {
@@ -462,7 +464,9 @@ const handleBenefitKey = (event: KeyboardEvent, benefitId: string) => {
       background: #f8fafc;
       border: 1px solid #e5e7eb;
       cursor: pointer;
-      transition: border-color 0.2s ease, transform 0.2s ease;
+      transition:
+        border-color 0.2s ease,
+        transform 0.2s ease;
 
       &:hover,
       &:focus-visible {
