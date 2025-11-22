@@ -48,7 +48,8 @@ const { type = 'both' } = defineProps<{
 <style lang="scss" scoped>
 .economy {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
+  gap: 36px;
   padding-inline: 14px;
 }
 
