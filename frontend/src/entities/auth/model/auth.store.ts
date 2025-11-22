@@ -53,7 +53,9 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   const mobileConfirm = async (verifyBody: VerifyPhoneRequest) => {
-    await authApi.verifyPhone(verifyBody);
+    const auth = await authApi.verifyPhone(verifyBody);
+    setAuth(auth);
+    return auth;
   };
 
   return {

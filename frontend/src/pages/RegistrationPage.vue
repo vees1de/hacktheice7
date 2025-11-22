@@ -3,7 +3,8 @@ import {
   AuthRegisterRequest,
   VerifyPhoneRequest,
   authApi,
-  toAuthRegisterDto
+  toAuthRegisterDto,
+  useAuthStore
 } from '@entities/auth';
 import { regionApi } from '@entities/region';
 import { createForm } from '@shared/lib/createForm';
@@ -14,6 +15,7 @@ import { Option } from '@shared/types/dropdownOption';
 import { FieldMetaData } from '@shared/types/formFieldMetaData';
 import { Button, Dropdown, Input } from '@shared/ui';
 import { CodeInput } from '@widgets/code-input';
+import { isAxiosError } from 'axios';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -33,9 +35,13 @@ export type Account = {
 };
 
 const router = useRouter();
+const authStore = useAuthStore();
 const { toggleLoader } = useViewStore();
 const step = ref(1);
 const regionOptions = ref<Option[]>([]);
+const codeError = ref('');
+const codeInputKey = ref(0);
+const isCodeSubmitting = ref(false);
 
 onMounted(async () => {
   const response = await regionApi.getAll();
@@ -92,22 +98,46 @@ const goToStep2 = async () => {
   toggleLoader();
 };
 
+const resetCodeInput = (message: string) => {
+  codeError.value = message;
+  codeInputKey.value += 1;
+};
+
 const handleFinal = async (code: string) => {
+  if (isCodeSubmitting.value) return;
+
+  isCodeSubmitting.value = true;
+  codeError.value = '';
   toggleLoader();
   const phone = '79' + form.phone.value;
   const payload: VerifyPhoneRequest = { code, phone };
   try {
-    await authApi.verifyPhone(payload);
-    await router.push('/home');
+    await authStore.mobileConfirm(payload);
+    step.value = 3;
+    codeError.value = '';
   } catch (error) {
+    if (
+      isAxiosError(error) &&
+      error.response?.status === 400 &&
+      (error.response.data as { message?: string })?.message ===
+        'Invalid verification code'
+    ) {
+      resetCodeInput('Введен неверный код. Попробуйте ещё раз.');
+      return;
+    }
     console.log(error);
   } finally {
+    isCodeSubmitting.value = false;
     toggleLoader();
   }
 };
 
 const redirectToAuthPage = async () => {
   await router.push(ROUTE_NAMES.WELCOME);
+};
+
+const goToHome = async () => {
+  await router.push(ROUTE_NAMES.HOME);
 };
 </script>
 
@@ -218,8 +248,31 @@ const redirectToAuthPage = async () => {
       v-if="step === 2"
       class="auth__form code-wrapper"
     >
-      <CodeInput @success="handleFinal" />
+      <CodeInput
+        :key="codeInputKey"
+        @success="handleFinal"
+      />
     </form>
+    <p
+      v-if="codeError"
+      class="code-error"
+    >
+      {{ codeError }}
+    </p>
+
+    <div
+      v-if="step === 3"
+      class="success-screen"
+    >
+      <h2>Регистрация завершена</h2>
+      <p>Добро пожаловать! Теперь вы можете перейти на главную страницу.</p>
+      <Button
+        class="submit"
+        @click="goToHome"
+      >
+        Перейти на главную
+      </Button>
+    </div>
 
     <!-- <Button
       v-if="step === 2"
@@ -240,6 +293,38 @@ const redirectToAuthPage = async () => {
 .code-wrapper {
   display: flex;
   justify-content: center;
+}
+
+.success-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 0 16px;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  p {
+    color: #475467;
+    font-size: 0.95rem;
+  }
+
+  .success-icon {
+    width: 72px;
+    height: 72px;
+  }
+}
+
+.code-error {
+  color: #d92d20;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 0.875rem;
 }
 
 .code-inputs {
@@ -271,7 +356,7 @@ const redirectToAuthPage = async () => {
 
 .has-account {
   text-align: center;
-  font-size: 1rem;
+  font-size: 0.875rem;
 
   a {
     text-decoration: none;
@@ -280,6 +365,7 @@ const redirectToAuthPage = async () => {
 }
 
 .logo {
+  margin-top: 24px;
   display: flex;
   width: 100%;
   justify-content: center;
@@ -307,7 +393,7 @@ const redirectToAuthPage = async () => {
   display: flex;
   justify-content: center;
   gap: 4px;
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 500;
   margin-bottom: 32px;
 }

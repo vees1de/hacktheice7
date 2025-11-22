@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { effect, ref } from 'vue';
+import { effect, nextTick, onMounted, ref } from 'vue';
 
 const emit = defineEmits(['success', 'fail']);
 
@@ -13,9 +13,23 @@ const handleBackspace = (index: number, e: KeyboardEvent) => {
 
 const codeDigits = ref(['', '', '', '']);
 
+const focusFirstInput = () => {
+  nextTick(() => {
+    const first = document.getElementById('digit-0');
+    first?.focus();
+  });
+};
+
+onMounted(() => {
+  focusFirstInput();
+});
+
 effect(() => {
   const isOk = codeDigits.value.every(d => d.length === 1);
   const code = codeDigits.value.join('');
+  if (codeDigits.value.every(d => d === '')) {
+    focusFirstInput();
+  }
   isOk ? emit('success', code) : emit('fail');
 });
 

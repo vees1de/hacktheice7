@@ -22,13 +22,11 @@ export const authApi = {
   },
 
   async verifyPhone(payload: VerifyPhoneRequest) {
-    const { data } = await apiRequest<{ message: string }>(
-      '/auth/verify-phone',
-      {
-        method: 'POST',
-        data: payload
-      }
-    );
+    const { data } = await apiRequest<AuthSuccess>('/auth/verify-phone', {
+      method: 'POST',
+      data: payload
+    });
+    setTokens(data.accessToken, data.refreshToken);
     return data;
   },
 
