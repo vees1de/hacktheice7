@@ -140,6 +140,7 @@ h3 {
 
 .home {
   margin-bottom: 36px;
+
   &__content {
     display: grid;
     gap: 32px;
@@ -152,7 +153,7 @@ h3 {
   background: #1a73e8 url('/assets/images/intersect.svg');
   background-repeat: repeat-x;
   background-position: 0 calc(100% + 20px);
-
+  max-width: calc(100dvw - 32px);
   margin-bottom: 32px;
   position: relative;
 
