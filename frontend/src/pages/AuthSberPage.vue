@@ -21,7 +21,6 @@ const goBack = () => router.push(ROUTE_NAMES.WELCOME);
 
 <style scoped lang="scss">
 .auth {
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;

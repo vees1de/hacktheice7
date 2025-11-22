@@ -44,7 +44,7 @@ const emit = defineEmits<{
         class="submit"
         @click="emit('submit')"
       >
-        Продолжить
+        Вход
       </Button>
       <Button
         v-if="step === 1"
@@ -67,6 +67,10 @@ const emit = defineEmits<{
 
 <style scoped lang="scss">
 .sms-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - 214px);
+  justify-content: space-between;
   width: 100%;
 }
 
@@ -82,7 +86,6 @@ const emit = defineEmits<{
 .auth__buttons {
   width: 100%;
   max-width: 420px;
-  margin: 32px auto 0;
   display: grid;
   gap: 12px;
 }

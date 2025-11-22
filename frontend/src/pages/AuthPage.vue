@@ -94,10 +94,9 @@ const redirectToRegisterPage = async () => {
 }
 
 .auth {
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 80px 24px 32px;
+  padding-top: 24px;
 }
 </style>

@@ -22,9 +22,7 @@ export const useViewStore = defineStore('view', () => {
   const isLoading = ref(false);
   const toggleLoader = () => (isLoading.value = !isLoading.value);
 
-  const hideGlobalChrome = computed(
-    () => router.currentRoute.value.path === ROUTE_NAMES.REGISTRATION
-  );
+  const hideGlobalChrome = computed(() => false);
 
   const showMenu = computed(() => {
     const isOkRoute =
