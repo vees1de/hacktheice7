@@ -1,10 +1,10 @@
 import { useUserStore } from '@entities/user';
 import { userApi } from '@entities/user/api/user';
 import { clearTokens, setTokens } from '@shared/api/token.service';
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { ROUTE_NAMES } from '@shared/model/routes.constants';
 
 import { authApi } from '../api/auth';
 import {
@@ -15,7 +15,7 @@ import {
 } from '../types/auth.types';
 
 export const useAuthStore = defineStore('auth', () => {
-  const isAuthenticated = ref(!false);
+  const isAuthenticated = ref(false);
   const router = useRouter();
   const userStore = useUserStore();
 
