@@ -15,7 +15,7 @@ const headers: Record<string, string> = {
   [ROUTE_NAMES.REGISTRATION]: 'Регистрация',
   [ROUTE_NAMES.HOME]: 'Главная',
   [ROUTE_NAMES.USER]: 'Профиль',
-  [ROUTE_NAMES.CHAT]: 'Чат',
+  [ROUTE_NAMES.CHAT]: 'Чат-Бот Лассо',
   [ROUTE_NAMES.SALES]: 'Продажи',
   [ROUTE_NAMES.BENEFITS]: 'Преимущества',
   [ROUTE_NAMES.ADMIN]: 'Админка',

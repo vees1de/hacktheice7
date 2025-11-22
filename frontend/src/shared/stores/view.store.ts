@@ -32,6 +32,12 @@ export const useViewStore = defineStore('view', () => {
     return isOkRoute && isAuthenticated.value && !hideGlobalChrome.value;
   });
 
+  const showProfile = computed(() => {
+    const isOkRoute = !router.currentRoute.value.path.includes('chat');
+
+    return isOkRoute && isAuthenticated.value && !hideGlobalChrome.value;
+  });
+
   const showHeader = computed(() => {
     return router.currentRoute.value.path !== ROUTE_NAMES.WELCOME;
   });
@@ -41,6 +47,7 @@ export const useViewStore = defineStore('view', () => {
     isLoading,
     toggleLoader,
     showMenu,
-    showHeader
+    showHeader,
+    showProfile
   };
 });

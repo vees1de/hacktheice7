@@ -13,6 +13,8 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 YANDEX_API_KEY = os.getenv("YANDEX_API_KEY")
 YANDEX_FOLDER_ID = os.getenv("YANDEX_FOLDER_ID")
+SMART_SEARCH_SCOPE = os.getenv("SMART_SEARCH_SCOPE", "personal")
+SMART_SEARCH_USER_ID = os.getenv("SMART_SEARCH_USER_ID")
 
 YANDEX_MODEL_URL = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
 
@@ -28,8 +30,59 @@ async def load_categories(conn):
     rows = await conn.fetch("SELECT id, name, title FROM beneficiary_category")
     return {r["id"]: r for r in rows}
 
-async def load_benefits(conn, region_id):
-    return await conn.fetch("""
+async def load_user_context(conn, user_id: str):
+    if not user_id:
+        return None
+
+    user_row = await conn.fetchrow(
+        """
+        SELECT id, "region_id" as region_id
+        FROM "user"
+        WHERE id = $1
+        """,
+        user_id,
+    )
+
+    if not user_row:
+        return None
+
+    category_rows = await conn.fetch(
+        """
+        SELECT "categoryId" 
+        FROM user_beneficiary_category
+        WHERE "userId" = $1 AND confirmed = true
+        """,
+        user_id,
+    )
+
+    return {
+        "region_id": user_row["region_id"],
+        "category_ids": [row["categoryId"] for row in category_rows],
+    }
+
+async def load_benefits(conn, region_id=None, category_ids=None):
+    conditions = []
+    params = []
+
+    if region_id:
+        conditions.append(f'br."regionId" = ${len(params) + 1}')
+        params.append(region_id)
+
+    if category_ids:
+        conditions.append(
+            f'''EXISTS (
+                SELECT 1 FROM benefit_beneficiary_category bbc2
+                WHERE bbc2."benefitId" = b.id
+                  AND bbc2."categoryId" = ANY(${len(params) + 1})
+            )'''
+        )
+        params.append(category_ids)
+
+    where_clause = ""
+    if conditions:
+        where_clause = "WHERE " + " AND ".join(conditions)
+
+    query = f"""
         SELECT 
           b.id,
           b.title,
@@ -44,9 +97,11 @@ async def load_benefits(conn, region_id):
         FROM benefit b
         JOIN benefit_region br ON br."benefitId" = b.id
         LEFT JOIN benefit_beneficiary_category bbc ON bbc."benefitId" = b.id
-        WHERE br."regionId" = $1
+        {where_clause}
         GROUP BY b.id
-    """, region_id)
+    """
+
+    return await conn.fetch(query, *params)
 
 def score_benefit(benefit, query):
     score = 0
@@ -83,9 +138,26 @@ async def smart_benefit_search(user_text: str):
     conn = await db()
 
     try:
-        region_id = await load_region_id(conn, semantic["region_code"])
+        benefits = []
+        if SMART_SEARCH_SCOPE == "personal":
+            user_context = await load_user_context(conn, SMART_SEARCH_USER_ID)
+            if not user_context:
+                raise ValueError("USER_CONTEXT_NOT_FOUND")
+
+            category_ids = user_context["category_ids"]
+            if not category_ids:
+                benefits = []
+            else:
+                benefits = await load_benefits(
+                    conn,
+                    region_id=user_context["region_id"],
+                    category_ids=category_ids,
+                )
+        else:
+            region_id = await load_region_id(conn, semantic["region_code"])
+            benefits = await load_benefits(conn, region_id=region_id)
+
         categories = await load_categories(conn)
-        benefits = await load_benefits(conn, region_id)
 
         scored = [(score_benefit(b, semantic), b) for b in benefits]
         scored.sort(key=lambda x: x[0], reverse=True)

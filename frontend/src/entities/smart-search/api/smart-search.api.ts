@@ -21,12 +21,15 @@ export interface SmartSearchResponse {
 }
 
 export const smartSearchApi = {
-  async search(query: string) {
+  async search(query: string, options?: { searchAll?: boolean }) {
     const { data } = await apiRequest<SmartSearchResponse>(
       '/smart-search/benefits',
       {
         method: 'POST',
-        data: { query }
+        data: {
+          query,
+          searchAll: options?.searchAll ?? false
+        }
       }
     );
     return data;

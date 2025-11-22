@@ -4,7 +4,9 @@ import {
   type SmartSearchResponse,
   smartSearchApi
 } from '@entities/smart-search/api/smart-search.api';
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { computed, nextTick, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 type ChatMessage = {
   id: number;
@@ -25,6 +27,8 @@ const messages = ref<ChatMessage[]>([
 const inputValue = ref('');
 const isSending = ref(false);
 const chatBody = ref<HTMLElement | null>(null);
+const searchAllBenefits = ref(false);
+const router = useRouter();
 
 const hasMessages = computed(() => messages.value.length > 0);
 
@@ -44,16 +48,26 @@ const appendMessage = (msg: ChatMessage) => {
   scrollToBottom();
 };
 
+const SCORE_THRESHOLD = 1;
+const NO_MATCH_TEXT =
+  'Не смогли найти подходящую льготу. Попробуйте переформулировать запрос.';
+
+const sanitizeItems = (items?: SmartSearchItem[]) =>
+  (items ?? []).filter(item => item.score !== SCORE_THRESHOLD);
+
 const handleSmartSearchResponse = (payload: SmartSearchResponse) => {
+  const filteredItems = sanitizeItems(payload.items);
   const text =
-    payload.answer_final?.trim() ||
-    payload.answer_ru?.trim() ||
-    'Не смог найти подходящих льгот, попробуйте уточнить вопрос.';
+    filteredItems.length > 0
+      ? payload.answer_final?.trim() ||
+        payload.answer_ru?.trim() ||
+        NO_MATCH_TEXT
+      : NO_MATCH_TEXT;
   appendMessage({
     role: 'bot',
     text,
-    items: payload.items || [],
-    meta: payload.items?.length ? 'Топ подходящих льгот' : undefined,
+    items: filteredItems,
+    meta: filteredItems.length ? 'Топ подходящих льгот' : undefined,
     id: 0
   });
 };
@@ -70,7 +84,9 @@ const sendMessage = async () => {
   isSending.value = true;
 
   try {
-    const response = await smartSearchApi.search(text);
+    const response = await smartSearchApi.search(text, {
+      searchAll: searchAllBenefits.value
+    });
     handleSmartSearchResponse(response);
   } catch (error: any) {
     appendMessage({
@@ -91,17 +107,16 @@ const handleKeyPress = (event: KeyboardEvent) => {
     sendMessage();
   }
 };
+
+const openBenefit = (item: SmartSearchItem) => {
+  if (!item.id) return;
+  const path = ROUTE_NAMES.BENEFIT_DETAIL.replace(':benefitId', item.id);
+  router.push(path);
+};
 </script>
 
 <template>
   <div class="chat-page">
-    <header class="chat-header">
-      <div>
-        <p class="chat-header__title">Чат-Бот Лассо</p>
-        <p class="chat-header__subtitle">Задайте вопрос — я подскажу льготы</p>
-      </div>
-    </header>
-
     <div class="chat-area">
       <div
         class="chat-body"
@@ -132,6 +147,10 @@ const handleKeyPress = (event: KeyboardEvent) => {
                 class="benefit-card"
                 v-for="item in message.items"
                 :key="item.id"
+                role="button"
+                tabindex="0"
+                @click="openBenefit(item)"
+                @keydown.enter.prevent="openBenefit(item)"
               >
                 <p class="benefit-card__title">{{ item.title }}</p>
                 <p class="benefit-card__type">{{ item.type }}</p>
@@ -166,6 +185,15 @@ const handleKeyPress = (event: KeyboardEvent) => {
           {{ isSending ? '...' : 'Отправить' }}
         </button>
       </div>
+      <div class="chat-toggle">
+        <label class="toggle">
+          <input
+            v-model="searchAllBenefits"
+            type="checkbox"
+          />
+          <span>Искать среди всех льгот</span>
+        </label>
+      </div>
     </div>
   </div>
 </template>
@@ -175,7 +203,6 @@ const handleKeyPress = (event: KeyboardEvent) => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px;
   height: calc(100vh - 140px);
 }
 
@@ -198,6 +225,24 @@ const handleKeyPress = (event: KeyboardEvent) => {
     margin: 4px 0 0;
     font-size: 0.9rem;
     color: #6b7280;
+  }
+}
+
+.chat-toggle {
+  margin: 0 16px;
+  margin-bottom: 8px;
+
+  .toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #475467;
+
+    input {
+      width: 16px;
+      height: 16px;
+    }
   }
 }
 
@@ -269,6 +314,17 @@ const handleKeyPress = (event: KeyboardEvent) => {
   border-radius: 14px;
   padding: 10px 12px;
   background: #f5f6ff;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.15);
+    outline: none;
+  }
 
   &__title {
     margin: 0;
@@ -335,11 +391,6 @@ const handleKeyPress = (event: KeyboardEvent) => {
 }
 
 @media (max-width: 768px) {
-  .chat-page {
-    padding: 8px;
-    height: calc(100vh - 180px);
-  }
-
   .chat-message {
     max-width: 100%;
   }

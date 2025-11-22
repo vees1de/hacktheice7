@@ -6,7 +6,7 @@ import * as path from 'path';
 export class SmartSearchService {
   private readonly logger = new Logger(SmartSearchService.name);
 
-  async searchBenefits(query: string) {
+  async searchBenefits(query: string, userId: string, searchAll: boolean) {
     const scriptPath = path.resolve(
       process.cwd(),
       'smartsearch/python/benefit_search.py'
@@ -26,7 +26,9 @@ export class SmartSearchService {
         cwd: path.dirname(scriptPath),
         env: {
           ...process.env,
-          PYTHONUNBUFFERED: '1'
+          PYTHONUNBUFFERED: '1',
+          SMART_SEARCH_USER_ID: userId,
+          SMART_SEARCH_SCOPE: searchAll ? 'all' : 'personal'
         }
       });
 
