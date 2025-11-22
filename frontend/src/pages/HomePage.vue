@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { useViewStore } from '@shared/stores/view.store';
 import { Block } from '@shared/ui';
 import { BenefitsCarousel } from '@widgets/benefits-carousel';
@@ -7,11 +8,17 @@ import { Economy } from '@widgets/possible-economy';
 import { QrSheetComponent } from '@widgets/qr-sheet';
 import { SalesCarousel } from '@widgets/sales-carousel';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 
 const viewStore = useViewStore();
 const { isQrSheetVisible } = storeToRefs(viewStore);
 const openQrSheet = () => {
   viewStore.toggleQrVisible();
+};
+
+const router = useRouter();
+const redirect = async (route: string) => {
+  await router.push(route);
 };
 
 // const benefits = [
@@ -49,19 +56,28 @@ const openQrSheet = () => {
           </p>
         </div> -->
       </Block>
-      <div class="section-heading">
+      <div
+        @click="redirect(ROUTE_NAMES.PROFITS)"
+        class="section-heading"
+      >
         <h3>Вы сэкономили</h3>
         <img src="/assets/icons/arrow.svg" />
       </div>
       <Economy />
       <h3>Чат-бот помощник ЛАССО</h3>
-      <ChatBot />
-      <div class="section-heading">
+      <ChatBot @click="redirect(ROUTE_NAMES.CHAT)" />
+      <div
+        @click="redirect(ROUTE_NAMES.BENEFITS)"
+        class="section-heading"
+      >
         <h3>Льготы для тебя</h3>
         <img src="/assets/icons/arrow.svg" />
       </div>
       <BenefitsCarousel />
-      <div class="section-heading">
+      <div
+        @click="redirect(ROUTE_NAMES.SALES)"
+        class="section-heading"
+      >
         <h3>Акции для тебя</h3>
         <img src="/assets/icons/arrow.svg" />
       </div>
