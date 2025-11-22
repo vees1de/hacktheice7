@@ -71,8 +71,8 @@ const validityText = computed(() => {
   return from || (to ? `до ${to}` : '');
 });
 
-const pageTitle = computed(() =>
-  currentItem.value?.title || (isOffer.value ? 'Акция' : 'Льгота')
+const pageTitle = computed(
+  () => currentItem.value?.title || (isOffer.value ? 'Акция' : 'Льгота')
 );
 
 const heroTitle = computed(() => {
@@ -90,9 +90,7 @@ const heroTitle = computed(() => {
 
 const regionsList = computed(() => {
   const regions = isOffer.value
-    ? currentOffer.value?.offerRegions?.map(
-        region => region.region?.name || ''
-      )
+    ? currentOffer.value?.offerRegions?.map(region => region.region?.name || '')
     : currentBenefit.value?.benefitRegions?.map(
         region => region.region?.name || ''
       );
@@ -121,7 +119,7 @@ const documentsTitle = computed(() =>
 );
 const documentsList = computed(() => {
   const text = isOffer.value
-    ? currentOffer.value?.terms ?? currentOffer.value?.description
+    ? (currentOffer.value?.terms ?? currentOffer.value?.description)
     : currentBenefit.value?.requirements;
   return splitText(text);
 });
@@ -183,13 +181,6 @@ const openRelated = (id: string) => {
 <template>
   <div class="benefit-page">
     <header class="benefit-page__header">
-      <button
-        class="back-button"
-        type="button"
-        @click="goBack"
-      >
-        Назад
-      </button>
       <h1>{{ pageTitle }}</h1>
     </header>
 
@@ -332,7 +323,6 @@ const openRelated = (id: string) => {
 
 <style scoped lang="scss">
 .benefit-page {
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 24px;

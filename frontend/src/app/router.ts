@@ -3,8 +3,9 @@ import AdminPage from '@pages/AdminPage.vue';
 import AuthPage from '@pages/AuthPage.vue';
 import AuthSberPage from '@pages/AuthSberPage.vue';
 import AuthWelcomePage from '@pages/AuthWelcomePage.vue';
-import BenefintsPage from '@pages/BenefitsPage.vue';
+import BenefitCategoryPage from '@pages/BenefitCategoryPage.vue';
 import BenefitDetailPage from '@pages/BenefitDetailPage.vue';
+import BenefintsPage from '@pages/BenefitsPage.vue';
 import ChatPage from '@pages/ChatPage.vue';
 import HomePage from '@pages/HomePage.vue';
 import ProfitPage from '@pages/ProfitPage.vue';
@@ -35,6 +36,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: ROUTE_NAMES.CHAT, component: ChatPage },
   { path: ROUTE_NAMES.SALES, component: SalesPage },
   { path: ROUTE_NAMES.BENEFITS, component: BenefintsPage },
+  { path: ROUTE_NAMES.BENEFITS_CATEGORY, component: BenefitCategoryPage },
   { path: ROUTE_NAMES.BENEFIT_DETAIL, component: BenefitDetailPage },
   { path: ROUTE_NAMES.ADMIN, component: AdminPage },
   { path: ROUTE_NAMES.ROOT, redirect: ROUTE_NAMES.WELCOME },

@@ -1,27 +1,30 @@
 <script setup lang="ts">
-const items: { icon: string; name: string }[] = [
-  { icon: 'bus', name: 'Транспорт' },
-  { icon: 'heart', name: 'Медицина' },
-  { icon: 'house', name: 'ЖКУ' },
-  { icon: 'ruble', name: 'Выплаты' },
-  { icon: 'bills', name: 'Налоги' },
-  { icon: 'users', name: 'Социальные услуги' },
-  { icon: 'notebook', name: 'Труд и обучение' },
-  { icon: 'cloud', name: 'Региональные льготы' }
-];
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
+import { BENEFIT_CATEGORY_LIST } from '@shared/constants/benefitCategories';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const openCategory = (slug: string) => {
+  const path = ROUTE_NAMES.BENEFITS_CATEGORY.replace(':categoryType', slug);
+  router.push(path);
+};
 </script>
 <template>
   <div class="categories">
     <div class="categories__line">
-      <div
-        v-for="item in items"
+      <button
+        v-for="item in BENEFIT_CATEGORY_LIST"
+        :key="item.slug"
         class="category"
+        type="button"
+        @click="openCategory(item.slug)"
       >
         <div class="category__image">
           <img :src="`/assets/icons/${item.icon}-icon.svg`" />
         </div>
         <div class="category__name">{{ item.name }}</div>
-      </div>
+      </button>
     </div>
   </div>
 </template>
@@ -39,6 +42,11 @@ const items: { icon: string; name: string }[] = [
 }
 
 .category {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+
   &__image {
     width: 58px;
     height: 58px;

@@ -17,7 +17,7 @@ defineProps<Card>();
       <div class="tags">
         <div
           v-for="tag of tags"
-          v-key="tag"
+          :key="tag"
           class="tag"
         >
           {{ tag }}
@@ -29,7 +29,6 @@ defineProps<Card>();
 <style lang="scss" scoped>
 .card {
   height: 250px;
-  width: 280px;
   border-radius: 16px;
   background-color: #e5f0ff;
   border: 1px solid #c6ddfd;

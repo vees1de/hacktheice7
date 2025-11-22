@@ -116,11 +116,12 @@ const handleDownloadCertificate = async () => {
 </template>
 <style lang="scss" scoped>
 .over {
-  position: absolute;
+  position: fixed;
   height: 100%;
   width: 100%;
   background-color: #38383886;
   bottom: 0;
+  z-index: 100;
   left: 0;
   display: flex;
   align-items: end;
@@ -131,7 +132,10 @@ const handleDownloadCertificate = async () => {
   border-top-right-radius: 20px;
   background-color: #fff;
   padding: 16px 16px;
-  z-index: 10;
+  z-index: 120;
+  position: fixed;
+  bottom: 0px;
+  left: 0;
 
   &__head {
     display: flex;

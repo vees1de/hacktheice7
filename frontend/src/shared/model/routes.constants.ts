@@ -9,6 +9,7 @@ export const ROUTE_NAMES = {
   CHAT: '/chat',
   SALES: '/sales',
   BENEFITS: '/benefits',
+  BENEFITS_CATEGORY: '/benefits/category/:categoryType',
   BENEFIT_DETAIL: '/benefits/:benefitId',
   ADMIN: '/admin',
   PROFITS: '/profits',

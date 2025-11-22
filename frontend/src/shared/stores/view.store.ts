@@ -33,7 +33,9 @@ export const useViewStore = defineStore('view', () => {
   });
 
   const showProfile = computed(() => {
-    const isOkRoute = !router.currentRoute.value.path.includes('chat');
+    const isOkRoute =
+      !router.currentRoute.value.path.includes('chat') &&
+      !router.currentRoute.value.path.startsWith('/benefits');
 
     return isOkRoute && isAuthenticated.value && !hideGlobalChrome.value;
   });
