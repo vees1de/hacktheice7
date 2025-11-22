@@ -9,6 +9,7 @@ import { OfferModule } from './offer/offer.module';
 import { BenefitModule } from './benefit/benefit.module';
 import { BeneficiaryCategoryModule } from './beneficiary-category/beneficiary-category.module';
 import { SmartSearchModule } from './smart-search/smart-search.module';
+import { LossModule } from './loss/loss.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { SmartSearchModule } from './smart-search/smart-search.module';
     OfferModule,
     BenefitModule,
     BeneficiaryCategoryModule,
-    SmartSearchModule
+    SmartSearchModule,
+    LossModule
   ]
 })
 export class AppModule {}

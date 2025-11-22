@@ -1,13 +1,60 @@
 <script setup lang="ts">
+import { lossApi, type UserLossResult } from '@entities/loss';
+import { computed, onMounted, ref } from 'vue';
+
 const { type = 'both' } = defineProps<{
   type?: 'both' | 'sales' | 'benefits';
 }>();
+
+const lossData = ref<UserLossResult | null>(null);
+const isLossLoading = ref(false);
+
+const currencyFormatter = new Intl.NumberFormat('ru-RU');
+const formatCurrency = (value: number) =>
+  `${currencyFormatter.format(Math.round(value))}₽`;
+
+const monthlyLoss = computed(() => lossData.value?.totalLossMonthly ?? 0);
+const yearlyLoss = computed(() => lossData.value?.totalLossYearly ?? 0);
+const benefitsCount = computed(() => lossData.value?.lossItems.length ?? 0);
+const lossPreview = computed(() =>
+  lossData.value?.lossItems.slice(0, 3) ?? []
+);
+
+const benefitsCountText = computed(() => {
+  const count = benefitsCount.value;
+  if (count === 0) return 'Нет доступных льгот';
+  if (count % 10 === 1 && count % 100 !== 11) return `В ${count} льготе`;
+  if (
+    [2, 3, 4].includes(count % 10) &&
+    ![12, 13, 14].includes(count % 100)
+  ) {
+    return `В ${count} льготах`;
+  }
+  return `В ${count} льготах`;
+});
+
+const loadLoss = async () => {
+  if (type === 'sales') return;
+  try {
+    isLossLoading.value = true;
+    lossData.value = await lossApi.getUserLoss();
+  } catch (error) {
+    console.error('Failed to load user loss', error);
+  } finally {
+    isLossLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  if (type === 'benefits' || type === 'both') {
+    loadLoss();
+  }
+});
 </script>
 <template>
   <div
     v-if="type === 'sales' || type === 'both'"
-    class="economy"
-    style="margin-bottom: 24px"
+    class="economy sales"
   >
     <div class="money">
       <div class="money__sum">13.000₽</div>
@@ -30,18 +77,40 @@ const { type = 'both' } = defineProps<{
     class="economy"
   >
     <div class="money">
-      <div class="money__sum">4.000₽</div>
-      <div class="money__date">11.02.2024-10.01.2025</div>
+      <div class="money__sum">
+        {{ isLossLoading ? '...' : formatCurrency(monthlyLoss) }}
+      </div>
+      <div class="money__date">
+        {{ isLossLoading ? 'Загрузка' : 'в месяц' }}
+      </div>
+      <div class="money__secondary">
+        {{ isLossLoading ? '' : `≈ ${formatCurrency(yearlyLoss)} в год` }}
+      </div>
     </div>
     <div class="shops">
-      <div class="shops__count">В 12 льготах</div>
-      <div class="shops__images">
-        <img
-          src="@shared/assets/images/benefits.png"
-          alt=""
-        />
-        <div>...</div>
+      <div class="shops__count">
+        {{ isLossLoading ? 'Считаем льготы...' : benefitsCountText }}
       </div>
+      <ul
+        v-if="!isLossLoading && lossPreview.length"
+        class="loss-list"
+      >
+        <li
+          v-for="item in lossPreview"
+          :key="item.id"
+        >
+          {{ item.title }}
+        </li>
+        <li v-if="benefitsCount > lossPreview.length">
+          + ещё {{ benefitsCount - lossPreview.length }}
+        </li>
+      </ul>
+      <p
+        v-else-if="!isLossLoading"
+        class="loss-empty"
+      >
+        Заполните профиль, чтобы увидеть недополученные выплаты.
+      </p>
     </div>
   </div>
 </template>
@@ -51,11 +120,16 @@ const { type = 'both' } = defineProps<{
   justify-content: space-around;
   gap: 36px;
   padding-inline: 14px;
+  margin-bottom: 24px;
+}
+
+.sales {
+  margin-bottom: 0;
 }
 
 .money {
-  width: 155px;
-  height: 83px;
+  width: 168px;
+  min-height: 100px;
   background-color: #e5f0ff;
   border: 2px solid #c6ddfd;
   border-radius: 10px;
@@ -76,12 +150,19 @@ const { type = 'both' } = defineProps<{
     color: #a2a2a2;
     font-size: 0.75rem;
   }
+
+  &__secondary {
+    font-size: 0.75rem;
+    color: #475467;
+    margin-top: 4px;
+  }
 }
 
 .shops {
   text-align: center;
   display: grid;
   place-items: center;
+  max-width: 200px;
 
   &__count {
     font-size: 0.875rem;
@@ -99,5 +180,23 @@ const { type = 'both' } = defineProps<{
       height: 32px;
     }
   }
+}
+
+.loss-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #475467;
+  list-style: none;
+  padding: 0;
+}
+
+.loss-empty {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #98a2b3;
+  text-align: center;
 }
 </style>
