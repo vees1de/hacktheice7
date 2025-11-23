@@ -52,15 +52,6 @@ const router = useRouter();
 const redirect = async (route: string) => {
   await router.push(route);
 };
-
-// const benefits = [
-//   { icon: 'bus', name: 'Транспорт' },
-//   { icon: 'heart', name: 'Медицина' },
-//   { icon: 'bus', name: 'ЖКХ' },
-//   { icon: 'cash', name: 'Социальные выплаты' },
-//   { icon: 'wheel', name: 'Образование и досуг' },
-//   { icon: 'document', name: 'Налоговые льготы' }
-// ];
 </script>
 
 <template>
@@ -68,7 +59,7 @@ const redirect = async (route: string) => {
     <div class="home__content">
       <Block class="qr">
         <div class="qr__title">
-          Единый кошелек льготника
+          Единое цифровое удостоверение льготника
           <div
             v-if="visibleBenefitTitles.length"
             class="qr__benefits"
@@ -79,12 +70,6 @@ const redirect = async (route: string) => {
               class="qr__benefit"
             >
               {{ title }}
-            </span>
-            <span
-              v-if="remainingBenefitCount"
-              class="qr__benefit qr__benefit--more"
-            >
-              +{{ remainingBenefitCount }}
             </span>
           </div>
         </div>
@@ -152,7 +137,7 @@ const redirect = async (route: string) => {
 
 <style lang="scss" scoped>
 h3 {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 600;
 }
 
@@ -176,6 +161,7 @@ h3 {
   width: 100%;
   margin-bottom: 32px;
   position: relative;
+  height: 140px;
 
   &__locked {
     position: absolute;
@@ -203,7 +189,6 @@ h3 {
 
   &__title {
     color: #fff;
-    font-size: 1.063;
     padding-top: 8px;
     font-weight: 600;
     width: 60%;
@@ -227,9 +212,8 @@ h3 {
   }
 
   &__benefits {
-    margin-top: 12px;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 8px;
   }
 
@@ -237,12 +221,12 @@ h3 {
     display: inline-flex;
     align-items: center;
     width: fit-content;
-    padding: 6px 16px;
+    padding: 4px 12px;
     border-radius: 999px;
     background-color: #dfeaff;
     color: #0f172a;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
 
     &--more {
       font-weight: 500;

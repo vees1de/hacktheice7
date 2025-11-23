@@ -125,7 +125,6 @@ const handleDownloadCertificate = async () => {
   left: 0;
   display: flex;
   align-items: end;
-  filter: blur(2px);
 }
 
 .qr-sheet {

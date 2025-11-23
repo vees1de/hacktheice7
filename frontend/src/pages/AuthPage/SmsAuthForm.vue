@@ -69,6 +69,7 @@ const emit = defineEmits<{
 .sms-wrapper {
   display: flex;
   flex-direction: column;
+  align-items: center;
   height: calc(100dvh - 214px);
   justify-content: space-between;
   width: 100%;
@@ -77,7 +78,6 @@ const emit = defineEmits<{
 .auth__form {
   width: 100%;
   max-width: 420px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 16px;

@@ -21,7 +21,8 @@ const headers: Record<string, string> = {
   [ROUTE_NAMES.ADMIN]: 'Админка',
   [ROUTE_NAMES.ROOT]: 'Главная',
   [ROUTE_NAMES.EDIT_BENEFITS]: 'Выбрать льготы',
-  [ROUTE_NAMES.PROFITS]: 'Выгода'
+  [ROUTE_NAMES.PROFITS]: 'Выгода',
+  [ROUTE_NAMES.USER_SETTINGS]: 'Настройки'
 };
 </script>
 
