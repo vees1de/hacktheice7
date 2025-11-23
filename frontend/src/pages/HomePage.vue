@@ -37,12 +37,6 @@ const userBenefitTitles = computed(() => {
 const visibleBenefitTitles = computed(() =>
   userBenefitTitles.value.slice(0, 2)
 );
-const remainingBenefitCount = computed(() =>
-  Math.max(
-    userBenefitTitles.value.length - visibleBenefitTitles.value.length,
-    0
-  )
-);
 
 const openQrSheet = () => {
   viewStore.toggleQrVisible();
