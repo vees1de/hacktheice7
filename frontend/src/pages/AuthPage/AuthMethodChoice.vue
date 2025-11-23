@@ -1,8 +1,13 @@
 <script setup lang="ts">
+import { useLangStore } from '@shared/stores/language.store';
+import { storeToRefs } from 'pinia';
+
 const emit = defineEmits<{
   (e: 'select-sms'): void;
   (e: 'select-sber'): void;
 }>();
+
+const { t } = storeToRefs(useLangStore());
 </script>
 
 <template>
@@ -18,9 +23,8 @@ const emit = defineEmits<{
           alt="SMS"
         />
 
-        <span class="card__text aa">
-          <span>Войти</span>
-          <span>по телефону</span>
+        <span class="card__text">
+          <span>{{ t['auth_phone'] }}</span>
         </span>
       </button>
       <button
@@ -34,8 +38,7 @@ const emit = defineEmits<{
         />
 
         <span class="card__text">
-          <span>Войти</span>
-          <span>по Сбер ID</span>
+          <span>{{ t['auth_sber'] }}</span>
         </span>
       </button>
     </div>
@@ -119,6 +122,7 @@ const emit = defineEmits<{
   font-weight: 400;
 
   span {
+    width: 160px;
     text-align: left;
   }
 }

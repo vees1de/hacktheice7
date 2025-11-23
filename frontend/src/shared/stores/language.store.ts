@@ -25,6 +25,7 @@ export const useLangStore = defineStore('lang', () => {
 
   return {
     t,
-    change
+    change,
+    locale
   };
 });
