@@ -18,7 +18,7 @@ const emit = defineEmits<{
           alt="SMS"
         />
 
-        <span class="card__text">
+        <span class="card__text aa">
           <span>Войти</span>
           <span>по телефону</span>
         </span>
@@ -43,6 +43,10 @@ const emit = defineEmits<{
 </template>
 
 <style scoped lang="scss">
+.aa {
+  color: #fff;
+}
+
 .choice {
   display: flex;
 

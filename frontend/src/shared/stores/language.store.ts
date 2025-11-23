@@ -16,7 +16,6 @@ export const useLangStore = defineStore('lang', () => {
   const langs = { ru, sk };
 
   const t = computed(() => {
-    console.log(langs[locale.value]);
     return langs[locale.value];
   });
 

@@ -4,51 +4,11 @@
 @import "./themes/light.scss";
 @import "./variables.scss";
 
-:root {
-    --background-color: #f5f7fb;
-    --text-color: #0e172e;
-    --control-border: #d0d5dd;
-    --focus-color: #2455cc;
-    --font-size-base: 16px;
-    --line-height-base: 1.6;
-}
-
-[data-theme='accessible'] {
-    --background-color: #2455cc;
-    --text-color: #ffffff;
-    --control-border: #c7d2fe;
-    --focus-color: #fff04d;
-    --font-size-base: 18px;
-}
-
-[data-theme='accessible'] {
-    color: var(--text-color);
-}
-
-[data-theme='accessible'] * {
-    color: inherit !important;
-}
-
-[data-theme='accessible'] :where(section, article, .card, .block, .benefit-card, .category-card, .chart-card, .settings, .theme-card, .profile, .auth, .menu, .economy, .sales, .benefits, .home__content, .summary, .chart-card, .categories-list, .category-card__body) {
-    background-color: rgba(255, 255, 255, 0.08) !important;
-    border-color: var(--control-border) !important;
-}
 
 html {
     font-family: Inter, Inter dev, sans-serif;
-    color: var(--text-color);
-    font-size: var(--font-size-base);
-}
+    color: #0E172E;
 
-body {
-    background-color: var(--background-color);
-    color: var(--text-color);
-    line-height: var(--line-height-base);
-    min-height: 100vh;
-}
-
-:where(body, h1, h2, h3, h4, h5, h6, p, span, label, li, strong, em) {
-    color: var(--text-color);
 }
 
 *,
@@ -57,58 +17,6 @@ body {
     box-sizing: border-box;
     font-family: inherit;
     scrollbar-width: none;
-}
-
-:where(button, input, textarea, select) {
-    font: inherit;
-    color: inherit;
-}
-
-button {
-    cursor: pointer;
-}
-
-:where(input, textarea, select) {
-    border-radius: 12px;
-    border: 1px solid var(--control-border);
-    padding: 10px 12px;
-    background-color: #fff;
-    color: inherit;
-}
-
-[data-theme='accessible'] input,
-[data-theme='accessible'] textarea,
-[data-theme='accessible'] select {
-    background-color: rgba(255, 255, 255, 0.16);
-    color: #fff;
-}
-
-[data-theme='accessible'] button {
-    border-color: var(--control-border);
-}
-
-*:focus-visible {
-    outline: 3px solid var(--focus-color);
-    outline-offset: 3px;
-}
-
-a {
-    color: inherit;
-    text-decoration: underline;
-}
-
-::selection {
-    background-color: rgba(36, 85, 204, 0.35);
-    color: #000;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    * {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-    }
 }
 
 .section-heading {
