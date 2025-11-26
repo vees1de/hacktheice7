@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 import { userApi } from '../api/user';
 import { UserProfile } from '../types/user.types';
@@ -15,11 +15,16 @@ export const useUserStore = defineStore('user', () => {
     regionId: '',
     status: 'PENDING',
     isVerified: false,
-    isEsiaVerified: false
+    isEsiaVerified: false,
+    userBeneficiaryCategories: []
   });
 
   const setUser = (setUser: UserProfile) => {
-    user.value = setUser;
+    user.value = {
+      ...user.value,
+      ...setUser,
+      userBeneficiaryCategories: setUser.userBeneficiaryCategories ?? []
+    };
   };
 
   const getUser = async () => {
@@ -27,5 +32,9 @@ export const useUserStore = defineStore('user', () => {
     setUser(response.data);
   };
 
-  return { setUser, user, getUser };
+  const hasBenefits = computed(
+    () => (user.value.userBeneficiaryCategories?.length ?? 0) > 0
+  );
+
+  return { setUser, user, getUser, hasBenefits };
 });

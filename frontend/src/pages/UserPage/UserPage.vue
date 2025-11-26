@@ -2,7 +2,7 @@
 import { useAuthStore } from '@entities/auth';
 import { downloadCertificatePdf, useUserStore } from '@entities/user';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { RouterView, useRouter } from 'vue-router';
 
 const { user } = storeToRefs(useUserStore());
@@ -20,6 +20,13 @@ const exit = async () => {
 };
 
 const isCertificateLoading = ref(false);
+const benefitTitles = computed(
+  () =>
+    user.value.userBeneficiaryCategories?.map(
+      category =>
+        category.beneficiaryCategory?.title || category.beneficiaryCategory?.name
+    ) ?? []
+);
 const downloadCertificate = async () => {
   if (isCertificateLoading.value) return;
   isCertificateLoading.value = true;
@@ -73,6 +80,36 @@ const downloadCertificate = async () => {
           />
         </div>
       </div>
+      <div class="profile__benefits">
+        <div class="benefits__header">
+          <h3>Ваши льготы</h3>
+          <button
+            class="benefits__action"
+            type="button"
+            @click="redirectTo"
+          >
+            Настроить
+          </button>
+        </div>
+        <div
+          v-if="benefitTitles.length"
+          class="benefits__chips"
+        >
+          <span
+            v-for="title in benefitTitles"
+            :key="title"
+            class="benefits__chip"
+          >
+            {{ title }}
+          </span>
+        </div>
+        <p
+          v-else
+          class="benefits__empty"
+        >
+          Льготы еще не выбраны. Нажмите «Настроить», чтобы добавить подходящие категории.
+        </p>
+      </div>
       <div class="profile__actions">
         <div class="download-card">
           <button
@@ -115,6 +152,16 @@ const downloadCertificate = async () => {
     display: grid;
     gap: 16px;
     width: 100%;
+  }
+
+  &__benefits {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid #d9d9d9;
+    background: #f8fafc;
+    display: grid;
+    gap: 12px;
   }
 
   .edit-button {
@@ -183,6 +230,52 @@ const downloadCertificate = async () => {
         cursor: default;
       }
     }
+  }
+}
+
+.benefits__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+
+  h3 {
+    margin: 0;
+  }
+}
+
+.benefits__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.benefits__chip {
+  background: #e0ecff;
+  color: #1a73e8;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.benefits__empty {
+  margin: 0;
+  color: #6b7280;
+}
+
+.benefits__action {
+  border: none;
+  background: linear-gradient(135deg, #1a73e8, #2563eb);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
   }
 }
 </style>

@@ -10,20 +10,39 @@ import { Economy } from '@widgets/possible-economy';
 import { QrSheetComponent } from '@widgets/qr-sheet';
 import { SalesCarousel } from '@widgets/sales-carousel';
 import { storeToRefs } from 'pinia';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import BenefitPromptModal from '@shared/ui/BenefitPromptModal.vue';
 
 const viewStore = useViewStore();
 const { isQrSheetVisible } = storeToRefs(viewStore);
-const { user } = storeToRefs(useUserStore());
+const userStore = useUserStore();
+const { user, hasBenefits } = storeToRefs(userStore);
 const catalogStore = useCatalogStore();
 const { benefits, offers, benefitsLoading, offersLoading } =
   storeToRefs(catalogStore);
+const showBenefitModal = ref(false);
 
-onMounted(() => {
+onMounted(async () => {
+  if (!user.value?.id) {
+    try {
+      await userStore.getUser();
+    } catch (error) {
+      // ignore
+    }
+  }
   catalogStore.fetchBenefits();
   catalogStore.fetchOffers();
 });
+
+watch(
+  () => [hasBenefits.value, user.value?.id],
+  ([hasAny]) => {
+    if (!user.value?.id) return;
+    showBenefitModal.value = !hasAny;
+  },
+  { immediate: true }
+);
 
 const userBenefitTitles = computed(() => {
   return (
@@ -45,6 +64,11 @@ const openQrSheet = () => {
 const router = useRouter();
 const redirect = async (route: string) => {
   await router.push(route);
+};
+
+const goToBenefitSelection = async () => {
+  showBenefitModal.value = false;
+  await router.push(ROUTE_NAMES.EDIT_BENEFITS);
 };
 </script>
 
@@ -127,6 +151,14 @@ const redirect = async (route: string) => {
     </div>
   </div>
   <QrSheetComponent v-if="isQrSheetVisible" />
+  <BenefitPromptModal
+    :open="showBenefitModal"
+    description="Укажите категории, чтобы мы подобрали льготы и открыли чат."
+    primary-label="Выбрать льготы"
+    secondary-label="Продолжить позже"
+    @primary="goToBenefitSelection"
+    @close="showBenefitModal = false"
+  />
 </template>
 
 <style lang="scss" scoped>

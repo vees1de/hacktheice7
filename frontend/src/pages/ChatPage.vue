@@ -4,8 +4,10 @@ import {
   type SmartSearchResponse,
   smartSearchApi
 } from '@entities/smart-search/api/smart-search.api';
+import { useUserStore } from '@entities/user';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
-import { computed, nextTick, ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 type ChatMessage = {
@@ -29,6 +31,9 @@ const isSending = ref(false);
 const chatBody = ref<HTMLElement | null>(null);
 const searchAllBenefits = ref(false);
 const router = useRouter();
+const userStore = useUserStore();
+const { user, hasBenefits } = storeToRefs(userStore);
+const isBlocked = computed(() => !hasBenefits.value);
 
 const hasMessages = computed(() => messages.value.length > 0);
 
@@ -73,6 +78,10 @@ const handleSmartSearchResponse = (payload: SmartSearchResponse) => {
 };
 
 const sendMessage = async () => {
+  if (isBlocked.value) {
+    return;
+  }
+
   if (!inputValue.value.trim() || isSending.value) return;
   const text = inputValue.value.trim();
   appendMessage({
@@ -113,11 +122,41 @@ const openBenefit = (item: SmartSearchItem) => {
   const path = ROUTE_NAMES.BENEFIT_DETAIL.replace(':benefitId', item.id);
   router.push(path);
 };
+
+const openBenefits = async () => {
+  await router.push(ROUTE_NAMES.EDIT_BENEFITS);
+};
+
+onMounted(async () => {
+  if (!user.value?.id) {
+    try {
+      await userStore.getUser();
+    } catch (error) {
+      // ignore
+    }
+  }
+});
 </script>
 
 <template>
   <div class="chat-page">
     <div class="chat-area">
+      <div
+        v-if="isBlocked"
+        class="chat-block"
+      >
+        <p class="chat-block__title">Чат-бот доступен после выбора льгот</p>
+        <p class="chat-block__text">
+          Добавьте хотя бы одну категорию, чтобы мы могли дать точные ответы.
+        </p>
+        <button
+          class="chat-block__action"
+          type="button"
+          @click="openBenefits"
+        >
+          Выбрать льготы
+        </button>
+      </div>
       <div
         class="chat-body"
         ref="chatBody"
@@ -175,11 +214,12 @@ const openBenefit = (item: SmartSearchItem) => {
           class="chat-textarea"
           placeholder="Как тебе помочь?"
           rows="2"
+          :disabled="isBlocked"
           @keydown="handleKeyPress"
         />
         <button
           class="send-btn"
-          :disabled="isSending"
+          :disabled="isSending || isBlocked"
           @click="sendMessage"
         >
           {{ isSending ? '...' : 'Отправить' }}
@@ -254,6 +294,42 @@ const openBenefit = (item: SmartSearchItem) => {
   border-radius: 24px 24px 12px 12px;
   border: 1px solid #e5e7eb;
   overflow: hidden;
+}
+
+.chat-block {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fef2f2;
+  color: #991b1b;
+  display: grid;
+  gap: 8px;
+  text-align: center;
+
+  &__title {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  &__text {
+    margin: 0;
+    color: #7f1d1d;
+  }
+
+  &__action {
+    justify-self: center;
+    border: none;
+    background: linear-gradient(135deg, #f97316, #ef4444);
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
 }
 
 .chat-body {

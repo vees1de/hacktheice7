@@ -1,12 +1,13 @@
 <script lang="ts" setup>
-import { userApi } from '@entities/user';
+import { useUserStore, userApi } from '@entities/user';
 import { useViewStore } from '@shared/stores/view.store';
 import { Button } from '@shared/ui';
-import { reactive } from 'vue';
+import { onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const viewStore = useViewStore();
+const userStore = useUserStore();
 
 const BENEFIT_CATEGORIES = reactive([
   { value: 'PENSIONER', label: 'Пенсионер', isSelected: false },
@@ -43,7 +44,8 @@ const submit = async () => {
 
   try {
     if (selectedBenefits.length) {
-      await userApi.updateUserCategories(selectedBenefits);
+      const profile = await userApi.updateUserCategories(selectedBenefits);
+      userStore.setUser(profile);
     }
   } catch (error) {
   } finally {
@@ -51,6 +53,18 @@ const submit = async () => {
     await router.back();
   }
 };
+
+onMounted(() => {
+  const current = userStore.user.userBeneficiaryCategories ?? [];
+  current.forEach(category => {
+    const idx = BENEFIT_CATEGORIES.findIndex(
+      c => c.value === category.beneficiaryCategory.name
+    );
+    if (idx !== -1) {
+      BENEFIT_CATEGORIES[idx].isSelected = true;
+    }
+  });
+});
 </script>
 <template>
   <div class="edit-benefits">
