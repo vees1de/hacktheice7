@@ -15,12 +15,14 @@ import {
 } from '@shared/lib/webauthn';
 
 const STORAGE_KEY = 'biometric-login-meta';
+const PIN_KEY = 'secure-pin';
 
 export const useBiometricStore = defineStore('biometric', () => {
   const supported = ref<boolean | null>(null);
   const meta = ref<BiometricMeta | null>(null);
   const isProcessing = ref(false);
   const lastError = ref<string | null>(null);
+  const pinHash = ref<string | null>(null);
 
   const authStore = useAuthStore();
   const userStore = useUserStore();
@@ -28,6 +30,7 @@ export const useBiometricStore = defineStore('biometric', () => {
   const loadFromStorage = async () => {
     meta.value =
       (await localForage.getItem<BiometricMeta>(STORAGE_KEY)) || null;
+    pinHash.value = (await localForage.getItem<string>(PIN_KEY)) || null;
   };
 
   const saveMeta = async (payload: BiometricMeta | null) => {
@@ -37,6 +40,27 @@ export const useBiometricStore = defineStore('biometric', () => {
     } else {
       await localForage.removeItem(STORAGE_KEY);
     }
+  };
+
+  const hashPin = (pin: string) => btoa(`pin:${pin}`);
+
+  const setPin = async (pin: string) => {
+    if (!/^[0-9]{4,6}$/.test(pin)) {
+      throw new Error('ПИН должен быть 4-6 цифр');
+    }
+    const hashed = hashPin(pin);
+    pinHash.value = hashed;
+    await localForage.setItem(PIN_KEY, hashed);
+  };
+
+  const clearPin = async () => {
+    pinHash.value = null;
+    await localForage.removeItem(PIN_KEY);
+  };
+
+  const verifyPin = (pin: string) => {
+    if (!pinHash.value) return false;
+    return hashPin(pin) === pinHash.value;
   };
 
   const ensureSupported = async () => {
@@ -144,18 +168,24 @@ export const useBiometricStore = defineStore('biometric', () => {
   const canLogin = computed(
     () => Boolean(meta.value?.phone) && supported.value !== false
   );
+  const isPinSet = computed(() => Boolean(pinHash.value));
 
   return {
     supported,
     meta,
     isProcessing,
     lastError,
+    pinHash,
     loadFromStorage,
     ensureSupported,
     enroll,
     loginWithBiometrics,
     disable,
     rememberIdentity,
-    canLogin
+    canLogin,
+    setPin,
+    clearPin,
+    verifyPin,
+    isPinSet
   };
 });

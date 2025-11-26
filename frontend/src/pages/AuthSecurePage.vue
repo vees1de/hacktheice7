@@ -3,7 +3,7 @@ import { useAuthStore, useBiometricStore } from '@entities/auth';
 import { useUserStore } from '@entities/user';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { storeToRefs } from 'pinia';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const biometricStore = useBiometricStore();
@@ -11,12 +11,10 @@ const userStore = useUserStore();
 const authStore = useAuthStore();
 const router = useRouter();
 
-const { meta, supported, isProcessing } = storeToRefs(biometricStore);
+const { meta, supported, isProcessing, isPinSet } = storeToRefs(biometricStore);
 const message = ref('');
-
-const goHome = async () => {
-  await router.push(ROUTE_NAMES.HOME);
-};
+const pin = ref('');
+const pinRepeat = ref('');
 
 const enableBiometrics = async () => {
   message.value = '';
@@ -42,15 +40,25 @@ const enableBiometrics = async () => {
   }
 };
 
-const loginWithBiometrics = async () => {
+const savePin = async () => {
   message.value = '';
   try {
-    await biometricStore.loginWithBiometrics();
-    await router.push(ROUTE_NAMES.HOME);
+    if (pin.value !== pinRepeat.value) {
+      message.value = 'ПИНы не совпадают.';
+      return;
+    }
+    await biometricStore.setPin(pin.value.trim());
+    message.value = 'ПИН сохранен. Теперь можно входить без пароля.';
   } catch (error: any) {
-    message.value = error?.message ?? 'Не получилось войти по биометрии.';
+    message.value = error?.message ?? 'Не удалось сохранить ПИН.';
   }
 };
+
+const goToLock = async () => {
+  await router.push(ROUTE_NAMES.LOCK);
+};
+
+const readyToContinue = computed(() => isPinSet.value || meta.value?.phone);
 
 onMounted(async () => {
   await biometricStore.ensureSupported();
@@ -63,7 +71,12 @@ onMounted(async () => {
     }
   }
 
-  if (!biometricStore.meta?.phone && !authStore.isAuthenticated) {
+  if (meta.value?.phone || isPinSet.value) {
+    router.push(ROUTE_NAMES.LOCK);
+    return;
+  }
+
+  if (!authStore.isAuthenticated) {
     router.push(ROUTE_NAMES.WELCOME);
   }
 });
@@ -72,45 +85,80 @@ onMounted(async () => {
 <template>
   <div class="secure">
     <div class="secure__card">
-      <h1>Дополнительная защита</h1>
-      <p>
-        Включите вход по Face ID / отпечатку, чтобы быстро возвращаться в
-        приложение.
-      </p>
-
-      <div class="secure__actions">
-        <button
-          v-if="supported !== false"
-          class="btn btn--primary"
-          type="button"
-          :disabled="isProcessing"
-          @click="meta?.phone ? loginWithBiometrics() : enableBiometrics()"
-        >
-          {{
-            meta?.phone
-              ? isProcessing
-                ? 'Проверяем...'
-                : 'Войти по биометрии'
-              : isProcessing
-                ? 'Подключаем...'
-                : 'Подключить биометрию'
-          }}
-        </button>
-        <button
-          class="btn btn--ghost"
-          type="button"
-          @click="goHome"
-        >
-          Продолжить без Face ID
-        </button>
+      <div class="secure__header">
+        <p class="secure__eyebrow">Шаг защиты</p>
+        <h1>Создайте ПИН и включите Face ID</h1>
+        <p>Нужно хотя бы одно: ПИН или биометрия.</p>
       </div>
 
-      <p
-        v-if="supported === false"
-        class="hint"
+      <div class="secure__grid">
+        <div class="secure__panel">
+          <div class="panel__header">
+            <p class="panel__title">ПИН-код</p>
+            <p class="panel__subtitle">4–6 цифр для быстрого входа.</p>
+          </div>
+          <div class="pin-fields">
+            <input
+              v-model="pin"
+              type="password"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="6"
+              placeholder="Придумайте ПИН"
+            />
+            <input
+              v-model="pinRepeat"
+              type="password"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              maxlength="6"
+              placeholder="Повторите ПИН"
+            />
+            <button
+              class="btn btn--ghost"
+              type="button"
+              :disabled="isPinSet || pin.length < 4 || pin !== pinRepeat"
+              @click="savePin"
+            >
+              {{ isPinSet ? 'ПИН сохранен' : 'Сохранить ПИН' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="secure__panel">
+          <div class="panel__header">
+            <p class="panel__title">Face ID / отпечаток</p>
+            <p class="panel__subtitle">
+              Подключите биометрию для мгновенного входа.
+            </p>
+          </div>
+          <button
+            v-if="supported !== false"
+            class="btn btn--primary"
+            type="button"
+            :disabled="isProcessing"
+            @click="enableBiometrics"
+          >
+            {{ isProcessing ? 'Подключаем...' : 'Включить биометрию' }}
+          </button>
+          <p
+            v-if="supported === false"
+            class="hint"
+          >
+            Биометрия на этом устройстве недоступна.
+          </p>
+        </div>
+      </div>
+
+      <button
+        class="btn btn--success"
+        type="button"
+        :disabled="!readyToContinue"
+        @click="goToLock"
       >
-        Биометрия недоступна на этом устройстве. Вы можете продолжить без неё.
-      </p>
+        Продолжить
+      </button>
+
       <p
         v-if="message"
         class="hint"
@@ -123,21 +171,27 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .secure {
-  min-height: calc(100dvh - 106px);
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 15% 20%, #0ea5e91c 0, transparent 26%),
+    radial-gradient(circle at 85% 15%, #312e8114 0, transparent 22%),
+    linear-gradient(135deg, #0f172a, #0b486b 70%, #0f172a);
 }
 
 .secure__card {
   width: 100%;
-  max-width: 440px;
-  background: #fff;
+  max-width: 520px;
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.4);
   display: grid;
-  gap: 12px;
+  gap: 16px;
+  backdrop-filter: blur(12px);
 
   h1 {
     margin: 0;
@@ -148,41 +202,97 @@ onMounted(async () => {
     margin: 0;
     color: #475467;
   }
-}
-
-.secure__actions {
-  display: grid;
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.btn {
-  border: none;
-  border-radius: 12px;
-  padding: 12px 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
+  .secure__header {
+    .secure__eyebrow {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: #0ea5e9;
+    }
+    h1 {
+      margin: 4px 0 8px;
+    }
+    p {
+      margin: 0;
+    }
   }
-}
 
-.btn--primary {
-  background: linear-gradient(135deg, #0f766e, #0ea5e9);
-  color: #fff;
-}
+  .secure__grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr;
+  }
 
-.btn--ghost {
-  background: #f4f6fb;
-  color: #1f2937;
-}
+  .secure__panel {
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 14px;
+    background: #f8fafc;
+    display: grid;
+    gap: 10px;
+  }
 
-.hint {
-  margin: 0;
-  color: #7f1d1d;
-  font-size: 0.95rem;
+  .panel__header {
+    display: grid;
+    gap: 4px;
+  }
+
+  .panel__title {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .panel__subtitle {
+    margin: 0;
+    color: #475467;
+  }
+
+  .pin-fields {
+    display: grid;
+    gap: 8px;
+
+    input {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 1rem;
+    }
+  }
+
+  .btn {
+    border: none;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+  }
+
+  .btn--primary {
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: #fff;
+  }
+
+  .btn--ghost {
+    background: #e0ecff;
+    color: #1f2937;
+  }
+
+  .btn--success {
+    background: linear-gradient(135deg, #10b981, #22c55e);
+    color: #fff;
+  }
+
+  .hint {
+    margin: 0;
+    color: #7f1d1d;
+    font-size: 0.95rem;
+  }
 }
 </style>

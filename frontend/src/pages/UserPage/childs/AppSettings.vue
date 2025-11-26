@@ -78,6 +78,16 @@ onMounted(async () => {
   await biometricStore.ensureSupported();
   await biometricStore.loadFromStorage();
 });
+
+const removeBiometrics = async () => {
+  biometricMessage.value = '';
+  try {
+    await biometricStore.disable();
+    biometricMessage.value = 'Face ID / отпечаток удалены с этого устройства.';
+  } catch (error: any) {
+    biometricMessage.value = error?.message ?? 'Не удалось удалить биометрию.';
+  }
+};
 </script>
 
 <template>
@@ -127,6 +137,15 @@ onMounted(async () => {
           {{ biometricEnabled ? 'Отключить' : 'Включить' }}
         </button>
       </div>
+      <button
+        v-if="biometricEnabled"
+        class="security__clear"
+        type="button"
+        :disabled="isProcessing"
+        @click="removeBiometrics"
+      >
+        Удалить Face ID с этого устройства
+      </button>
       <p
         v-if="!biometricAvailable"
         class="security__hint"
@@ -269,6 +288,22 @@ onMounted(async () => {
 
     &.error {
       color: #ef4444;
+    }
+  }
+
+  &__clear {
+    border: 1px dashed #ef4444;
+    background: #fff5f5;
+    color: #b91c1c;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
     }
   }
 }

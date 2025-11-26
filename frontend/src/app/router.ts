@@ -12,6 +12,7 @@ import HomePage from '@pages/HomePage.vue';
 import ProfitPage from '@pages/ProfitPage.vue';
 import RegistrationPage from '@pages/RegistrationPage.vue';
 import SalesPage from '@pages/SalesPage.vue';
+import AuthLockPage from '@pages/AuthLockPage.vue';
 import UserPage from '@pages/UserPage/UserPage.vue';
 import AppSettings from '@pages/UserPage/childs/AppSettings.vue';
 import EditBenefits from '@pages/UserPage/childs/EditBenefits.vue';
@@ -27,6 +28,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: ROUTE_NAMES.AUTH, component: AuthPage },
   { path: ROUTE_NAMES.SBER, component: AuthSberPage },
   { path: ROUTE_NAMES.SECURE, component: AuthSecurePage },
+  { path: ROUTE_NAMES.LOCK, component: AuthLockPage },
   { path: ROUTE_NAMES.REGISTRATION, component: RegistrationPage },
   { path: ROUTE_NAMES.HOME, component: HomePage },
   {
@@ -62,7 +64,8 @@ const PUBLIC_ROUTES = new Set<string>([
   ROUTE_NAMES.AUTH,
   ROUTE_NAMES.SBER,
   ROUTE_NAMES.REGISTRATION,
-  ROUTE_NAMES.SECURE
+  ROUTE_NAMES.SECURE,
+  ROUTE_NAMES.LOCK
 ]);
 
 const markActivity = () => {
@@ -105,12 +108,14 @@ router.beforeEach(async (to, _from, next) => {
     // ignore
   }
 
-  if (
-    to.path === ROUTE_NAMES.WELCOME &&
-    biometricStore.meta?.phone &&
-    !isAuthenticated.value
-  ) {
-    next({ path: ROUTE_NAMES.SECURE });
+  const hasQuickAccess =
+    Boolean(biometricStore.meta?.phone) ||
+    Boolean(
+      (biometricStore as any).isPinSet?.value ?? (biometricStore as any).pinHash
+    );
+
+  if (to.path === ROUTE_NAMES.WELCOME && hasQuickAccess && !isAuthenticated.value) {
+    next({ path: ROUTE_NAMES.LOCK });
     return;
   }
 
@@ -124,11 +129,12 @@ router.beforeEach(async (to, _from, next) => {
 
   const idle =
     isAuthenticated.value &&
+    to.path !== ROUTE_NAMES.LOCK &&
     to.path !== ROUTE_NAMES.SECURE &&
     !PUBLIC_ROUTES.has(to.path) &&
     isIdle();
   if (idle) {
-    next({ path: ROUTE_NAMES.SECURE });
+    next({ path: ROUTE_NAMES.LOCK });
     return;
   }
 
@@ -136,8 +142,16 @@ router.beforeEach(async (to, _from, next) => {
 
   if (
     to.path === ROUTE_NAMES.SECURE &&
-    !isAuthenticated.value &&
-    !biometricStore.meta?.phone
+    (!isAuthenticated.value || hasQuickAccess)
+  ) {
+    next({ path: hasQuickAccess ? ROUTE_NAMES.LOCK : ROUTE_NAMES.WELCOME });
+    return;
+  }
+
+  if (
+    to.path === ROUTE_NAMES.LOCK &&
+    !hasQuickAccess &&
+    !isAuthenticated.value
   ) {
     next({ path: ROUTE_NAMES.WELCOME });
     return;

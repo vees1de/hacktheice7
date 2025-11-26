@@ -4,6 +4,7 @@ export const ROUTE_NAMES = {
   SBER: '/auth/sberid',
   REGISTRATION: '/auth/register',
   SECURE: '/auth/secure',
+  LOCK: '/auth/lock',
   HOME: '/home',
   USER: '/user',
   EDIT_BENEFITS: '/user/edit-benefits',
