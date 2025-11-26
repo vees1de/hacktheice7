@@ -6,7 +6,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const biometricStore = useBiometricStore();
-const { meta, supported, isProcessing, isPinSet } = storeToRefs(biometricStore);
+const { meta, supported, isPinSet } = storeToRefs(biometricStore);
 const router = useRouter();
 
 const pin = ref(''); // max 4 digits

@@ -63,65 +63,64 @@ const handleDownloadCertificate = async () => {
 };
 </script>
 <template>
-  <div class="over">
-    <div class="qr-sheet">
-      <div class="qr-sheet__head">
-        <span>Единое цифровое удостоверение льготника</span>
-        <div
-          @click="toggleQrVisible()"
-          class="exit"
-        >
-          X
-        </div>
+  <div class="over"></div>
+  <div class="qr-sheet">
+    <div class="qr-sheet__head">
+      <span>Единое цифровое удостоверение льготника</span>
+      <div
+        @click="toggleQrVisible()"
+        class="exit"
+      >
+        X
       </div>
-      <div class="qr-sheet__content">
-        <div class="qr-sheet__img">
-          <template v-if="loading">
-            <p>Генерируем QR...</p>
-          </template>
-          <template v-else-if="error">
-            <p class="error">{{ error }}</p>
-            <button
-              class="retry"
-              @click="generateQr"
-            >
-              Повторить
-            </button>
-          </template>
-          <template v-else-if="qrDataUrl">
-            <img
-              :src="qrDataUrl"
-              alt="QR token"
-            />
-            <p class="token">{{ token }}</p>
-          </template>
-        </div>
-        <p class="hint">
-          Покажите QR кассиру. Токен одноразовый и действует ограниченное время.
-        </p>
-        <button
-          class="certificate-btn"
-          :disabled="isCertificateDownloading"
-          @click="handleDownloadCertificate"
-        >
-          {{
-            isCertificateDownloading
-              ? 'Готовим PDF...'
-              : 'Скачать бумажное удостоверение'
-          }}
-        </button>
+    </div>
+    <div class="qr-sheet__content">
+      <div class="qr-sheet__img">
+        <template v-if="loading">
+          <p>Генерируем QR...</p>
+        </template>
+        <template v-else-if="error">
+          <p class="error">{{ error }}</p>
+          <button
+            class="retry"
+            @click="generateQr"
+          >
+            Повторить
+          </button>
+        </template>
+        <template v-else-if="qrDataUrl">
+          <img
+            :src="qrDataUrl"
+            alt="QR token"
+          />
+          <p class="token">{{ token }}</p>
+        </template>
       </div>
+      <p class="hint">
+        Покажите QR кассиру. Токен одноразовый и действует ограниченное время.
+      </p>
+      <button
+        class="certificate-btn"
+        :disabled="isCertificateDownloading"
+        @click="handleDownloadCertificate"
+      >
+        {{
+          isCertificateDownloading
+            ? 'Готовим PDF...'
+            : 'Скачать бумажное удостоверение'
+        }}
+      </button>
     </div>
   </div>
 </template>
 <style lang="scss" scoped>
 .over {
   position: fixed;
-  height: 100%;
-  width: 100%;
+  height: 100dvh;
+  width: 100dvw;
   background-color: #38383886;
   bottom: 0;
-  z-index: 100;
+  z-index: 10;
   left: 0;
   display: flex;
   align-items: end;
@@ -132,7 +131,7 @@ const handleDownloadCertificate = async () => {
   border-top-right-radius: 20px;
   background-color: #fff;
   padding: 16px 16px;
-  z-index: 120;
+  z-index: 1000;
   position: fixed;
   bottom: 0px;
   left: 0;
