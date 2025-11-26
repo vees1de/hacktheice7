@@ -43,6 +43,14 @@ const codeError = ref('');
 const codeInputKey = ref(0);
 const isCodeSubmitting = ref(false);
 
+const showError = (error: any, fallback: string) => {
+  const message =
+    (error?.response?.data as { message?: string })?.message ||
+    error?.message ||
+    fallback;
+  alert(message);
+};
+
 onMounted(async () => {
   const response = await regionApi.getAll();
   const regions: Option[] = response.map(region => ({
@@ -92,7 +100,10 @@ const goToStep2 = async () => {
       await authApi.register(body);
       step.value = 2;
     } catch (error) {
-      console.log(error);
+      showError(
+        error,
+        'Не удалось отправить данные. Проверьте форму и попробуйте снова.'
+      );
     }
   }
   toggleLoader();
@@ -125,7 +136,7 @@ const handleFinal = async (code: string) => {
       resetCodeInput('Введен неверный код. Попробуйте ещё раз.');
       return;
     }
-    console.log(error);
+    showError(error, 'Не удалось подтвердить код. Попробуйте позже.');
   } finally {
     isCodeSubmitting.value = false;
     toggleLoader();

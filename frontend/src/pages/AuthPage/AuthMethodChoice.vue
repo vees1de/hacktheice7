@@ -4,15 +4,12 @@ import { storeToRefs } from 'pinia';
 
 const emit = defineEmits<{
   (e: 'select-sms'): void;
-  (e: 'select-sber'): void;
-  (e: 'select-biometric'): void;
+  (e: 'select-demo'): void;
 }>();
 
 const { t } = storeToRefs(useLangStore());
 
-const { showBiometric = false } = defineProps<{
-  showBiometric?: boolean;
-}>();
+defineProps<{}>();
 </script>
 
 <template>
@@ -34,31 +31,16 @@ const { showBiometric = false } = defineProps<{
       </button>
       <button
         type="button"
-        class="card card--sber"
-        @click="emit('select-sber')"
-      >
-        <img
-          src="/assets/icons/sber.svg"
-          alt="Sber"
-        />
-
-        <span class="card__text">
-          <span>{{ t['auth_sber'] }}</span>
-        </span>
-      </button>
-      <button
-        v-if="showBiometric"
-        type="button"
-        class="card card--bio"
-        @click="emit('select-biometric')"
+        class="card card--demo"
+        @click="emit('select-demo')"
       >
         <img
           src="/assets/icons/locked.svg"
-          alt="Biometric"
+          alt="Demo"
         />
 
         <span class="card__text">
-          <span>{{ t['auth_biometric'] }}</span>
+          <span>Демо доступ</span>
         </span>
       </button>
     </div>
@@ -80,7 +62,7 @@ const { showBiometric = false } = defineProps<{
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: 7fr 3fr;
   width: 100%;
   gap: 10px;
 }
@@ -114,17 +96,12 @@ const { showBiometric = false } = defineProps<{
   max-height: 128px;
 }
 
-.card--sber {
+.card--demo {
   flex: 1;
   aspect-ratio: 1/1;
   background: #dae9ff;
   color: #111827;
   max-height: 128px;
-}
-
-.card--bio {
-  background: linear-gradient(135deg, #0f766e, #0ea5e9);
-  color: #fff;
 }
 
 .card__icon {
@@ -149,7 +126,6 @@ const { showBiometric = false } = defineProps<{
   font-weight: 400;
 
   span {
-    width: 160px;
     text-align: left;
   }
 }

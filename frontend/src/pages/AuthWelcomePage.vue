@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AuthLoginRequest } from '@entities/auth';
-import { useAuthStore, useBiometricStore } from '@entities/auth';
+import { useAuthStore } from '@entities/auth';
 import { useUserStore } from '@entities/user';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { useLangStore } from '@shared/stores/language.store';
@@ -12,26 +12,27 @@ import AuthMethodChoice from './AuthPage/AuthMethodChoice.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
-const biometricStore = useBiometricStore();
 const userStore = useUserStore();
 const langStore = useLangStore();
 const { locale } = storeToRefs(langStore);
 const { change } = langStore;
 
 const goToSms = () => router.push(ROUTE_NAMES.AUTH);
-const goToSber = () => router.push(ROUTE_NAMES.SBER);
 
 const isDemoLoading = ref(false);
 const demoCredentials: AuthLoginRequest = {
   phone: '79222222222',
   password: '123456'
 };
-const biometricError = ref('');
-const { canLogin } = storeToRefs(biometricStore);
-
 onMounted(async () => {
-  await biometricStore.ensureSupported();
-  await biometricStore.loadFromStorage();
+  try {
+    await authStore.checkToken();
+    if (authStore.isAuthenticated) {
+      await router.push(ROUTE_NAMES.SECURE);
+    }
+  } catch {
+    // ignore
+  }
 });
 
 const loginAsDemo = async () => {
@@ -48,16 +49,6 @@ const loginAsDemo = async () => {
   }
 };
 
-const loginWithBiometrics = async () => {
-  biometricError.value = '';
-  try {
-    await biometricStore.loginWithBiometrics();
-    await router.push(ROUTE_NAMES.HOME);
-  } catch (error: any) {
-    biometricError.value =
-      error?.message ?? 'Не получилось войти по биометрии. Попробуйте еще раз.';
-  }
-};
 </script>
 
 <template>
@@ -92,24 +83,8 @@ const loginWithBiometrics = async () => {
 
     <AuthMethodChoice
       @select-sms="goToSms"
-      @select-sber="goToSber"
-      :show-biometric="canLogin"
-      @select-biometric="loginWithBiometrics"
+      @select-demo="loginAsDemo"
     />
-    <p
-      v-if="biometricError"
-      class="error"
-    >
-      {{ biometricError }}
-    </p>
-    <button
-      class="demo-button"
-      :disabled="isDemoLoading"
-      type="button"
-      @click="loginAsDemo"
-    >
-      {{ isDemoLoading ? 'Входим...' : 'ДЕМО ДОСТУП' }}
-    </button>
   </div>
 </template>
 

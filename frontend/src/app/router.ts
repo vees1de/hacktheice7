@@ -1,7 +1,8 @@
-import { useAuthStore } from '@entities/auth';
+import { useAuthStore, useBiometricStore } from '@entities/auth';
 import AdminPage from '@pages/AdminPage.vue';
 import AuthPage from '@pages/AuthPage.vue';
 import AuthSberPage from '@pages/AuthSberPage.vue';
+import AuthSecurePage from '@pages/AuthSecurePage.vue';
 import AuthWelcomePage from '@pages/AuthWelcomePage.vue';
 import BenefitCategoryPage from '@pages/BenefitCategoryPage.vue';
 import BenefitDetailPage from '@pages/BenefitDetailPage.vue';
@@ -12,16 +13,20 @@ import ProfitPage from '@pages/ProfitPage.vue';
 import RegistrationPage from '@pages/RegistrationPage.vue';
 import SalesPage from '@pages/SalesPage.vue';
 import UserPage from '@pages/UserPage/UserPage.vue';
-import EditBenefits from '@pages/UserPage/childs/EditBenefits.vue';
 import AppSettings from '@pages/UserPage/childs/AppSettings.vue';
+import EditBenefits from '@pages/UserPage/childs/EditBenefits.vue';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { storeToRefs } from 'pinia';
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router';
+
+const LAST_ACTIVITY_KEY = 'lasso:lastActivity';
+const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 
 const routes: Array<RouteRecordRaw> = [
   { path: ROUTE_NAMES.WELCOME, component: AuthWelcomePage },
   { path: ROUTE_NAMES.AUTH, component: AuthPage },
   { path: ROUTE_NAMES.SBER, component: AuthSberPage },
+  { path: ROUTE_NAMES.SECURE, component: AuthSecurePage },
   { path: ROUTE_NAMES.REGISTRATION, component: RegistrationPage },
   { path: ROUTE_NAMES.HOME, component: HomePage },
   {
@@ -56,12 +61,58 @@ const PUBLIC_ROUTES = new Set<string>([
   ROUTE_NAMES.WELCOME,
   ROUTE_NAMES.AUTH,
   ROUTE_NAMES.SBER,
-  ROUTE_NAMES.REGISTRATION
+  ROUTE_NAMES.REGISTRATION,
+  ROUTE_NAMES.SECURE
 ]);
+
+const markActivity = () => {
+  try {
+    localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
+  } catch {
+    // ignore storage issues
+  }
+};
+
+const isIdle = () => {
+  try {
+    const last = Number(localStorage.getItem(LAST_ACTIVITY_KEY));
+    if (!last) return false;
+    return Date.now() - last > IDLE_TIMEOUT_MS;
+  } catch {
+    return false;
+  }
+};
+
+if (typeof window !== 'undefined') {
+  ['click', 'keydown', 'touchstart', 'mousemove', 'visibilitychange'].forEach(
+    event =>
+      window.addEventListener(event, () => {
+        if (document.visibilityState === 'hidden') return;
+        markActivity();
+      })
+  );
+  markActivity();
+}
 
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
+  const biometricStore = useBiometricStore();
   const { isAuthenticated } = storeToRefs(authStore);
+
+  try {
+    await biometricStore.loadFromStorage();
+  } catch {
+    // ignore
+  }
+
+  if (
+    to.path === ROUTE_NAMES.WELCOME &&
+    biometricStore.meta?.phone &&
+    !isAuthenticated.value
+  ) {
+    next({ path: ROUTE_NAMES.SECURE });
+    return;
+  }
 
   try {
     if (!PUBLIC_ROUTES.has(to.path)) {
@@ -69,6 +120,27 @@ router.beforeEach(async (to, _from, next) => {
     }
   } catch {
     // space
+  }
+
+  const idle =
+    isAuthenticated.value &&
+    to.path !== ROUTE_NAMES.SECURE &&
+    !PUBLIC_ROUTES.has(to.path) &&
+    isIdle();
+  if (idle) {
+    next({ path: ROUTE_NAMES.SECURE });
+    return;
+  }
+
+  markActivity();
+
+  if (
+    to.path === ROUTE_NAMES.SECURE &&
+    !isAuthenticated.value &&
+    !biometricStore.meta?.phone
+  ) {
+    next({ path: ROUTE_NAMES.WELCOME });
+    return;
   }
 
   if (!isAuthenticated.value && !PUBLIC_ROUTES.has(to.path)) {

@@ -27,6 +27,14 @@ const goBackToWelcome = () => {
   router.push(ROUTE_NAMES.WELCOME);
 };
 
+const showError = (error: any, fallback: string) => {
+  const message =
+    (error?.response?.data as { message?: string })?.message ||
+    error?.message ||
+    fallback;
+  alert(message);
+};
+
 const goToPhoneConfirmationStep = async () => {
   const formHasError = checkValidation();
   if (!formHasError) {
@@ -39,7 +47,7 @@ const goToPhoneConfirmationStep = async () => {
       await router.push(ROUTE_NAMES.HOME);
       step.value = 2;
     } catch (error) {
-      console.log(error);
+      showError(error, 'Не удалось войти. Проверьте данные и попробуйте снова.');
     } finally {
       viewStore.toggleLoader();
     }

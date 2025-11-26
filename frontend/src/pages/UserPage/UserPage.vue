@@ -24,7 +24,8 @@ const benefitTitles = computed(
   () =>
     user.value.userBeneficiaryCategories?.map(
       category =>
-        category.beneficiaryCategory?.title || category.beneficiaryCategory?.name
+        category.beneficiaryCategory?.title ||
+        category.beneficiaryCategory?.name
     ) ?? []
 );
 const downloadCertificate = async () => {
@@ -49,36 +50,6 @@ const downloadCertificate = async () => {
         />
         <div class="name">{{ user.firstName }} {{ user.lastName }}</div>
         <div class="phone">{{ user.phone }}</div>
-      </div>
-      <div class="profile__edit">
-        <div class="edit-button">
-          <div @click="redirectTo">
-            <img
-              class="btn-icon"
-              src="/assets/icons/chat-icon.svg"
-              alt=""
-            />
-            <span>Выбрать льготы</span>
-          </div>
-          <img
-            class="arrow"
-            src="/assets/icons/arrow.svg"
-          />
-        </div>
-        <div class="edit-button">
-          <div @click="goToSettings">
-            <img
-              class="btn-icon"
-              src="/assets/icons/chat-icon.svg"
-              alt=""
-            />
-            <span>Настройки приложения</span>
-          </div>
-          <img
-            class="arrow"
-            src="/assets/icons/arrow.svg"
-          />
-        </div>
       </div>
       <div class="profile__benefits">
         <div class="benefits__header">
@@ -107,8 +78,25 @@ const downloadCertificate = async () => {
           v-else
           class="benefits__empty"
         >
-          Льготы еще не выбраны. Нажмите «Настроить», чтобы добавить подходящие категории.
+          Льготы еще не выбраны. Нажмите «Настроить», чтобы добавить подходящие
+          категории.
         </p>
+      </div>
+      <div class="profile__edit">
+        <div class="edit-button">
+          <div @click="goToSettings">
+            <img
+              class="btn-icon"
+              src="/assets/icons/chat-icon.svg"
+              alt=""
+            />
+            <span>Настройки приложения</span>
+          </div>
+          <img
+            class="arrow"
+            src="/assets/icons/arrow.svg"
+          />
+        </div>
       </div>
       <div class="profile__actions">
         <div class="download-card">
@@ -117,7 +105,11 @@ const downloadCertificate = async () => {
             :disabled="isCertificateLoading"
             @click="downloadCertificate"
           >
-            {{ isCertificateLoading ? 'Готовим PDF...' : 'Скачать бумажное удостоверение' }}
+            {{
+              isCertificateLoading
+                ? 'Готовим PDF...'
+                : 'Скачать бумажное удостоверение'
+            }}
           </button>
         </div>
         <div class="edit-button">
@@ -136,6 +128,10 @@ const downloadCertificate = async () => {
   <RouterView v-else></RouterView>
 </template>
 <style lang="scss" scoped>
+.profile__benefits {
+  margin-bottom: 20px;
+}
+
 .profile {
   display: flex;
   flex-direction: column;

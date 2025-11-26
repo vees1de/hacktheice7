@@ -3,6 +3,7 @@ export const ROUTE_NAMES = {
   AUTH: '/auth/login',
   SBER: '/auth/sberid',
   REGISTRATION: '/auth/register',
+  SECURE: '/auth/secure',
   HOME: '/home',
   USER: '/user',
   EDIT_BENEFITS: '/user/edit-benefits',
