@@ -11,32 +11,42 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       devOptions: { enabled: true },
+      workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+        navigateFallback: '/',
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,avif}'],
+        sourcemap: false
+      },
       manifest: {
         short_name: 'ЛАССО',
         name: 'ЛАССО',
-        start_url: '/',
+        id: '/?source=pwa',
+        start_url: '/?source=pwa',
+        scope: '/',
         display: 'standalone',
-        theme_color: '#1a73e8',
-        background_color: '#ffffffff',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
         orientation: 'any',
         icons: [
           {
             src: '/assets/icons/16.png',
             sizes: '16x16',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any maskable'
           },
           {
             src: '/assets/icons/32.png',
             sizes: '32x32',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any maskable'
           },
           {
             src: '/assets/icons/192.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any maskable'
           }
         ]
       }

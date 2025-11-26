@@ -11,7 +11,10 @@ const bufferToBase64Url = (buffer: ArrayBuffer): string => {
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/u, '');
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/u, '');
 };
 
 const base64UrlToBuffer = (value: string): ArrayBuffer => {
@@ -88,8 +91,11 @@ export const attestationToJSON = (
       attestationObject: bufferToBase64Url(response.attestationObject),
       transports
     },
-    authenticatorAttachment: credential.authenticatorAttachment ?? null,
-    clientExtensionResults: credential.getClientExtensionResults(),
+    authenticatorAttachment:
+      (credential.authenticatorAttachment as AuthenticatorAttachment | null | undefined) ??
+      null,
+    clientExtensionResults:
+      (credential.getClientExtensionResults() as Record<string, unknown>) ?? {},
     type: credential.type
   };
 };
@@ -112,8 +118,11 @@ export const assertionToJSON = (
       signature: bufferToBase64Url(response.signature),
       userHandle
     },
-    authenticatorAttachment: credential.authenticatorAttachment ?? null,
-    clientExtensionResults: credential.getClientExtensionResults(),
+    authenticatorAttachment:
+      (credential.authenticatorAttachment as AuthenticatorAttachment | null | undefined) ??
+      null,
+    clientExtensionResults:
+      (credential.getClientExtensionResults() as Record<string, unknown>) ?? {},
     type: credential.type
   };
 };
