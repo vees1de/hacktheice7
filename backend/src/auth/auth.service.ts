@@ -15,6 +15,7 @@ import {
 import { isoBase64URL } from '@simplewebauthn/server/helpers';
 import {
   AuthenticationResponseJSON,
+  AuthenticatorTransportFuture,
   RegistrationResponseJSON
 } from '@simplewebauthn/types';
 import { hash, verify } from 'argon2';
@@ -332,11 +333,11 @@ export class AuthService {
       where: { userId }
     });
 
-    const options = generateRegistrationOptions({
+    const options = await generateRegistrationOptions({
       rpName: this.rpName,
       rpID: this.rpID,
       userName: user.phone,
-      userID: user.id,
+      userID: Buffer.from(user.id, 'utf-8'),
       userDisplayName: [user.firstName, user.lastName].filter(Boolean).join(' '),
       attestationType: 'none',
       authenticatorSelection: {
@@ -345,9 +346,8 @@ export class AuthService {
         authenticatorAttachment: 'platform'
       },
       excludeCredentials: existingCredentials.map(cred => ({
-        id: isoBase64URL.toBuffer(cred.credentialId),
-        type: 'public-key',
-        transports: cred.transports ?? undefined
+        id: cred.credentialId,
+        transports: (cred.transports as AuthenticatorTransportFuture[]) ?? undefined
       }))
     });
 
@@ -392,8 +392,14 @@ export class AuthService {
       credentialBackedUp
     } = verification.registrationInfo;
 
-    const credentialId = isoBase64URL.fromBuffer(credentialID);
-    const publicKey = isoBase64URL.fromBuffer(credentialPublicKey);
+    const credentialId =
+      typeof credentialID === 'string'
+        ? credentialID
+        : isoBase64URL.fromBuffer(credentialID);
+    const publicKey =
+      typeof credentialPublicKey === 'string'
+        ? credentialPublicKey
+        : isoBase64URL.fromBuffer(credentialPublicKey);
     const transports =
       response.response?.transports && Array.isArray(response.response.transports)
         ? response.response.transports
@@ -450,13 +456,12 @@ export class AuthService {
       );
     }
 
-    const options = generateAuthenticationOptions({
+    const options = await generateAuthenticationOptions({
       rpID: this.rpID,
       userVerification: 'preferred',
       allowCredentials: authenticators.map(cred => ({
-        id: isoBase64URL.toBuffer(cred.credentialId),
-        type: 'public-key',
-        transports: cred.transports ?? undefined
+        id: cred.credentialId,
+        transports: (cred.transports as AuthenticatorTransportFuture[]) ?? undefined
       }))
     });
 
@@ -506,10 +511,11 @@ export class AuthService {
       expectedOrigin: this.expectedOrigin,
       expectedRPID: this.rpID,
       authenticator: {
-        credentialID: isoBase64URL.toBuffer(authenticator.credentialId),
+        credentialID: authenticator.credentialId,
         credentialPublicKey: isoBase64URL.toBuffer(authenticator.publicKey),
         counter: authenticator.counter,
-        transports: authenticator.transports ?? undefined
+        transports:
+          (authenticator.transports as AuthenticatorTransportFuture[]) ?? undefined
       },
       requireUserVerification: true
     });
