@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
+
     <link
       rel="icon"
       type="image/svg"
@@ -20,7 +21,6 @@
           src="/assets/icons/lasso-icon.svg"
           alt="Lasso"
         />
-        <p>Загружаем Лассо...</p>
       </div>
     </div>
     <div id="app"></div>
@@ -31,10 +31,16 @@
   </body>
 
   <style>
+    html,
+    body {
+      touch-action: manipulation;
+    }
+
     #boot-loader {
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at 20% 20%, #0ea5e91f 0, transparent 25%),
+      background:
+        radial-gradient(circle at 20% 20%, #0ea5e91f 0, transparent 25%),
         radial-gradient(circle at 80% 10%, #2563eb1c 0, transparent 22%),
         #0b1220;
       display: grid;

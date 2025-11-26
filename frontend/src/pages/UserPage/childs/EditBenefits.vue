@@ -47,6 +47,10 @@ const submit = async () => {
       const profile = await userApi.updateUserCategories(selectedBenefits);
       userStore.setUser(profile);
     }
+    if (selectedBenefits.length === 0) {
+      const profile = await userApi.updateUserCategories([]);
+      userStore.setUser(profile);
+    }
   } catch (error) {
   } finally {
     viewStore.toggleLoader();

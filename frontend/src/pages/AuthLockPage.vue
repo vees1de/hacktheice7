@@ -9,7 +9,7 @@ const biometricStore = useBiometricStore();
 const { meta, supported, isProcessing, isPinSet } = storeToRefs(biometricStore);
 const router = useRouter();
 
-const pin = ref('');
+const pin = ref(''); // max 4 digits
 const message = ref('');
 
 const canUseBiometric = computed(
@@ -21,177 +21,192 @@ const unlockWithBiometric = async () => {
   try {
     await biometricStore.loginWithBiometrics();
     await router.push(ROUTE_NAMES.HOME);
-  } catch (error: any) {
-    message.value =
-      error?.message ??
-      'Не получилось войти. Попробуйте ещё раз или введите ПИН.';
+  } catch (err: any) {
+    message.value = err?.message ?? 'Ошибка биометрии';
   }
+};
+
+const handleDigit = (d: string) => {
+  if (pin.value.length >= 4) return;
+  pin.value += d;
+
+  if (pin.value.length === 4) {
+    unlockWithPin();
+  }
+};
+
+const handleDelete = () => {
+  pin.value = pin.value.slice(0, -1);
 };
 
 const unlockWithPin = async () => {
   message.value = '';
-  if (!biometricStore.verifyPin(pin.value.trim())) {
-    message.value = 'Неверный ПИН. Попробуйте снова.';
+  if (!biometricStore.verifyPin(pin.value)) {
+    message.value = 'Неверный ПИН';
+    pin.value = '';
     return;
   }
   await router.push(ROUTE_NAMES.HOME);
 };
 
-const goToSetup = async () => {
-  await router.push(ROUTE_NAMES.SECURE);
-};
-
 onMounted(async () => {
   await biometricStore.ensureSupported();
   await biometricStore.loadFromStorage();
+
   if (!meta.value?.phone && !isPinSet.value) {
-    goToSetup();
+    router.push(ROUTE_NAMES.SECURE);
   }
 });
 </script>
 
 <template>
   <div class="lock">
-    <div class="lock__card">
-      <div class="lock__header">
-        <p>Введите код доступа</p>
-      </div>
+    <div class="lock__top">
+      <p class="title">Введите код</p>
 
-      <div class="lock__actions">
-        <button
-          v-if="canUseBiometric"
-          class="btn btn--primary"
-          type="button"
-          :disabled="isProcessing"
-          @click="unlockWithBiometric"
-        >
-          {{ isProcessing ? 'Сканируем...' : 'Войти по биометрии' }}
-        </button>
-
+      <!-- ПИН точки -->
+      <div class="pin-dots">
         <div
-          v-if="isPinSet"
-          class="pin-box"
-        >
-          <label>Введите ПИН</label>
-          <input
-            v-model="pin"
-            type="password"
-            inputmode="numeric"
-            pattern="[0-9]*"
-            maxlength="6"
-            placeholder="••••"
-          />
-          <button
-            class="btn btn--ghost"
-            type="button"
-            :disabled="pin.length < 4"
-            @click="unlockWithPin"
-          >
-            Войти по ПИН
-          </button>
-        </div>
-
-        <button
-          v-if="!canUseBiometric && !isPinSet"
-          class="btn btn--primary"
-          type="button"
-          @click="goToSetup"
-        >
-          Настроить защиту
-        </button>
+          v-for="i in 4"
+          :key="i"
+          :class="['dot', { filled: i <= pin.length }]"
+        ></div>
       </div>
 
       <p
-        v-if="message"
         class="hint"
+        v-if="message"
       >
         {{ message }}
       </p>
+    </div>
+
+    <!-- Цифровая клавиатура -->
+    <div class="numpad">
+      <button
+        v-for="n in ['1', '2', '3', '4', '5', '6', '7', '8', '9']"
+        :key="n"
+        @click="handleDigit(n)"
+      >
+        {{ n }}
+      </button>
+
+      <!-- Биометрия -->
+      <button
+        v-if="canUseBiometric"
+        class="biometric"
+        @click="unlockWithBiometric"
+      >
+        🔒
+      </button>
+      <div
+        v-else
+        class="empty"
+      ></div>
+
+      <button @click="handleDigit('0')">0</button>
+
+      <!-- Delete -->
+      <button
+        class="delete"
+        @click="handleDelete"
+      >
+        ⌫
+      </button>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
 .lock {
-  height: calc(100dvh - 106px);
+  height: calc(100dvh - 108px);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px 20px;
 }
 
-.lock__card {
-  width: 100%;
-  max-width: 460px;
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 20px;
-  padding: 24px;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-  display: grid;
-  gap: 16px;
-}
+.lock__top {
+  text-align: center;
+  margin-top: 20px;
 
-.lock__header {
-  h1 {
-    margin: 0 0 6px;
-  }
-  p {
+  .title {
     margin: 0;
-    color: #475467;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .hint {
+    margin-top: 12px;
+    color: #b91c1c;
+    font-size: 15px;
   }
 }
 
-.lock__actions {
-  display: grid;
-  gap: 12px;
+.pin-dots {
+  margin: 24px auto 0;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+
+  .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 100px;
+    border: 2px solid #cbd5e1;
+    background: transparent;
+
+    &.filled {
+      background: #0f172a;
+      border-color: #0f172a;
+    }
+  }
 }
 
-.pin-box {
+.numpad {
   display: grid;
-  gap: 8px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  padding: 12px;
-  border-radius: 12px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  padding-bottom: 40px;
 
-  label {
+  button {
+    background: #f1f5f9;
+    border: none;
+    border-radius: 999px;
+    height: 70px;
+    font-size: 28px;
     font-weight: 600;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+    cursor: pointer;
+    transition: 0.15s;
+
+    &:active {
+      background: #e2e8f0;
+      transform: scale(0.95);
+    }
   }
 
-  input {
-    border: 1px solid #cbd5e1;
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 1rem;
+  .biometric {
+    font-size: 34px;
+    background: #10b981;
+    color: #fff !important;
+
+    &:active {
+      background: #059669;
+    }
   }
-}
 
-.btn {
-  border: none;
-  border-radius: 12px;
-  padding: 12px 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
+  .delete {
+    font-size: 26px;
   }
-}
 
-.btn--primary {
-  background: linear-gradient(135deg, #10b981, #14b8a6);
-  color: #fff;
-}
-
-.btn--ghost {
-  background: #f4f6fb;
-  color: #1f2937;
-}
-
-.hint {
-  margin: 0;
-  color: #7f1d1d;
+  .empty {
+    visibility: hidden;
+  }
 }
 </style>

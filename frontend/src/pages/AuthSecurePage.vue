@@ -47,6 +47,10 @@ const savePin = async () => {
       message.value = 'ПИНы не совпадают.';
       return;
     }
+    if (pin.value.length !== 4) {
+      message.value = 'ПИНы не равен 4.';
+      return;
+    }
     await biometricStore.setPin(pin.value.trim());
     message.value = 'ПИН сохранен. Теперь можно входить без пароля.';
   } catch (error: any) {
@@ -111,7 +115,7 @@ onMounted(async () => {
               type="password"
               inputmode="numeric"
               pattern="[0-9]*"
-              maxlength="6"
+              maxlength="4"
               placeholder="Повторите ПИН"
             />
             <button
@@ -171,15 +175,9 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .secure {
-  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  background:
-    radial-gradient(circle at 15% 20%, #0ea5e91c 0, transparent 26%),
-    radial-gradient(circle at 85% 15%, #312e8114 0, transparent 22%),
-    linear-gradient(135deg, #0f172a, #0b486b 70%, #0f172a);
 }
 
 .secure__card {
