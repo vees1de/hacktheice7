@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { shareTokenApi } from '@entities/auth/api/shareToken';
 import { useUserStore } from '@entities/user';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { useCatalogStore } from '@shared/stores/catalog.store';
@@ -10,6 +11,7 @@ import { Economy } from '@widgets/possible-economy';
 import { QrSheetComponent } from '@widgets/qr-sheet';
 import { SalesCarousel } from '@widgets/sales-carousel';
 import { storeToRefs } from 'pinia';
+import QRCode from 'qrcode';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import BenefitPromptModal from '@shared/ui/BenefitPromptModal.vue';
@@ -22,6 +24,34 @@ const catalogStore = useCatalogStore();
 const { benefits, offers, benefitsLoading, offersLoading } =
   storeToRefs(catalogStore);
 const showBenefitModal = ref(false);
+const qrPreview = ref<string | null>(null);
+const qrPreviewLoading = ref(false);
+const qrPreviewError = ref('');
+
+const loadQrPreview = async () => {
+  if (qrPreviewLoading.value) return;
+  if (!user.value?.id || user.value?.onboardingStep === 'ESIA_AUTH') {
+    qrPreview.value = null;
+    qrPreviewError.value = '';
+    return;
+  }
+
+  qrPreviewLoading.value = true;
+  qrPreviewError.value = '';
+  try {
+    const res = await shareTokenApi.create();
+    qrPreview.value = await QRCode.toDataURL(res.token, {
+      margin: 1,
+      width: 120
+    });
+  } catch (error: any) {
+    qrPreview.value = null;
+    qrPreviewError.value =
+      error?.response?.data?.message || 'Не удалось загрузить QR';
+  } finally {
+    qrPreviewLoading.value = false;
+  }
+};
 
 onMounted(async () => {
   if (!user.value?.id) {
@@ -33,6 +63,7 @@ onMounted(async () => {
   }
   catalogStore.fetchBenefits();
   catalogStore.fetchOffers();
+  loadQrPreview();
 });
 
 watch(
@@ -95,7 +126,25 @@ const goToBenefitSelection = async () => {
           @click="openQrSheet"
           class="qr__image"
         >
+          <p
+            v-if="qrPreviewLoading"
+            class="qr__status"
+          >
+            Генерируем QR...
+          </p>
+          <p
+            v-else-if="qrPreviewError"
+            class="qr__status qr__status--error"
+          >
+            {{ qrPreviewError }}
+          </p>
           <img
+            v-else-if="qrPreview"
+            :src="qrPreview"
+            alt="qr-code"
+          />
+          <img
+            v-else
             src="/assets/images/qrcode.png"
             alt="qr-code"
           />
@@ -229,11 +278,27 @@ h3 {
     background-color: #fff;
     border-radius: 6px;
     height: 124px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    text-align: center;
 
     width: 124px;
 
     img {
       height: 100%;
+      width: 100%;
+      object-fit: contain;
+    }
+  }
+
+  &__status {
+    font-weight: 600;
+    color: #1a73e8;
+    font-size: 0.85rem;
+
+    &--error {
+      color: #c53030;
     }
   }
 

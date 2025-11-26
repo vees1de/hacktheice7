@@ -118,7 +118,11 @@ const handleDownloadCertificate = async () => {
   position: fixed;
   height: 100dvh;
   width: 100dvw;
+  top: 0;
+  right: 0;
   background-color: #38383886;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   bottom: 0;
   z-index: 10;
   left: 0;
