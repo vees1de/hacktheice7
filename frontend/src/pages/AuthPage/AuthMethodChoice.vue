@@ -5,9 +5,14 @@ import { storeToRefs } from 'pinia';
 const emit = defineEmits<{
   (e: 'select-sms'): void;
   (e: 'select-sber'): void;
+  (e: 'select-biometric'): void;
 }>();
 
 const { t } = storeToRefs(useLangStore());
+
+const { showBiometric = false } = defineProps<{
+  showBiometric?: boolean;
+}>();
 </script>
 
 <template>
@@ -41,6 +46,21 @@ const { t } = storeToRefs(useLangStore());
           <span>{{ t['auth_sber'] }}</span>
         </span>
       </button>
+      <button
+        v-if="showBiometric"
+        type="button"
+        class="card card--bio"
+        @click="emit('select-biometric')"
+      >
+        <img
+          src="/assets/icons/locked.svg"
+          alt="Biometric"
+        />
+
+        <span class="card__text">
+          <span>{{ t['auth_biometric'] }}</span>
+        </span>
+      </button>
     </div>
   </div>
 </template>
@@ -59,9 +79,10 @@ const { t } = storeToRefs(useLangStore());
 }
 
 .cards {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   width: 100%;
-  gap: 6px;
+  gap: 10px;
 }
 
 .card {
@@ -78,6 +99,7 @@ const { t } = storeToRefs(useLangStore());
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
+  min-height: 120px;
 
   &:hover {
     transform: translateY(-4px);
@@ -98,6 +120,11 @@ const { t } = storeToRefs(useLangStore());
   background: #dae9ff;
   color: #111827;
   max-height: 128px;
+}
+
+.card--bio {
+  background: linear-gradient(135deg, #0f766e, #0ea5e9);
+  color: #fff;
 }
 
 .card__icon {

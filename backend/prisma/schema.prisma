@@ -78,6 +78,7 @@ model User {
   benefitStatus UserBenefitStatus[]
   hiddenBenefits HiddenBenefit[]
   savedOffers   SavedOffer[]
+  webauthnCredentials WebAuthnCredential[]
   
   staffProfile  Staff?
   authTokens    AuthToken[]
@@ -319,4 +320,21 @@ model UserPreference {
   preferredRegions    String[] // JSON массив предпочитаемых регионов
   
   @@map("user_preference")
+}
+
+model WebAuthnCredential {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  credentialId String  @unique
+  publicKey   String
+  counter     Int
+  deviceType  String
+  backedUp    Boolean  @default(false)
+  transports  String[] @default([])
+
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String @map("user_id")
+
+  @@map("webauthn_credential")
 }

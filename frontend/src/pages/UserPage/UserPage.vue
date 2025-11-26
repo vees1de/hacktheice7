@@ -1,12 +1,13 @@
 <script setup lang="ts">
+import { useAuthStore } from '@entities/auth';
 import { downloadCertificatePdf, useUserStore } from '@entities/user';
-import { clearTokens } from '@shared/api/token.service';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { RouterView, useRouter } from 'vue-router';
 
 const { user } = storeToRefs(useUserStore());
 const router = useRouter();
+const authStore = useAuthStore();
 const redirectTo = () => {
   router.push('/user/edit-benefits');
 };
@@ -15,8 +16,7 @@ const goToSettings = () => {
 };
 
 const exit = async () => {
-  await clearTokens();
-  await router.push('/auth');
+  await authStore.logout();
 };
 
 const isCertificateLoading = ref(false);

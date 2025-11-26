@@ -4,7 +4,19 @@ import {
   UnauthorizedException,
   NotFoundException
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse
+} from '@simplewebauthn/server';
+import { isoBase64URL } from '@simplewebauthn/server/helpers';
+import {
+  AuthenticationResponseJSON,
+  RegistrationResponseJSON
+} from '@simplewebauthn/types';
 import { hash, verify } from 'argon2';
 import { randomBytes } from 'crypto';
 import { UserService } from '../user/user.service';
@@ -29,8 +41,33 @@ export class AuthService {
   constructor(
     private jwt: JwtService,
     private userService: UserService,
-    private prisma: PrismaService
+    private prisma: PrismaService,
+    private config: ConfigService
   ) {}
+
+  private get rpID(): string {
+    const rpId = this.config.get<string>('WEBAUTHN_RP_ID');
+    if (rpId) return rpId;
+
+    try {
+      const origin = this.expectedOrigin;
+      return new URL(origin).hostname;
+    } catch {
+      return 'localhost';
+    }
+  }
+
+  private get rpName(): string {
+    return this.config.get<string>('WEBAUTHN_RP_NAME') ?? 'Lasso App';
+  }
+
+  private get expectedOrigin(): string {
+    return (
+      this.config.get<string>('WEBAUTHN_ORIGIN') ??
+      this.config.get<string>('FRONTEND_URL') ??
+      'http://localhost:3000'
+    );
+  }
 
   async getUserById(userId: string) {
     try {
@@ -280,6 +317,269 @@ export class AuthService {
       }
       throw new UnauthorizedException('Invalid refresh token');
     }
+  }
+
+  async getWebauthnRegistrationOptions(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const existingCredentials = await this.prisma.webAuthnCredential.findMany({
+      where: { userId }
+    });
+
+    const options = generateRegistrationOptions({
+      rpName: this.rpName,
+      rpID: this.rpID,
+      userName: user.phone,
+      userID: user.id,
+      userDisplayName: [user.firstName, user.lastName].filter(Boolean).join(' '),
+      attestationType: 'none',
+      authenticatorSelection: {
+        userVerification: 'preferred',
+        residentKey: 'preferred',
+        authenticatorAttachment: 'platform'
+      },
+      excludeCredentials: existingCredentials.map(cred => ({
+        id: isoBase64URL.toBuffer(cred.credentialId),
+        type: 'public-key',
+        transports: cred.transports ?? undefined
+      }))
+    });
+
+    await this.storeChallenge(userId, 'webauthn_registration', options.challenge);
+    return options;
+  }
+
+  async verifyWebauthnRegistration(
+    userId: string,
+    response: RegistrationResponseJSON
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const challenge = await this.consumeChallenge(
+      userId,
+      'webauthn_registration'
+    );
+
+    const verification = await verifyRegistrationResponse({
+      response,
+      expectedChallenge: challenge.token,
+      expectedOrigin: this.expectedOrigin,
+      expectedRPID: this.rpID,
+      requireUserVerification: true
+    });
+
+    if (!verification.verified || !verification.registrationInfo) {
+      throw new UnauthorizedException('Biometric verification failed');
+    }
+
+    const {
+      credentialID,
+      credentialPublicKey,
+      counter,
+      credentialDeviceType,
+      credentialBackedUp
+    } = verification.registrationInfo;
+
+    const credentialId = isoBase64URL.fromBuffer(credentialID);
+    const publicKey = isoBase64URL.fromBuffer(credentialPublicKey);
+    const transports =
+      response.response?.transports && Array.isArray(response.response.transports)
+        ? response.response.transports
+        : [];
+
+    await this.prisma.webAuthnCredential.upsert({
+      where: { credentialId },
+      update: {
+        publicKey,
+        counter,
+        deviceType: credentialDeviceType,
+        backedUp: credentialBackedUp,
+        transports
+      },
+      create: {
+        credentialId,
+        publicKey,
+        counter,
+        deviceType: credentialDeviceType,
+        backedUp: credentialBackedUp,
+        transports,
+        userId: user.id
+      }
+    });
+
+    await this.prisma.authToken.update({
+      where: { id: challenge.id },
+      data: { used: true }
+    });
+
+    return { verified: true };
+  }
+
+  async getWebauthnLoginOptions(phone: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { phone }
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.status !== 'ACTIVE') {
+      throw new UnauthorizedException('User status does not allow login');
+    }
+
+    const authenticators = await this.prisma.webAuthnCredential.findMany({
+      where: { userId: user.id }
+    });
+
+    if (!authenticators.length) {
+      throw new BadRequestException(
+        'Biometric login is not configured for this account'
+      );
+    }
+
+    const options = generateAuthenticationOptions({
+      rpID: this.rpID,
+      userVerification: 'preferred',
+      allowCredentials: authenticators.map(cred => ({
+        id: isoBase64URL.toBuffer(cred.credentialId),
+        type: 'public-key',
+        transports: cred.transports ?? undefined
+      }))
+    });
+
+    await this.storeChallenge(user.id, 'webauthn_login', options.challenge);
+
+    return {
+      options,
+      displayName: [user.firstName, user.lastName].filter(Boolean).join(' '),
+      phone: user.phone
+    };
+  }
+
+  async verifyWebauthnLogin(
+    phone: string,
+    response: AuthenticationResponseJSON
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { phone },
+      include: {
+        staffProfile: true
+      }
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.status !== 'ACTIVE') {
+      throw new UnauthorizedException('User status does not allow login');
+    }
+
+    const authenticator = await this.prisma.webAuthnCredential.findUnique({
+      where: { credentialId: response.id }
+    });
+
+    if (!authenticator || authenticator.userId !== user.id) {
+      throw new UnauthorizedException(
+        'Biometric key is not linked to this account'
+      );
+    }
+
+    const challenge = await this.consumeChallenge(user.id, 'webauthn_login');
+
+    const verification = await verifyAuthenticationResponse({
+      response,
+      expectedChallenge: challenge.token,
+      expectedOrigin: this.expectedOrigin,
+      expectedRPID: this.rpID,
+      authenticator: {
+        credentialID: isoBase64URL.toBuffer(authenticator.credentialId),
+        credentialPublicKey: isoBase64URL.toBuffer(authenticator.publicKey),
+        counter: authenticator.counter,
+        transports: authenticator.transports ?? undefined
+      },
+      requireUserVerification: true
+    });
+
+    if (!verification.verified || !verification.authenticationInfo) {
+      throw new UnauthorizedException('Biometric authentication failed');
+    }
+
+    if (verification.authenticationInfo.newCounter !== undefined) {
+      await this.prisma.webAuthnCredential.update({
+        where: { credentialId: authenticator.credentialId },
+        data: { counter: verification.authenticationInfo.newCounter }
+      });
+    }
+
+    await this.prisma.authToken.update({
+      where: { id: challenge.id },
+      data: { used: true }
+    });
+
+    const { passwordHash, verificationCode, ...safeUser } = user;
+    const tokens = this.issueTokens(user.id);
+
+    return {
+      result: true,
+      user: {
+        ...safeUser,
+        commercialOffersAvailable: Boolean(user.isEsiaVerified)
+      },
+      ...tokens
+    };
+  }
+
+  private async storeChallenge(
+    userId: string,
+    type: string,
+    challenge: string
+  ) {
+    await this.prisma.authToken.deleteMany({
+      where: { userId, type }
+    });
+
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    return this.prisma.authToken.create({
+      data: {
+        token: challenge,
+        type,
+        userId,
+        expiresAt,
+        used: false
+      }
+    });
+  }
+
+  private async consumeChallenge(userId: string, type: string) {
+    const token = await this.prisma.authToken.findFirst({
+      where: {
+        userId,
+        type,
+        used: false,
+        expiresAt: { gt: new Date() }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (!token) {
+      throw new UnauthorizedException('Biometric challenge expired');
+    }
+
+    return token;
   }
 
   issueTokens(userId: string): { accessToken: string; refreshToken: string } {

@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import type { AuthLoginRequest } from '@entities/auth';
-import { useAuthStore } from '@entities/auth';
+import { useAuthStore, useBiometricStore } from '@entities/auth';
 import { useUserStore } from '@entities/user';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { useLangStore } from '@shared/stores/language.store';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import AuthMethodChoice from './AuthPage/AuthMethodChoice.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const biometricStore = useBiometricStore();
 const userStore = useUserStore();
 const langStore = useLangStore();
 const { locale } = storeToRefs(langStore);
@@ -25,6 +26,13 @@ const demoCredentials: AuthLoginRequest = {
   phone: '79222222222',
   password: '123456'
 };
+const biometricError = ref('');
+const { canLogin } = storeToRefs(biometricStore);
+
+onMounted(async () => {
+  await biometricStore.ensureSupported();
+  await biometricStore.loadFromStorage();
+});
 
 const loginAsDemo = async () => {
   if (isDemoLoading.value) return;
@@ -37,6 +45,17 @@ const loginAsDemo = async () => {
     console.error('Не удалось выполнить демо-вход', error);
   } finally {
     isDemoLoading.value = false;
+  }
+};
+
+const loginWithBiometrics = async () => {
+  biometricError.value = '';
+  try {
+    await biometricStore.loginWithBiometrics();
+    await router.push(ROUTE_NAMES.HOME);
+  } catch (error: any) {
+    biometricError.value =
+      error?.message ?? 'Не получилось войти по биометрии. Попробуйте еще раз.';
   }
 };
 </script>
@@ -74,7 +93,15 @@ const loginAsDemo = async () => {
     <AuthMethodChoice
       @select-sms="goToSms"
       @select-sber="goToSber"
+      :show-biometric="canLogin"
+      @select-biometric="loginWithBiometrics"
     />
+    <p
+      v-if="biometricError"
+      class="error"
+    >
+      {{ biometricError }}
+    </p>
     <button
       class="demo-button"
       :disabled="isDemoLoading"
@@ -159,5 +186,12 @@ const loginAsDemo = async () => {
     opacity: 0.7;
     cursor: default;
   }
+}
+
+.error {
+  margin: 0;
+  color: #ef4444;
+  font-size: 0.9rem;
+  text-align: center;
 }
 </style>

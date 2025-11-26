@@ -19,6 +19,11 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ShareTokenDto } from './dto/share-token.dto';
 import { Auth } from './decorators/auth.decorator';
 import { CurrentUser } from './decorators/user.decorator';
+import {
+  WebauthnLoginOptionsDto,
+  WebauthnLoginVerifyDto,
+  WebauthnRegisterVerifyDto
+} from './dto/webauthn.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -96,6 +101,38 @@ export class AuthController {
       }
       throw new UnauthorizedException('Token refresh failed');
     }
+  }
+
+  @HttpCode(200)
+  @Auth()
+  @Get('webauthn/register/options')
+  async getWebauthnRegisterOptions(@CurrentUser('id') userId: string) {
+    return this.authService.getWebauthnRegistrationOptions(userId);
+  }
+
+  @HttpCode(200)
+  @Auth()
+  @UsePipes(new ValidationPipe())
+  @Post('webauthn/register/verify')
+  async verifyWebauthnRegister(
+    @CurrentUser('id') userId: string,
+    @Body() dto: WebauthnRegisterVerifyDto
+  ) {
+    return this.authService.verifyWebauthnRegistration(userId, dto.response);
+  }
+
+  @HttpCode(200)
+  @UsePipes(new ValidationPipe())
+  @Post('webauthn/login/options')
+  async getWebauthnLoginOptions(@Body() dto: WebauthnLoginOptionsDto) {
+    return this.authService.getWebauthnLoginOptions(dto.phone);
+  }
+
+  @HttpCode(200)
+  @UsePipes(new ValidationPipe())
+  @Post('webauthn/login/verify')
+  async verifyWebauthnLogin(@Body() dto: WebauthnLoginVerifyDto) {
+    return this.authService.verifyWebauthnLogin(dto.phone, dto.response);
   }
 
   @HttpCode(200)
