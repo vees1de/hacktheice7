@@ -23,7 +23,8 @@ const unlockWithBiometric = async () => {
     await router.push(ROUTE_NAMES.HOME);
   } catch (error: any) {
     message.value =
-      error?.message ?? 'Не получилось войти. Попробуйте ещё раз или введите ПИН.';
+      error?.message ??
+      'Не получилось войти. Попробуйте ещё раз или введите ПИН.';
   }
 };
 
@@ -53,8 +54,7 @@ onMounted(async () => {
   <div class="lock">
     <div class="lock__card">
       <div class="lock__header">
-        <h1>Разблокировка</h1>
-        <p>Защитили вас: нужен Face ID / отпечаток или ПИН.</p>
+        <p>Введите код доступа</p>
       </div>
 
       <div class="lock__actions">
@@ -113,12 +113,10 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 .lock {
-  min-height: 100vh;
+  height: calc(100dvh - 106px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  background: linear-gradient(135deg, #0ea5e9 0%, #312e81 100%);
 }
 
 .lock__card {

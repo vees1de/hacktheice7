@@ -329,10 +329,6 @@ export class AuthService {
       throw new NotFoundException('User not found');
     }
 
-    const existingCredentials = await this.prisma.webAuthnCredential.findMany({
-      where: { userId }
-    });
-
     const options = await generateRegistrationOptions({
       rpName: this.rpName,
       rpID: this.rpID,
@@ -345,10 +341,7 @@ export class AuthService {
         residentKey: 'preferred',
         authenticatorAttachment: 'platform'
       },
-      excludeCredentials: existingCredentials.map(cred => ({
-        id: cred.credentialId,
-        transports: (cred.transports as AuthenticatorTransportFuture[]) ?? undefined
-      }))
+      excludeCredentials: []
     });
 
     await this.storeChallenge(userId, 'webauthn_registration', options.challenge);

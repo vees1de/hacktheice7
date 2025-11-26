@@ -63,6 +63,11 @@ export const useBiometricStore = defineStore('biometric', () => {
     return hashPin(pin) === pinHash.value;
   };
 
+  const clearAll = async () => {
+    await disable();
+    await clearPin();
+  };
+
   const ensureSupported = async () => {
     if (supported.value !== null) {
       return supported.value;
@@ -186,6 +191,7 @@ export const useBiometricStore = defineStore('biometric', () => {
     setPin,
     clearPin,
     verifyPin,
-    isPinSet
+    isPinSet,
+    clearAll
   };
 });

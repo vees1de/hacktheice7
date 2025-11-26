@@ -6,6 +6,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { useBiometricStore } from './biometric.store';
 import { authApi } from '../api/auth';
 import {
   AuthLoginRequest,
@@ -18,6 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = ref(false);
   const router = useRouter();
   const userStore = useUserStore();
+  const biometricStore = useBiometricStore();
 
   const setAuth = async (data: AuthSuccess | null) => {
     isAuthenticated.value = Boolean(data);
@@ -48,6 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = async () => {
     await clearTokens();
+    await biometricStore.clearAll();
     isAuthenticated.value = false;
     router.push(ROUTE_NAMES.WELCOME);
   };
