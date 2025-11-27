@@ -30,7 +30,7 @@
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.6",
-    "@prisma/client": "^6.19.0",
+    "@prisma/client": "6.19.0",
     "@simplewebauthn/server": "^10.0.1",
     "@simplewebauthn/types": "^10.0.0",
     "@types/eslint": "^9.6.1",
