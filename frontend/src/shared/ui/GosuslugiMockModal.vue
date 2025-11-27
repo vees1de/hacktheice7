@@ -31,17 +31,19 @@ const handleClose = () => emit('close');
             <div class="esia-card__logo">
               гос<span class="logo-accent">услуги</span>
             </div>
-            <button
+            <!-- <button
               class="esia-card__close"
               type="button"
               @click="handleClose"
             >
               ×
-            </button>
+            </button> -->
           </div>
-          <div class="esia-card__lang">
-            Русский
-            <span class="esia-flag"></span>
+          <div class="esia-card__head">
+            <div class="esia-card__lang">
+              Русский
+              <span class="esia-flag"></span>
+            </div>
           </div>
 
           <div class="esia-card__field">
@@ -49,7 +51,7 @@ const handleClose = () => emit('close');
             <input
               v-model="form.login"
               type="text"
-              placeholder="example@domain.ru"
+              placeholder="ivanov@mail.ru"
             />
           </div>
 
@@ -85,7 +87,9 @@ const handleClose = () => emit('close');
 
           <div class="esia-divider"></div>
 
-          <p class="esia-alt-title">Войти другим способом. <span class="esia-link">Подробнее</span></p>
+          <p class="esia-alt-title">
+            Войти другим способом. <span class="esia-link">Подробнее</span>
+          </p>
 
           <div class="esia-alt">
             <button
@@ -126,7 +130,7 @@ const handleClose = () => emit('close');
   background: #fff;
   border-radius: 22px;
   box-shadow: 0 24px 64px rgba(17, 38, 97, 0.25);
-  padding: 22px 22px 20px;
+  padding: 28px 28px 26px;
   display: grid;
   gap: 14px;
   border: 1px solid #e4ebff;
@@ -135,13 +139,15 @@ const handleClose = () => emit('close');
 .esia-card__head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  padding-bottom: 10px;
 }
 
 .esia-card__logo {
-  font-weight: 900;
-  font-size: 24px;
+  font-weight: 700;
+  font-size: 35px;
   color: #1969d2;
+  display: flex;
 }
 
 .logo-accent {
@@ -150,23 +156,25 @@ const handleClose = () => emit('close');
 
 .esia-card__close {
   border: none;
+  position: absolute;
+  right: -20px;
+
   background: #f1f4ff;
-  border-radius: 12px;
+  border-radius: 50%;
   width: 34px;
   height: 34px;
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 400;
   cursor: pointer;
 }
 
 .esia-card__lang {
-  display: inline-flex;
+  display: flex;
+  justify-content: center;
   align-items: center;
   gap: 10px;
-  font-weight: 700;
+  font-weight: 400;
   color: #1f3b68;
-  border: 1px solid #e4ebff;
-  border-radius: 999px;
   padding: 8px 12px;
   width: fit-content;
 }
@@ -175,7 +183,7 @@ const handleClose = () => emit('close');
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: linear-gradient(#1f56d9 0 33%, #fff 33% 66%, #e7352a 66% 100%);
+  background: linear-gradient(#fff 0 33%, #1f56d9 33% 66%, #e7352a 66% 100%);
   border: 1px solid #d8e2ff;
 }
 
@@ -183,7 +191,7 @@ const handleClose = () => emit('close');
   display: grid;
   gap: 6px;
   color: #1f3b68;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .esia-card__field input {
@@ -199,7 +207,7 @@ const handleClose = () => emit('close');
   border: none;
   background: transparent;
   color: #1969d2;
-  font-weight: 700;
+  font-weight: 400;
   cursor: pointer;
   padding: 0;
   text-align: left;
@@ -216,7 +224,7 @@ const handleClose = () => emit('close');
   border: none;
   border-radius: 12px;
   padding: 14px;
-  font-weight: 800;
+  font-weight: 400;
   font-size: 15px;
   cursor: pointer;
   box-shadow: 0 12px 28px rgba(12, 87, 214, 0.35);
@@ -235,7 +243,7 @@ const handleClose = () => emit('close');
 .esia-alt-title {
   margin: 0;
   color: #1f3b68;
-  font-weight: 700;
+  font-weight: 300;
 }
 
 .esia-alt {
@@ -249,7 +257,7 @@ const handleClose = () => emit('close');
   color: #0c57d6;
   border-radius: 12px;
   padding: 12px;
-  font-weight: 800;
+  font-weight: 400;
   background: #f9fbff;
   cursor: pointer;
 }

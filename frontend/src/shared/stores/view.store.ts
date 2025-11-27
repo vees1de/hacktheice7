@@ -27,7 +27,8 @@ export const useViewStore = defineStore('view', () => {
   const showMenu = computed(() => {
     const isOkRoute =
       !router.currentRoute.value.path.includes('user') &&
-      !router.currentRoute.value.path.startsWith('/auth');
+      !router.currentRoute.value.path.startsWith('/auth') &&
+      !router.currentRoute.value.path.includes('simple');
 
     return isOkRoute && isAuthenticated.value && !hideGlobalChrome.value;
   });
