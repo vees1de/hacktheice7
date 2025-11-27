@@ -35,14 +35,14 @@ const handleSubmit = () => {
   startLoading();
 };
 
-const handleClose = () => {
-  if (loadingTimer) {
-    clearTimeout(loadingTimer);
-  }
-  isLoading.value = false;
-  isSuccess.value = false;
-  emit('close');
-};
+// const handleClose = () => {
+//   if (loadingTimer) {
+//     clearTimeout(loadingTimer);
+//   }
+//   isLoading.value = false;
+//   isSuccess.value = false;
+//   emit('close');
+// };
 
 watch(
   () => open,
