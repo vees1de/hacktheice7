@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useUserStore, userApi } from '@entities/user';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 
 import GosuslugiMockModal from './GosuslugiMockModal.vue';
 
@@ -192,6 +192,64 @@ const finalizeOnboarding = async () => {
     finishing.value = false;
   }
 };
+
+let autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
+
+const startAutoAdvance = () => {
+  if (autoAdvanceTimer) return;
+  autoAdvanceTimer = setTimeout(() => {
+    if (step.value === 0) {
+      startFlow();
+    }
+  }, 3000);
+};
+
+const clearAutoAdvance = () => {
+  if (autoAdvanceTimer) {
+    clearTimeout(autoAdvanceTimer);
+    autoAdvanceTimer = null;
+  }
+};
+
+onMounted(() => {
+  // Запускаем автопереход только если изначально открыт
+  if (props.open) {
+    syncBenefitsFromProfile();
+    startAutoAdvance();
+  }
+
+  // Также следим за изменением open, если компонент остаётся смонтированным,
+  // но open меняется — это защита на случай, если modal используется с v-show
+  const stopWatch = watch(
+    () => props.open,
+    isOpen => {
+      if (isOpen) {
+        step.value = 0;
+        selectedMode.value = null;
+        isEsiaModalOpen.value = false;
+        isEsiaWarmup.value = false;
+        finishError.value = '';
+        syncBenefitsFromProfile();
+        startAutoAdvance();
+      } else {
+        clearAutoAdvance();
+      }
+    },
+    { immediate: false }
+  );
+
+  onUnmounted(() => {
+    stopWatch();
+    clearAutoAdvance();
+  });
+});
+
+// Также отменяем таймер, если пользователь сам ушёл с шага 0
+watch(step, newStep => {
+  if (newStep !== 0) {
+    clearAutoAdvance();
+  }
+});
 </script>
 
 <template>
@@ -243,178 +301,196 @@ const finalizeOnboarding = async () => {
                 ← Назад
               </button>
             </div>
+            <!-- Слайдер -->
+            <div class="panel__slider">
+              <div
+                class="panel__slider-track"
+                :style="{ transform: `translateX(-${step * 100}%)` }"
+              >
+                <!-- Шаг 0: Приветствие -->
+                <div class="panel__slide">
+                  <div class="panel__card panel__welcome">
+                    <div class="benefit-cover__logo">
+                      <img
+                        src="/assets/icons/lasso-icon.svg"
+                        alt="LASSO"
+                      />
+                      <div>
+                        <p class="cover__eyebrow">Лассо</p>
+                        <h2>Цифровое удостоверение льготника</h2>
+                      </div>
+                    </div>
 
-            <div
-              v-if="step === 0"
-              class="panel__card panel__welcome"
-            >
-              <div class="benefit-cover__logo">
-                <img
-                  src="/assets/icons/lasso-icon.svg"
-                  alt="LASSO"
-                />
-                <div>
-                  <p class="cover__eyebrow">Лассо</p>
-                  <h2>Цифровое удостоверение льготника</h2>
-                </div>
-              </div>
-
-              <p class="benefit-cover__text">
-                Лассо — цифровое удостоверение льготника. Работает в магазинах и
-                сервисах вашего региона.
-              </p>
-              <div class="panel__actions">
-                <button
-                  class="btn btn--primary"
-                  type="button"
-                  @click="startFlow"
-                >
-                  Начать →
-                </button>
-              </div>
-            </div>
-
-            <div
-              v-else-if="step === 1"
-              class="panel__card"
-            >
-              <div class="panel__heading">
-                <h3>Какая у вас льгота?</h3>
-                <p>Можно выбрать несколько категорий — сохраним в профиле.</p>
-              </div>
-
-              <div class="benefit-grid">
-                <button
-                  v-for="item in benefitOptions"
-                  :key="item.value"
-                  type="button"
-                  class="option-card"
-                  :class="{
-                    'option-card--active': selectedBenefits.includes(item.value)
-                  }"
-                  @click="toggleBenefit(item.value)"
-                >
-                  <div class="option-card__top">
-                    <div class="option-card__title">{{ item.title }}</div>
-                    <span
-                      v-if="selectedBenefits.includes(item.value)"
-                      class="option-card__check"
-                    >
-                      ✓
-                    </span>
+                    <p class="benefit-cover__text">
+                      Лассо — цифровое удостоверение льготника. Работает в
+                      магазинах и сервисах вашего региона.
+                    </p>
+                    <div class="panel__actions">
+                      <button
+                        class="btn btn--primary"
+                        type="button"
+                        @click="startFlow"
+                      >
+                        Начать →
+                      </button>
+                    </div>
                   </div>
-                  <p class="option-card__subtitle">
-                    {{ item.subtitle }}
-                  </p>
-                  <span class="option-card__chevron">→</span>
-                </button>
-              </div>
+                </div>
 
-              <div class="panel__actions">
-                <button
-                  class="btn btn--primary"
-                  type="button"
-                  @click="proceedFromBenefits"
-                >
-                  Далее
-                </button>
-              </div>
-            </div>
+                <!-- Шаг 1: Льготы -->
+                <div class="panel__slide">
+                  <div class="panel__card">
+                    <div class="panel__heading">
+                      <h3>Какая у вас льгота?</h3>
+                      <p>
+                        Можно выбрать несколько категорий — сохраним в профиле.
+                      </p>
+                    </div>
 
-            <div
-              v-else-if="step === 2"
-              class="panel__card"
-            >
-              <div class="panel__heading">
-                <h3>Подтверждение через Госуслуги</h3>
-                <p>
-                  Для доступа к вашим официальным льготам требуется
-                  подтверждение личности через Госуслуги.
-                </p>
-              </div>
+                    <div class="benefit-grid">
+                      <button
+                        v-for="item in benefitOptions"
+                        :key="item.value"
+                        type="button"
+                        class="option-card"
+                        :class="{
+                          'option-card--active': selectedBenefits.includes(
+                            item.value
+                          )
+                        }"
+                        @click="toggleBenefit(item.value)"
+                      >
+                        <div class="option-card__top">
+                          <div class="option-card__title">{{ item.title }}</div>
+                          <span
+                            v-if="selectedBenefits.includes(item.value)"
+                            class="option-card__check"
+                          >
+                            ✓
+                          </span>
+                        </div>
+                        <p class="option-card__subtitle">
+                          {{ item.subtitle }}
+                        </p>
+                        <span class="option-card__chevron">→</span>
+                      </button>
+                    </div>
 
-              <button
-                class="btn btn--gos"
-                type="button"
-                :disabled="isEsiaWarmup"
-                @click="openEsia"
-              >
-                <img
-                  src="/assets/icons/gos-low-icon.svg"
-                  alt=""
-                />
-                <span v-if="isEsiaWarmup">Загрузка...</span>
-                <span v-else>Войти через Госуслуги</span>
-              </button>
-              <p
-                v-if="isEsiaWarmup"
-                class="gos-hint"
-              >
-                Подождите, открываем окно авторизации…
-              </p>
-            </div>
+                    <div class="panel__actions">
+                      <button
+                        class="btn btn--primary"
+                        type="button"
+                        @click="proceedFromBenefits"
+                      >
+                        Далее
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
-            <div
-              v-else
-              class="panel__card"
-            >
-              <div class="panel__heading">
-                <h3>Выберите режим</h3>
-                <p>Как удобнее начать работу с Лассо?</p>
-              </div>
+                <!-- Шаг 2: Госуслуги -->
+                <div class="panel__slide">
+                  <div class="panel__card">
+                    <div class="panel__heading">
+                      <h3>Подтверждение через Госуслуги</h3>
+                      <p>
+                        Для доступа к вашим официальным льготам требуется
+                        подтверждение личности через Госуслуги.
+                      </p>
+                    </div>
 
-              <div class="mode-grid">
-                <button
-                  class="mode-card"
-                  :class="{ 'mode-card--active': selectedMode === 'simple' }"
-                  type="button"
-                  @click="selectMode('simple')"
-                >
-                  <div class="mode-card__badge">Рекомендуем</div>
-                  <h4>Простой режим</h4>
-                  <p class="mode-card__subtitle">
-                    Минимальный интерфейс и подсказки для быстрого старта.
-                  </p>
-                  <ul class="mode-card__list">
-                    <li>минимальный интерфейс</li>
-                    <li>подсказки</li>
-                    <li>подходит новичкам</li>
-                  </ul>
-                </button>
+                    <button
+                      class="btn btn--gos"
+                      type="button"
+                      :disabled="isEsiaWarmup"
+                      @click="openEsia"
+                    >
+                      <img
+                        src="/assets/icons/gos-low-icon.svg"
+                        alt=""
+                      />
+                      <span v-if="isEsiaWarmup">Загрузка...</span>
+                      <span v-else>Войти через Госуслуги</span>
+                    </button>
+                    <p
+                      v-if="isEsiaWarmup"
+                      class="gos-hint"
+                    >
+                      Подождите, открываем окно авторизации…
+                    </p>
+                  </div>
+                </div>
 
-                <button
-                  class="mode-card mode-card--light"
-                  :class="{ 'mode-card--active': selectedMode === 'default' }"
-                  type="button"
-                  @click="selectMode('default')"
-                >
-                  <h4>Обычный режим</h4>
-                  <p class="mode-card__subtitle">
-                    Полный функционал и быстрый доступ ко всем возможностям.
-                  </p>
-                  <ul class="mode-card__list">
-                    <li>полный функционал</li>
-                    <li>быстрый доступ ко всем функциям</li>
-                    <li>готовы сразу пользоваться</li>
-                  </ul>
-                </button>
-              </div>
+                <!-- Шаг 3: Режим -->
+                <div class="panel__slide">
+                  <div class="panel__card">
+                    <div class="panel__heading">
+                      <h3>Выберите режим</h3>
+                      <p>Как удобнее начать работу с Лассо?</p>
+                    </div>
 
-              <div class="finish-row">
-                <p
-                  v-if="finishError"
-                  class="finish-row__error"
-                >
-                  {{ finishError }}
-                </p>
-                <button
-                  class="btn btn--primary finish-row__cta"
-                  type="button"
-                  :disabled="!selectedMode || finishing"
-                  @click="finalizeOnboarding"
-                >
-                  {{ finishing ? 'Завершаем...' : 'Завершить регистрацию' }}
-                </button>
+                    <div class="mode-grid">
+                      <button
+                        class="mode-card"
+                        :class="{
+                          'mode-card--active': selectedMode === 'simple'
+                        }"
+                        type="button"
+                        @click="selectMode('simple')"
+                      >
+                        <div class="mode-card__badge">Рекомендуем</div>
+                        <h4>Простой режим</h4>
+                        <p class="mode-card__subtitle">
+                          Минимальный интерфейс и подсказки для быстрого старта.
+                        </p>
+                        <ul class="mode-card__list">
+                          <li>минимальный интерфейс</li>
+                          <li>подсказки</li>
+                          <li>подходит новичкам</li>
+                        </ul>
+                      </button>
+
+                      <button
+                        class="mode-card mode-card--light"
+                        :class="{
+                          'mode-card--active': selectedMode === 'default'
+                        }"
+                        type="button"
+                        @click="selectMode('default')"
+                      >
+                        <h4>Обычный режим</h4>
+                        <p class="mode-card__subtitle">
+                          Полный функционал и быстрый доступ ко всем
+                          возможностям.
+                        </p>
+                        <ul class="mode-card__list">
+                          <li>полный функционал</li>
+                          <li>быстрый доступ ко всем функциям</li>
+                          <li>готовы сразу пользоваться</li>
+                        </ul>
+                      </button>
+                    </div>
+
+                    <div class="finish-row">
+                      <p
+                        v-if="finishError"
+                        class="finish-row__error"
+                      >
+                        {{ finishError }}
+                      </p>
+                      <button
+                        class="btn btn--primary finish-row__cta"
+                        type="button"
+                        :disabled="!selectedMode || finishing"
+                        @click="finalizeOnboarding"
+                      >
+                        {{
+                          finishing ? 'Завершаем...' : 'Завершить регистрацию'
+                        }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -431,6 +507,25 @@ const finalizeOnboarding = async () => {
 </template>
 
 <style scoped lang="scss">
+.panel__slider {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  height: auto; /* или фиксированная высота, если нужно */
+}
+
+.panel__slider-track {
+  display: flex;
+  transition: transform 0.3s ease-in-out;
+  width: calc(100% * #{length(steps)}); /* 4 шага → 400% */
+  height: auto;
+}
+
+.panel__slide {
+  width: 100%;
+  flex-shrink: 0;
+}
+
 .benefit-modal {
   position: fixed;
   inset: 0;
