@@ -167,20 +167,20 @@ const goToBenefitSelection = async () => {
         @click="redirect(ROUTE_NAMES.PROFITS)"
         class="section-heading"
       >
-        <h3>Вы могли сэкономить</h3>
+        <div class="heading">Вы могли сэкономить</div>
         <img
           src="/assets/icons/arrow.svg"
           alt="''"
         />
       </div>
       <Economy />
-      <h3>Чат-бот помощник ЛАССО</h3>
+      <div class="heading">Чат-бот помощник ЛАССО</div>
       <ChatBot @click="redirect(ROUTE_NAMES.CHAT)" />
       <div
         @click="redirect(ROUTE_NAMES.BENEFITS)"
         class="section-heading"
       >
-        <h3>Льготы для тебя</h3>
+        <div class="heading">Льготы для тебя</div>
         <img
           src="/assets/icons/arrow.svg"
           alt="''"
@@ -196,7 +196,7 @@ const goToBenefitSelection = async () => {
         @click="redirect(ROUTE_NAMES.SALES)"
         class="section-heading"
       >
-        <h3>Акции для тебя</h3>
+        <div class="heading">Акции для тебя</div>
         <img
           src="/assets/icons/arrow.svg"
           alt="''"
@@ -220,7 +220,7 @@ const goToBenefitSelection = async () => {
 </template>
 
 <style lang="scss" scoped>
-h3 {
+.heading {
   font-size: 1.25rem;
   font-weight: 600;
 }
