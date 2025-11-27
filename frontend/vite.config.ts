@@ -21,7 +21,7 @@ export default defineConfig({
       },
       manifest: {
         short_name: 'Лассо',
-        name: 'ЛАССЛассоО',
+        name: 'Лассо',
         id: '/?source=pwa',
         start_url: '/?source=pwa',
         scope: '/',
