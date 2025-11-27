@@ -159,7 +159,15 @@ export const useBiometricStore = defineStore('biometric', () => {
   };
 
   const disable = async () => {
-    await saveMeta(null);
+    lastError.value = null;
+    try {
+      await biometricApi.clearCredentials();
+      await saveMeta(null);
+    } catch (error: any) {
+      lastError.value =
+        error?.message ?? 'Не удалось удалить биометрию на сервере';
+      throw error;
+    }
   };
 
   const rememberIdentity = async (phone: string, displayName?: string) => {

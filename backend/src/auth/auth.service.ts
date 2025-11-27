@@ -555,6 +555,13 @@ export class AuthService {
     };
   }
 
+  async clearWebauthnCredentials(userId: string) {
+    await this.prisma.webAuthnCredential.deleteMany({
+      where: { userId }
+    });
+    return { result: true };
+  }
+
   private async storeChallenge(
     userId: string,
     type: string,

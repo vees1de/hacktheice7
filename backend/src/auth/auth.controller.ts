@@ -139,6 +139,13 @@ export class AuthController {
   }
 
   @HttpCode(200)
+  @Auth()
+  @Post('webauthn/clear')
+  async clearWebauthn(@CurrentUser('id') userId: string) {
+    return this.authService.clearWebauthnCredentials(userId);
+  }
+
+  @HttpCode(200)
   @Post('share-token')
   @Auth()
   async createShareToken(@CurrentUser('id') userId: string) {

@@ -52,5 +52,15 @@ export const biometricApi = {
       }
     );
     return data;
+  },
+
+  async clearCredentials() {
+    const { data } = await apiRequest<{ result: boolean }>(
+      '/auth/webauthn/clear',
+      {
+        method: 'POST'
+      }
+    );
+    return data;
   }
 };

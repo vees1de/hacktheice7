@@ -85,7 +85,8 @@ const removeBiometrics = async () => {
   biometricMessage.value = '';
   try {
     await biometricStore.disable();
-    biometricMessage.value = 'Face ID / отпечаток удалены с этого устройства.';
+    biometricMessage.value =
+      'Биометрический ключ удален из аккаунта и с этого устройства.';
   } catch (error: any) {
     biometricMessage.value = error?.message ?? 'Не удалось удалить биометрию.';
   }
@@ -141,13 +142,12 @@ const removeBiometrics = async () => {
         </button>
       </div>
       <button
-        v-if="biometricEnabled"
         class="security__clear"
         type="button"
         :disabled="isProcessing"
         @click="removeBiometrics"
       >
-        Удалить Face ID с этого устройства
+        Удалить ключ биометрии из аккаунта
       </button>
       <p
         v-if="!biometricAvailable"

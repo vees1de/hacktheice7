@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useBiometricStore } from '@entities/auth';
 import { useUserStore, userApi } from '@entities/user';
 import { computed, reactive, ref } from 'vue';
 
@@ -20,12 +21,14 @@ const emit = defineEmits<{
 }>();
 
 const userStore = useUserStore();
+const biometricStore = useBiometricStore();
 
 const steps = [
   { id: 0, label: 'Старт' },
   { id: 1, label: 'Льготы' },
   { id: 2, label: 'Госуслуги' },
-  { id: 3, label: 'Режим' }
+  { id: 3, label: 'Режим' },
+  { id: 4, label: 'Защита' }
 ];
 
 const heroImages = [
@@ -89,6 +92,8 @@ const finishing = ref(false);
 const finishError = ref('');
 const activeHeroIndex = ref(0);
 const activeHero = computed(() => heroImages[activeHeroIndex.value]);
+const pinValue = ref('');
+const pinComplete = computed(() => pinValue.value.length === 4);
 
 const progress = computed(() => ((step.value + 1) / steps.length) * 100);
 
@@ -106,6 +111,11 @@ const goToStep = (nextStep: number) => {
 
 const goBack = () => goToStep(step.value - 1);
 const startFlow = () => goToStep(1);
+const goToSecurity = () => {
+  pinValue.value = '';
+  finishError.value = '';
+  goToStep(4);
+};
 
 const toggleBenefit = (value: string) => {
   if (selectedBenefits.value.includes(value)) {
@@ -150,15 +160,31 @@ const selectMode = (mode: 'simple' | 'default') => {
   selectedMode.value = mode;
 };
 
+const handlePinDigit = (digit: string) => {
+  if (pinValue.value.length >= 4) return;
+  pinValue.value += digit;
+  finishError.value = '';
+};
+
+const handlePinDelete = () => {
+  pinValue.value = pinValue.value.slice(0, -1);
+  finishError.value = '';
+};
+
 // const finishRegistration = () => {
 //   // handled below with async finalize
 // };
 
 const finalizeOnboarding = async () => {
   if (!selectedMode.value) return;
+  if (!pinComplete.value) {
+    finishError.value = 'Введите ПИН-код из 4 цифр';
+    return;
+  }
   finishError.value = '';
   finishing.value = true;
   try {
+    await biometricStore.setPin(pinValue.value);
     const withBenefits = await userApi.updateUserCategories(
       selectedBenefits.value
     );
@@ -417,6 +443,74 @@ const nextHero = () => {
                   </button>
                 </div>
 
+                <div class="panel__actions panel__actions--end">
+                  <button
+                    class="btn btn--primary"
+                    type="button"
+                    :disabled="!selectedMode"
+                    @click="goToSecurity"
+                  >
+                    Далее
+                  </button>
+                </div>
+              </div>
+
+              <!-- Шаг 4: ПИН и биометрия -->
+              <div
+                v-else-if="step === 4"
+                class="panel__card"
+              >
+                <div class="panel__heading">
+                  <h3>Защитите вход</h3>
+                  <p>Придумайте ПИН-код — 4 цифры, как на экране блокировки.</p>
+                </div>
+
+                <div class="pin-setup">
+                  <div class="pin-dots">
+                    <span
+                      v-for="i in 4"
+                      :key="i"
+                      :class="['pin-dot', { 'pin-dot--filled': i <= pinValue.length }]"
+                    ></span>
+                  </div>
+
+                  <div class="pin-numpad">
+                    <button
+                      v-for="n in ['1', '2', '3', '4', '5', '6', '7', '8', '9']"
+                      :key="n"
+                      class="pin-numpad__btn"
+                      type="button"
+                      @click="handlePinDigit(n)"
+                    >
+                      {{ n }}
+                    </button>
+                    <button
+                      class="pin-numpad__btn pin-numpad__btn--empty"
+                      type="button"
+                      disabled
+                    ></button>
+                    <button
+                      class="pin-numpad__btn"
+                      type="button"
+                      @click="handlePinDigit('0')"
+                    >
+                      0
+                    </button>
+                    <button
+                      class="pin-numpad__btn pin-numpad__btn--delete"
+                      type="button"
+                      @click="handlePinDelete"
+                    >
+                      ⌫
+                    </button>
+                  </div>
+
+                  <p class="pin-setup__note">
+                    Face ID / отпечаток можно будет использовать, если
+                    поддерживается вашим устройством.
+                  </p>
+                </div>
+
                 <div class="finish-row">
                   <p
                     v-if="finishError"
@@ -427,7 +521,7 @@ const nextHero = () => {
                   <button
                     class="btn btn--primary finish-row__cta"
                     type="button"
-                    :disabled="!selectedMode || finishing"
+                    :disabled="!selectedMode || !pinComplete || finishing"
                     @click="finalizeOnboarding"
                   >
                     {{ finishing ? 'Завершаем...' : 'Завершить регистрацию' }}
@@ -919,6 +1013,71 @@ const nextHero = () => {
 
 .mode-card--light .mode-card__list {
   color: #45516a;
+}
+
+.pin-setup {
+  display: grid;
+  gap: 16px;
+}
+
+.pin-dots {
+  display: flex;
+  gap: 12px;
+}
+
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+}
+
+.pin-dot--filled {
+  background: #1a73e8;
+  border-color: #1a73e8;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+}
+
+.pin-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(64px, 1fr));
+  gap: 10px;
+}
+
+.pin-numpad__btn {
+  border: 1px solid #dfe4f3;
+  border-radius: 12px;
+  background: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  color: #0f172a;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.pin-numpad__btn:hover:not(:disabled) {
+  background: #f4f6fb;
+}
+
+.pin-numpad__btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.pin-numpad__btn--delete {
+  color: #1a73e8;
+}
+
+.pin-numpad__btn--empty {
+  visibility: hidden;
+}
+
+.pin-setup__note {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.5;
 }
 
 .finish-row {
