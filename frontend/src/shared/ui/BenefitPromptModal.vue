@@ -81,13 +81,6 @@ const finishError = ref('');
 
 const progress = computed(() => ((step.value + 1) / steps.length) * 100);
 
-const welcomeTitle = computed(() => props.title || 'Добро пожаловать в Лассо!');
-const welcomeDescription = computed(
-  () =>
-    props.description ||
-    'Мы подберём для вас персональные льготы, скидки и компенсации. Это займёт меньше минуты.'
-);
-
 // const handleClose = () => {
 //   isEsiaModalOpen.value = false;
 //   emit('close');
@@ -188,23 +181,6 @@ const finalizeOnboarding = async () => {
       <div class="benefit-modal__body">
         <div class="benefit-modal__grid">
           <aside class="benefit-cover">
-            <div class="benefit-cover__pill">Новичкам в LASSO</div>
-            <div class="benefit-cover__logo">
-              <img
-                src="/assets/icons/lasso-icon.svg"
-                alt="LASSO"
-              />
-              <div>
-                <p class="cover__eyebrow">Лассо</p>
-                <h2>Цифровое удостоверение льготника</h2>
-              </div>
-            </div>
-
-            <p class="benefit-cover__text">
-              Лассо — цифровое удостоверение льготника. Работает в магазинах и
-              сервисах вашего региона.
-            </p>
-
             <div class="benefit-cover__meta">
               <div class="meta__item">
                 <span class="meta__label"
@@ -218,9 +194,6 @@ const finalizeOnboarding = async () => {
                     ></span>
                   </span>
                 </div>
-              </div>
-              <div class="meta__item meta__muted">
-                {{ welcomeDescription }}
               </div>
             </div>
           </aside>
@@ -253,10 +226,20 @@ const finalizeOnboarding = async () => {
               v-if="step === 0"
               class="panel__card panel__welcome"
             >
-              <p class="eyebrow">Экран 0</p>
-              <h3>{{ welcomeTitle }}</h3>
-              <p class="panel__lead">
-                {{ welcomeDescription }}
+              <div class="benefit-cover__logo">
+                <img
+                  src="/assets/icons/lasso-icon.svg"
+                  alt="LASSO"
+                />
+                <div>
+                  <p class="cover__eyebrow">Лассо</p>
+                  <h2>Цифровое удостоверение льготника</h2>
+                </div>
+              </div>
+
+              <p class="benefit-cover__text">
+                Лассо — цифровое удостоверение льготника. Работает в магазинах и
+                сервисах вашего региона.
               </p>
               <div class="panel__actions">
                 <button
@@ -267,10 +250,6 @@ const finalizeOnboarding = async () => {
                   Начать →
                 </button>
               </div>
-              <p class="panel__muted">
-                Лассо — цифровое удостоверение льготника. Работает в магазинах и
-                сервисах вашего региона.
-              </p>
             </div>
 
             <div
@@ -334,35 +313,17 @@ const finalizeOnboarding = async () => {
                 </p>
               </div>
 
-              <div class="gos-card">
-                <div class="gos-card__logo">госуслуги</div>
-                <div class="gos-card__text">
-                  <p>
-                    Мы не сохраняем логин и пароль — данные нужны только для
-                    проверки статуса льготника.
-                  </p>
-                  <p class="gos-card__hint">
-                    Мок-версия, выглядит как на портале.
-                  </p>
-                </div>
-                <button
-                  class="btn btn--gos"
-                  type="button"
-                  @click="openEsia"
-                >
-                  Войти через Госуслуги
-                </button>
-              </div>
-
-              <div class="panel__actions panel__actions--end">
-                <button
-                  class="btn btn--ghost"
-                  type="button"
-                  @click="handleEsiaSubmit"
-                >
-                  Продолжить без авторизации
-                </button>
-              </div>
+              <button
+                class="btn btn--gos"
+                type="button"
+                @click="openEsia"
+              >
+                <img
+                  src="/assets/icons/gosuslugi.png"
+                  alt=""
+                />
+                Войти через Госуслуги
+              </button>
             </div>
 
             <div
@@ -462,8 +423,6 @@ const finalizeOnboarding = async () => {
 }
 
 .benefit-modal__grid {
-  display: grid;
-  grid-template-columns: 400px 1fr;
   min-height: 100%;
 }
 
@@ -515,7 +474,7 @@ const finalizeOnboarding = async () => {
 
 .benefit-cover__text {
   margin: 0;
-  color: rgba(255, 255, 255, 0.9);
+  color: black;
   font-size: 15px;
   line-height: 1.6;
 }
@@ -857,7 +816,6 @@ const finalizeOnboarding = async () => {
 }
 
 .finish-row__cta {
-  min-width: 220px;
 }
 
 .finish-row__error {
@@ -905,9 +863,19 @@ const finalizeOnboarding = async () => {
 }
 
 .btn--gos {
-  background: linear-gradient(90deg, #1a5ad7, #d81b60);
-  color: #fff;
-  box-shadow: 0 10px 28px rgba(26, 90, 215, 0.25);
+  color: #142a4a;
+  background-color: #fff;
+  border: #516079 1px solid;
+  padding: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  img {
+    width: 40px;
+    height: 40px;
+    border: 16px;
+  }
 }
 
 .eyebrow {
@@ -925,7 +893,7 @@ const finalizeOnboarding = async () => {
   }
 
   .benefit-cover {
-    min-height: 220px;
+    height: auto;
   }
 }
 
