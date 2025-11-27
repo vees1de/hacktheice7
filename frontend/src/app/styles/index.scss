@@ -1,7 +1,7 @@
 @import "./reset.scss";
 @import "./typography.scss";
-@import "./themes/dark.scss";
-@import "./themes/light.scss";
+@import "./themes/accessible.scss";
+@import "./themes/default.scss";
 @import "./variables.scss";
 
 
@@ -9,6 +9,34 @@ html {
     font-family: Inter, Inter dev, sans-serif;
     color: #0E172E;
 
+}
+
+body {
+    min-height: 100dvh;
+    background-color: var(--bg);
+
+    color: var(--primary-text);
+}
+
+.section-heading {
+    img {
+        filter: var(--icon)
+    }
+}
+
+.back-button {
+    img {
+        filter: var(--icon)
+    }
+}
+
+.theme-card__title,
+.security__title {
+    color: var(--invert-primary-text)
+}
+
+.economy-modal {
+    color: var(--invert-primary-text);
 }
 
 *,

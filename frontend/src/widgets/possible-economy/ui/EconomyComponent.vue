@@ -138,7 +138,7 @@ const handleBenefitKey = (event: KeyboardEvent, benefitId: string) => {
       <div class="shops__images">
         <img
           src="/assets/images/shops.png"
-          alt=""
+          alt="''"
         />
         <div>...</div>
       </div>
@@ -297,7 +297,8 @@ const handleBenefitKey = (event: KeyboardEvent, benefitId: string) => {
   min-width: 0;
   flex: 1 1 140px; // ← гибкая ширина, но не сжимается слишком сильно
   min-height: 100px;
-  background-color: #e5f0ff;
+  background-color: var(--money-bg);
+  color: var(--money-text);
   border: 2px solid #c6ddfd;
   border-radius: 10px;
   display: flex;

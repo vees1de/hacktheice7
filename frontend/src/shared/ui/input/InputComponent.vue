@@ -181,8 +181,8 @@ const handleInput = (event: CustomEvent<MaskaDetail>) => {
   font-size: 1rem;
 
   color: #111827;
-  background-color: #e5f0ff;
-  border: 2px solid #c6ddfd;
+  background-color: var(--input);
+  border: 2px solid var(--input-border);
   border-radius: 12px;
   transition: all 0.2s ease-in-out;
   outline: none;

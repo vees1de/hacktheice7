@@ -27,9 +27,9 @@ const demoCredentials: AuthLoginRequest = {
 onMounted(async () => {
   try {
     await authStore.checkToken();
-    if (authStore.isAuthenticated) {
-      await router.push(ROUTE_NAMES.SECURE);
-    }
+    // if (authStore.isAuthenticated) {
+    //   await router.push(ROUTE_NAMES.SECURE);
+    // }
   } catch {
     // ignore
   }
@@ -48,7 +48,6 @@ const loginAsDemo = async () => {
     isDemoLoading.value = false;
   }
 };
-
 </script>
 
 <template>
@@ -58,7 +57,10 @@ const loginAsDemo = async () => {
         class="logo-img"
         src="/assets/icons/lasso-icon.svg"
       />
-      <img src="/assets/icons/lasso-title.svg" />
+      <img
+        src="/assets/icons/lasso-title.svg"
+        alt="''"
+      />
     </div>
     <div class="change-lang">
       <button
@@ -119,10 +121,13 @@ const loginAsDemo = async () => {
 }
 
 .logo {
+  img {
+    filter: var(--logo-main);
+  }
+
   .logo-img {
     width: 160px;
     height: 160px;
-    fill: #1a73e8;
   }
 
   img {

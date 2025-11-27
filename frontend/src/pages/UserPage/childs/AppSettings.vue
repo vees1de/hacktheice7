@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useBiometricStore } from '@entities/auth';
 import { useUserStore } from '@entities/user';
-import { useThemeStore } from '@shared/stores/theme.store';
+import { Theme, useThemeStore } from '@shared/stores/theme.store';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, ref } from 'vue';
 
@@ -10,10 +10,11 @@ const biometricStore = useBiometricStore();
 const userStore = useUserStore();
 
 const { theme } = storeToRefs(themeStore);
-const { meta, supported, isProcessing, lastError } = storeToRefs(biometricStore);
+const { meta, supported, isProcessing, lastError } =
+  storeToRefs(biometricStore);
 const { user } = storeToRefs(userStore);
 
-const themeOptions = [
+const themeOptions: { id: Theme; label: string; description: string }[] = [
   {
     id: 'default',
     label: 'Стандартная тема',
@@ -29,8 +30,8 @@ const themeOptions = [
 
 const biometricMessage = ref('');
 
-const selectTheme = (value: string) => {
-  themeStore.setTheme(value as 'default' | 'accessible');
+const selectTheme = async (value: Theme) => {
+  await themeStore.setTheme(value);
 };
 
 const biometricLabel = computed(() => {
@@ -65,7 +66,8 @@ const toggleBiometrics = async () => {
         .filter(Boolean)
         .join(' ');
       await biometricStore.enroll(user.value.phone, displayName);
-      biometricMessage.value = 'Вход по биометрии включен. В следующий раз можно не вводить пароль.';
+      biometricMessage.value =
+        'Вход по биометрии включен. В следующий раз можно не вводить пароль.';
     }
   } catch (error: any) {
     biometricMessage.value =
@@ -124,7 +126,8 @@ const removeBiometrics = async () => {
         <div>
           <p class="security__title">Быстрый вход по биометрии</p>
           <p class="security__subtitle">
-            Открывайте приложение по {{ biometricLabel }} без ввода телефона и пароля.
+            Открывайте приложение по {{ biometricLabel }} без ввода телефона и
+            пароля.
             {{ meta?.phone ? 'Аккаунт сохранен.' : '' }}
           </p>
         </div>
@@ -150,7 +153,8 @@ const removeBiometrics = async () => {
         v-if="!biometricAvailable"
         class="security__hint"
       >
-        Биометрия на этом устройстве недоступна. Попробуйте с телефона с Face ID или сканером отпечатка.
+        Биометрия на этом устройстве недоступна. Попробуйте с телефона с Face ID
+        или сканером отпечатка.
       </p>
       <p
         v-if="lastError"
@@ -183,7 +187,7 @@ const removeBiometrics = async () => {
 
     p {
       margin: 0;
-      color: #475467;
+      color: var(--primary-text);
     }
   }
 }
@@ -209,7 +213,9 @@ const removeBiometrics = async () => {
   padding: 12px 14px;
   cursor: pointer;
   background: #fff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 
   &.active {
     border-color: #2455cc;

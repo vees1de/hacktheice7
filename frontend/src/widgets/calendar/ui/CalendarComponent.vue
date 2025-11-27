@@ -37,7 +37,10 @@ const calendarItems = [
       :key="item.title"
       class="shops__item"
     >
-      <img :src="item.image" />
+      <img
+        :src="item.image"
+        alt="''"
+      />
       <div class="info">
         <div class="info__title">{{ item.title }}</div>
         <div class="info__subtitle">{{ item.subtitle }}</div>

@@ -53,9 +53,9 @@ onMounted(async () => {
   await biometricStore.ensureSupported();
   await biometricStore.loadFromStorage();
 
-  if (!meta.value?.phone && !isPinSet.value) {
-    router.push(ROUTE_NAMES.SECURE);
-  }
+  // if (!meta.value?.phone && !isPinSet.value) {
+  //   router.push(ROUTE_NAMES.SECURE);
+  // }
 });
 </script>
 

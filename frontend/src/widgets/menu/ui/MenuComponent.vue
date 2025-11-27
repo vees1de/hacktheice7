@@ -45,8 +45,12 @@ effect(() => {
         <template v-if="item.title">
           <img
             class="item__icon"
-            :class="{ item__icon_active: index === activeMenuItem }"
+            :class="{
+              item__icon_active: index === activeMenuItem,
+              item__icon_unactive: index !== activeMenuItem
+            }"
             :src="`/assets/icons/${item.icon}-icon.svg`"
+            alt=""
           />
           <div
             v-if="item.title"
@@ -60,6 +64,7 @@ effect(() => {
             class="item__icon"
             :class="{ item__icon_active: index === activeMenuItem }"
             :src="`/assets/icons/${item.icon}-icon.svg`"
+            alt=""
           />
         </template>
       </div>
@@ -71,7 +76,7 @@ effect(() => {
   height: var(--menu-height);
   display: flex;
   justify-content: space-between;
-  background-color: #fff;
+  background-color: var(--bg);
   width: 100%;
   position: fixed;
   border-top: 1px #c8cdd0 solid;
@@ -84,9 +89,11 @@ effect(() => {
   text-align: center;
   font-size: 0.625rem;
 
+  &__icon_unactive {
+    filter: var(--menu-item);
+  }
   &__icon_active {
-    filter: brightness(0) saturate(100%) invert(37%) sepia(60%) saturate(3622%)
-      hue-rotate(202deg) brightness(93%) contrast(95%);
+    filter: var(--menu-item-active);
   }
 }
 .chat_item {
@@ -94,15 +101,14 @@ effect(() => {
   place-items: center;
   transform: translateY(-20px);
   border-radius: 100%;
-  background-color: #1a73e8;
+  background-color: var(--chat-item);
   width: 58px;
   height: 58px;
 
   img {
     width: 28px;
     height: 28px;
-    filter: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(700%)
-      hue-rotate(188deg) brightness(108%) contrast(101%);
+    filter: var(--chat-item-svg);
   }
 }
 </style>

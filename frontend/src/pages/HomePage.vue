@@ -5,6 +5,7 @@ import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { useCatalogStore } from '@shared/stores/catalog.store';
 import { useViewStore } from '@shared/stores/view.store';
 import { Block } from '@shared/ui';
+import BenefitPromptModal from '@shared/ui/BenefitPromptModal.vue';
 import { BenefitsCarousel } from '@widgets/benefits-carousel';
 import { ChatBot } from '@widgets/chatbot';
 import { Economy } from '@widgets/possible-economy';
@@ -14,7 +15,6 @@ import { storeToRefs } from 'pinia';
 import QRCode from 'qrcode';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import BenefitPromptModal from '@shared/ui/BenefitPromptModal.vue';
 
 const viewStore = useViewStore();
 const { isQrSheetVisible } = storeToRefs(viewStore);
@@ -155,7 +155,7 @@ const goToBenefitSelection = async () => {
         >
           <img
             src="/assets/icons/locked.svg"
-            alt=""
+            alt="''"
           />
           <p>
             Подтвердите аккаунт госулсуг, чтобы использовать цифровое
@@ -168,7 +168,10 @@ const goToBenefitSelection = async () => {
         class="section-heading"
       >
         <h3>Вы могли сэкономить</h3>
-        <img src="/assets/icons/arrow.svg" />
+        <img
+          src="/assets/icons/arrow.svg"
+          alt="''"
+        />
       </div>
       <Economy />
       <h3>Чат-бот помощник ЛАССО</h3>
@@ -178,7 +181,10 @@ const goToBenefitSelection = async () => {
         class="section-heading"
       >
         <h3>Льготы для тебя</h3>
-        <img src="/assets/icons/arrow.svg" />
+        <img
+          src="/assets/icons/arrow.svg"
+          alt="''"
+        />
       </div>
 
       <BenefitsCarousel
@@ -191,7 +197,10 @@ const goToBenefitSelection = async () => {
         class="section-heading"
       >
         <h3>Акции для тебя</h3>
-        <img src="/assets/icons/arrow.svg" />
+        <img
+          src="/assets/icons/arrow.svg"
+          alt="''"
+        />
       </div>
       <SalesCarousel
         :offers="offers"
