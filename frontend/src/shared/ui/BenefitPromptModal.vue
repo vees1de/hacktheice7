@@ -280,18 +280,6 @@ watch(step, newStep => {
 
           <section class="benefit-panel">
             <div class="panel__steps">
-              <div
-                v-for="item in steps"
-                :key="item.id"
-                class="step-chip"
-                :class="{
-                  'step-chip--active': step === item.id,
-                  'step-chip--done': step > item.id
-                }"
-              >
-                <span class="step-chip__index">{{ item.id + 1 }}</span>
-                <span>{{ item.label }}</span>
-              </div>
               <button
                 v-if="step > 0"
                 class="step-chip__back"

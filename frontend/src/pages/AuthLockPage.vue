@@ -195,12 +195,15 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  align-items: center;
+  gap: 30px;
 }
 
 .lock__header {
   position: relative;
   min-height: 88px;
   padding: 12px 0px;
+  width: 100%;
 }
 
 .account-wrap {
@@ -287,7 +290,6 @@ onMounted(async () => {
 
 .lock__top {
   text-align: center;
-  margin-top: 30px;
   padding-top: 12px;
 
   .title {
@@ -329,8 +331,7 @@ onMounted(async () => {
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
   padding-bottom: 40px;
-  padding: 0 40px;
-  margin-top: 80px;
+  width: 250px;
 
   button {
     background: #f1f5f9;
