@@ -9,7 +9,7 @@ import { useRouter } from 'vue-router';
 const biometricStore = useBiometricStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
-const { meta, supported, isPinSet } = storeToRefs(biometricStore);
+const { meta, supported } = storeToRefs(biometricStore);
 const { user } = storeToRefs(userStore);
 const router = useRouter();
 
@@ -162,7 +162,7 @@ onMounted(async () => {
 
       <!-- Биометрия -->
       <button
-        v-if="true"
+        v-if="canUseBiometric"
         class="biometric"
         @click="unlockWithBiometric"
       >
