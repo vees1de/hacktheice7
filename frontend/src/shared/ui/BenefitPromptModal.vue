@@ -201,7 +201,7 @@ const startAutoAdvance = () => {
     if (step.value === 0) {
       startFlow();
     }
-  }, 3000);
+  }, 7000);
 };
 
 const clearAutoAdvance = () => {
