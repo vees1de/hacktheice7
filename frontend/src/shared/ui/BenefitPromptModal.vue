@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useUserStore, userApi } from '@entities/user';
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref } from 'vue';
 
 import GosuslugiMockModal from './GosuslugiMockModal.vue';
 
-const props = defineProps<{
+defineProps<{
   open: boolean;
   title?: string;
   description?: string;
@@ -26,6 +26,13 @@ const steps = [
   { id: 1, label: 'Льготы' },
   { id: 2, label: 'Госуслуги' },
   { id: 3, label: 'Режим' }
+];
+
+const heroImages = [
+  '/assets/images/step1.png',
+  '/assets/images/step2.png',
+  '/assets/images/step3.png',
+  '/assets/images/step4.png'
 ];
 
 const benefitOptions = reactive([
@@ -80,6 +87,8 @@ const isEsiaWarmup = ref(false);
 let esiaTimer: ReturnType<typeof setTimeout> | null = null;
 const finishing = ref(false);
 const finishError = ref('');
+const activeHeroIndex = ref(0);
+const activeHero = computed(() => heroImages[activeHeroIndex.value]);
 
 const progress = computed(() => ((step.value + 1) / steps.length) * 100);
 
@@ -97,13 +106,6 @@ const goToStep = (nextStep: number) => {
 
 const goBack = () => goToStep(step.value - 1);
 const startFlow = () => goToStep(1);
-
-const syncBenefitsFromProfile = () => {
-  const current = userStore.user.userBeneficiaryCategories ?? [];
-  selectedBenefits.value = current
-    .map(category => category.beneficiaryCategory?.name || '')
-    .filter(Boolean);
-};
 
 const toggleBenefit = (value: string) => {
   if (selectedBenefits.value.includes(value)) {
@@ -152,23 +154,6 @@ const selectMode = (mode: 'simple' | 'default') => {
 //   // handled below with async finalize
 // };
 
-watch(
-  () => props.open,
-  val => {
-    if (val) {
-      step.value = 0;
-      selectedMode.value = null;
-      isEsiaModalOpen.value = false;
-      isEsiaWarmup.value = false;
-      if (esiaTimer) {
-        clearTimeout(esiaTimer);
-      }
-      finishError.value = '';
-      syncBenefitsFromProfile();
-    }
-  }
-);
-
 const finalizeOnboarding = async () => {
   if (!selectedMode.value) return;
   finishError.value = '';
@@ -193,63 +178,26 @@ const finalizeOnboarding = async () => {
   }
 };
 
-let autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
+// const clearAutoAdvance = () => {
+//   if (autoAdvanceTimer) {
+//     clearTimeout(autoAdvanceTimer);
+//     autoAdvanceTimer = null;
+//   }
+// };
 
-const startAutoAdvance = () => {
-  if (autoAdvanceTimer) return;
-  autoAdvanceTimer = setTimeout(() => {
-    if (step.value === 0) {
-      startFlow();
-    }
-  }, 7000);
+// const setHeroIndex = (index: number) => {
+//   if (index < 0 || index >= heroImages.length) return;
+//   activeHeroIndex.value = index;
+// };
+
+const nextHero = () => {
+  activeHeroIndex.value = (activeHeroIndex.value + 1) % heroImages.length;
 };
 
-const clearAutoAdvance = () => {
-  if (autoAdvanceTimer) {
-    clearTimeout(autoAdvanceTimer);
-    autoAdvanceTimer = null;
-  }
-};
-
-onMounted(() => {
-  // Запускаем автопереход только если изначально открыт
-  if (props.open) {
-    syncBenefitsFromProfile();
-    startAutoAdvance();
-  }
-
-  // Также следим за изменением open, если компонент остаётся смонтированным,
-  // но open меняется — это защита на случай, если modal используется с v-show
-  const stopWatch = watch(
-    () => props.open,
-    isOpen => {
-      if (isOpen) {
-        step.value = 0;
-        selectedMode.value = null;
-        isEsiaModalOpen.value = false;
-        isEsiaWarmup.value = false;
-        finishError.value = '';
-        syncBenefitsFromProfile();
-        startAutoAdvance();
-      } else {
-        clearAutoAdvance();
-      }
-    },
-    { immediate: false }
-  );
-
-  onUnmounted(() => {
-    stopWatch();
-    clearAutoAdvance();
-  });
-});
-
-// Также отменяем таймер, если пользователь сам ушёл с шага 0
-watch(step, newStep => {
-  if (newStep !== 0) {
-    clearAutoAdvance();
-  }
-});
+// const prevHero = () => {
+//   activeHeroIndex.value =
+//     (activeHeroIndex.value - 1 + heroImages.length) % heroImages.length;
+// };
 </script>
 
 <template>
@@ -289,195 +237,201 @@ watch(step, newStep => {
                 ← Назад
               </button>
             </div>
-            <!-- Слайдер -->
-            <div class="panel__slider">
+            <div class="panel__content">
+              <!-- Шаг 0: Приветствие -->
               <div
-                class="panel__slider-track"
-                :style="{ transform: `translateX(-${step * 100}%)` }"
+                v-if="step === 0"
+                class="panel__card panel__welcome"
               >
-                <!-- Шаг 0: Приветствие -->
-                <div class="panel__slide">
-                  <div class="panel__card panel__welcome">
-                    <div class="benefit-cover__logo">
-                      <img
-                        src="/assets/icons/lasso-icon.svg"
-                        alt="LASSO"
-                      />
-                      <div>
-                        <p class="cover__eyebrow">Лассо</p>
-                        <h2>Цифровое удостоверение льготника</h2>
-                      </div>
-                    </div>
+                <div class="benefit-cover__logo">
+                  <img
+                    src="/assets/icons/lasso-icon.svg"
+                    alt="LASSO"
+                  />
+                  <div>
+                    <p class="cover__eyebrow">Лассо</p>
+                    <h2>Цифровое удостоверение льготника</h2>
+                  </div>
+                </div>
 
-                    <p class="benefit-cover__text">
-                      Лассо — цифровое удостоверение льготника. Работает в
-                      магазинах и сервисах вашего региона.
+                <p class="benefit-cover__text">
+                  Лассо — цифровое удостоверение льготника. Работает в магазинах
+                  и сервисах вашего региона.
+                </p>
+
+                <div class="panel__actions">
+                  <button
+                    class="btn btn--primary"
+                    type="button"
+                    @click="startFlow"
+                  >
+                    Начать →
+                  </button>
+                </div>
+                <div class="hero-slider">
+                  <div
+                    class="hero-slider__frame"
+                    @click="nextHero"
+                  >
+                    <img
+                      :src="activeHero"
+                      alt="Преимущества Лассо"
+                      @click="nextHero"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Шаг 1: Льготы -->
+              <div
+                v-else-if="step === 1"
+                class="panel__card"
+              >
+                <div class="panel__heading">
+                  <h3>Какая у вас льгота?</h3>
+                  <p>Можно выбрать несколько категорий — сохраним в профиле.</p>
+                </div>
+
+                <div class="benefit-grid">
+                  <button
+                    v-for="item in benefitOptions"
+                    :key="item.value"
+                    type="button"
+                    class="option-card"
+                    :class="{
+                      'option-card--active': selectedBenefits.includes(
+                        item.value
+                      )
+                    }"
+                    @click="toggleBenefit(item.value)"
+                  >
+                    <div class="option-card__top">
+                      <div class="option-card__title">{{ item.title }}</div>
+                      <span
+                        v-if="selectedBenefits.includes(item.value)"
+                        class="option-card__check"
+                      >
+                        ✓
+                      </span>
+                    </div>
+                    <p class="option-card__subtitle">
+                      {{ item.subtitle }}
                     </p>
-                    <div class="panel__actions">
-                      <button
-                        class="btn btn--primary"
-                        type="button"
-                        @click="startFlow"
-                      >
-                        Начать →
-                      </button>
-                    </div>
-                  </div>
+                    <span class="option-card__chevron">→</span>
+                  </button>
                 </div>
 
-                <!-- Шаг 1: Льготы -->
-                <div class="panel__slide">
-                  <div class="panel__card">
-                    <div class="panel__heading">
-                      <h3>Какая у вас льгота?</h3>
-                      <p>
-                        Можно выбрать несколько категорий — сохраним в профиле.
-                      </p>
-                    </div>
+                <div class="panel__actions">
+                  <button
+                    class="btn btn--primary"
+                    type="button"
+                    @click="proceedFromBenefits"
+                  >
+                    Далее
+                  </button>
+                </div>
+              </div>
 
-                    <div class="benefit-grid">
-                      <button
-                        v-for="item in benefitOptions"
-                        :key="item.value"
-                        type="button"
-                        class="option-card"
-                        :class="{
-                          'option-card--active': selectedBenefits.includes(
-                            item.value
-                          )
-                        }"
-                        @click="toggleBenefit(item.value)"
-                      >
-                        <div class="option-card__top">
-                          <div class="option-card__title">{{ item.title }}</div>
-                          <span
-                            v-if="selectedBenefits.includes(item.value)"
-                            class="option-card__check"
-                          >
-                            ✓
-                          </span>
-                        </div>
-                        <p class="option-card__subtitle">
-                          {{ item.subtitle }}
-                        </p>
-                        <span class="option-card__chevron">→</span>
-                      </button>
-                    </div>
-
-                    <div class="panel__actions">
-                      <button
-                        class="btn btn--primary"
-                        type="button"
-                        @click="proceedFromBenefits"
-                      >
-                        Далее
-                      </button>
-                    </div>
-                  </div>
+              <!-- Шаг 2: Госуслуги -->
+              <div
+                v-else-if="step === 2"
+                class="panel__card"
+              >
+                <div class="panel__heading">
+                  <h3>Подтверждение через Госуслуги</h3>
+                  <p>
+                    Для доступа к вашим официальным льготам требуется
+                    подтверждение личности через Госуслуги.
+                  </p>
                 </div>
 
-                <!-- Шаг 2: Госуслуги -->
-                <div class="panel__slide">
-                  <div class="panel__card">
-                    <div class="panel__heading">
-                      <h3>Подтверждение через Госуслуги</h3>
-                      <p>
-                        Для доступа к вашим официальным льготам требуется
-                        подтверждение личности через Госуслуги.
-                      </p>
-                    </div>
+                <button
+                  class="btn btn--gos"
+                  type="button"
+                  :disabled="isEsiaWarmup"
+                  @click="openEsia"
+                >
+                  <img
+                    src="/assets/icons/gos-low-icon.svg"
+                    alt=""
+                  />
+                  <span v-if="isEsiaWarmup">Загрузка...</span>
+                  <span v-else>Войти через Госуслуги</span>
+                </button>
+                <p
+                  v-if="isEsiaWarmup"
+                  class="gos-hint"
+                >
+                  Подождите, открываем окно авторизации…
+                </p>
+              </div>
 
-                    <button
-                      class="btn btn--gos"
-                      type="button"
-                      :disabled="isEsiaWarmup"
-                      @click="openEsia"
-                    >
-                      <img
-                        src="/assets/icons/gos-low-icon.svg"
-                        alt=""
-                      />
-                      <span v-if="isEsiaWarmup">Загрузка...</span>
-                      <span v-else>Войти через Госуслуги</span>
-                    </button>
-                    <p
-                      v-if="isEsiaWarmup"
-                      class="gos-hint"
-                    >
-                      Подождите, открываем окно авторизации…
+              <!-- Шаг 3: Режим -->
+              <div
+                v-else-if="step === 3"
+                class="panel__card"
+              >
+                <div class="panel__heading">
+                  <h3>Выберите режим</h3>
+                  <p>Как удобнее начать работу с Лассо?</p>
+                </div>
+
+                <div class="mode-grid">
+                  <button
+                    class="mode-card"
+                    :class="{
+                      'mode-card--active': selectedMode === 'simple'
+                    }"
+                    type="button"
+                    @click="selectMode('simple')"
+                  >
+                    <div class="mode-card__badge">Рекомендуем</div>
+                    <h4>Простой режим</h4>
+                    <p class="mode-card__subtitle">
+                      Минимальный интерфейс и подсказки для быстрого старта.
                     </p>
-                  </div>
+                    <ul class="mode-card__list">
+                      <li>минимальный интерфейс</li>
+                      <li>подсказки</li>
+                      <li>подходит новичкам</li>
+                    </ul>
+                  </button>
+
+                  <button
+                    class="mode-card mode-card--light"
+                    :class="{
+                      'mode-card--active': selectedMode === 'default'
+                    }"
+                    type="button"
+                    @click="selectMode('default')"
+                  >
+                    <h4>Обычный режим</h4>
+                    <p class="mode-card__subtitle">
+                      Полный функционал и быстрый доступ ко всем возможностям.
+                    </p>
+                    <ul class="mode-card__list">
+                      <li>полный функционал</li>
+                      <li>быстрый доступ ко всем функциям</li>
+                      <li>готовы сразу пользоваться</li>
+                    </ul>
+                  </button>
                 </div>
 
-                <!-- Шаг 3: Режим -->
-                <div class="panel__slide">
-                  <div class="panel__card">
-                    <div class="panel__heading">
-                      <h3>Выберите режим</h3>
-                      <p>Как удобнее начать работу с Лассо?</p>
-                    </div>
-
-                    <div class="mode-grid">
-                      <button
-                        class="mode-card"
-                        :class="{
-                          'mode-card--active': selectedMode === 'simple'
-                        }"
-                        type="button"
-                        @click="selectMode('simple')"
-                      >
-                        <div class="mode-card__badge">Рекомендуем</div>
-                        <h4>Простой режим</h4>
-                        <p class="mode-card__subtitle">
-                          Минимальный интерфейс и подсказки для быстрого старта.
-                        </p>
-                        <ul class="mode-card__list">
-                          <li>минимальный интерфейс</li>
-                          <li>подсказки</li>
-                          <li>подходит новичкам</li>
-                        </ul>
-                      </button>
-
-                      <button
-                        class="mode-card mode-card--light"
-                        :class="{
-                          'mode-card--active': selectedMode === 'default'
-                        }"
-                        type="button"
-                        @click="selectMode('default')"
-                      >
-                        <h4>Обычный режим</h4>
-                        <p class="mode-card__subtitle">
-                          Полный функционал и быстрый доступ ко всем
-                          возможностям.
-                        </p>
-                        <ul class="mode-card__list">
-                          <li>полный функционал</li>
-                          <li>быстрый доступ ко всем функциям</li>
-                          <li>готовы сразу пользоваться</li>
-                        </ul>
-                      </button>
-                    </div>
-
-                    <div class="finish-row">
-                      <p
-                        v-if="finishError"
-                        class="finish-row__error"
-                      >
-                        {{ finishError }}
-                      </p>
-                      <button
-                        class="btn btn--primary finish-row__cta"
-                        type="button"
-                        :disabled="!selectedMode || finishing"
-                        @click="finalizeOnboarding"
-                      >
-                        {{
-                          finishing ? 'Завершаем...' : 'Завершить регистрацию'
-                        }}
-                      </button>
-                    </div>
-                  </div>
+                <div class="finish-row">
+                  <p
+                    v-if="finishError"
+                    class="finish-row__error"
+                  >
+                    {{ finishError }}
+                  </p>
+                  <button
+                    class="btn btn--primary finish-row__cta"
+                    type="button"
+                    :disabled="!selectedMode || finishing"
+                    @click="finalizeOnboarding"
+                  >
+                    {{ finishing ? 'Завершаем...' : 'Завершить регистрацию' }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -495,25 +449,6 @@ watch(step, newStep => {
 </template>
 
 <style scoped lang="scss">
-.panel__slider {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-  height: auto; /* или фиксированная высота, если нужно */
-}
-
-.panel__slider-track {
-  display: flex;
-  transition: transform 0.3s ease-in-out;
-  width: calc(100% * #{length(steps)}); /* 4 шага → 400% */
-  height: auto;
-}
-
-.panel__slide {
-  width: 100%;
-  flex-shrink: 0;
-}
-
 .benefit-modal {
   position: fixed;
   inset: 0;
@@ -636,6 +571,75 @@ watch(step, newStep => {
   letter-spacing: 0.08em;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.82);
+}
+
+.hero-slider {
+  display: flex;
+  align-items: flex-end;
+  /* фиксированная высота области под иллюстрацию */
+  height: 250px;
+}
+
+.hero-slider__frame {
+  position: relative;
+  /* одинаковый размер “рамки” для всех step.png */
+  width: 260px; // можешь подправить под макет
+  height: 220px; // и это тоже
+  overflow: visible; // вправо/вверх можно вылезать
+}
+
+/* Картинка не тянется под фрейм, а рисуется в натуральном размере,
+   привязанная к левому нижнему углу */
+.hero-slider__frame img {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100px;
+
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+
+  pointer-events: none; // “не взаимодействует” с остальным UI
+}
+
+.hero-slider__arrow {
+  border: 1px solid #dfe4f3;
+  background: #fff;
+  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  font-weight: 800;
+  color: #1a73e8;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.hero-slider__arrow:hover {
+  background: #f4f6fb;
+}
+
+.hero-slider__dots {
+  grid-column: 1 / span 3;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  padding-top: 6px;
+}
+
+.hero-slider__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid #c7d2e8;
+  background: #fff;
+  cursor: pointer;
+}
+
+.hero-slider__dot--active {
+  background: #1a73e8;
+  border-color: #1a73e8;
 }
 
 .benefit-panel {
