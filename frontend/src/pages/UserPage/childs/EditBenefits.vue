@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { useUserStore, userApi } from '@entities/user';
 import { useViewStore } from '@shared/stores/view.store';
+import { useCatalogStore } from '@shared/stores/catalog.store';
 import { Button } from '@shared/ui';
 import { onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router';
@@ -8,6 +9,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const viewStore = useViewStore();
 const userStore = useUserStore();
+const catalogStore = useCatalogStore();
 
 const BENEFIT_CATEGORIES = reactive([
   { value: 'PENSIONER', label: 'Пенсионер', isSelected: false },
@@ -46,10 +48,18 @@ const submit = async () => {
     if (selectedBenefits.length) {
       const profile = await userApi.updateUserCategories(selectedBenefits);
       userStore.setUser(profile);
+      await Promise.all([
+        userStore.getUser(),
+        catalogStore.fetchBenefits(true)
+      ]);
     }
     if (selectedBenefits.length === 0) {
       const profile = await userApi.updateUserCategories([]);
       userStore.setUser(profile);
+      await Promise.all([
+        userStore.getUser(),
+        catalogStore.fetchBenefits(true)
+      ]);
     }
   } catch (error) {
   } finally {

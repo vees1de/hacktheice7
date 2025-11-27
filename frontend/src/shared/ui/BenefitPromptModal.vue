@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useBiometricStore } from '@entities/auth';
 import { useUserStore, userApi } from '@entities/user';
+import { useCatalogStore } from '@shared/stores/catalog.store';
 import { computed, reactive, ref } from 'vue';
 
 import GosuslugiMockModal from './GosuslugiMockModal.vue';
@@ -20,8 +21,9 @@ const emit = defineEmits<{
   (e: 'simple'): void;
 }>();
 
-const userStore = useUserStore();
 const biometricStore = useBiometricStore();
+const userStore = useUserStore();
+const catalogStore = useCatalogStore();
 
 const steps = [
   { id: 0, label: 'Старт' },
@@ -189,6 +191,11 @@ const finalizeOnboarding = async () => {
       selectedBenefits.value
     );
     userStore.setUser(withBenefits);
+    // Обновляем профиль и доступные льготы, чтобы данные синхронизировались
+    await Promise.all([
+      userStore.getUser(),
+      catalogStore.fetchBenefits(true)
+    ]);
 
     if (selectedMode.value === 'simple') {
       handleSimple();
