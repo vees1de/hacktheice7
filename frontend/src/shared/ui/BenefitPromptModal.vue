@@ -592,7 +592,6 @@ const nextHero = () => {
    привязанная к левому нижнему углу */
 .hero-slider__frame img {
   position: absolute;
-  left: -40px;
   bottom: 0;
   width: 100px;
 
