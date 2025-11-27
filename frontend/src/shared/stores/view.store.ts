@@ -41,7 +41,10 @@ export const useViewStore = defineStore('view', () => {
   });
 
   const showHeader = computed(() => {
-    return router.currentRoute.value.path !== ROUTE_NAMES.WELCOME;
+    return (
+      router.currentRoute.value.path !== ROUTE_NAMES.WELCOME &&
+      router.currentRoute.value.path !== ROUTE_NAMES.LOCK
+    );
   });
   return {
     isQrSheetVisible,
