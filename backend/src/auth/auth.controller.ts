@@ -53,11 +53,14 @@ export class AuthController {
   @Post('verify-phone')
   async verifyPhone(@Body() dto: VerifyPhoneDto) {
     try {
-      await this.authService.verifyPhone(dto.phone, dto.code);
+      const authResult = await this.authService.verifyPhone(
+        dto.phone,
+        dto.code
+      );
       return {
         message:
           'Телефон подтвержден. Теперь можно войти, а офферы партнеров откроются после входа через Госуслуги.',
-        result: true
+        ...authResult
       };
     } catch (error) {
       if (

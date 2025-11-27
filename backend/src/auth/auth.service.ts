@@ -197,7 +197,7 @@ export class AuthService {
         throw new BadRequestException('User with this phone already exists');
       }
 
-      await this.prisma.user.create({
+      const user = await this.prisma.user.create({
         data: {
           passwordHash: pendingData.passwordHash,
           firstName: pendingData.firstName,
@@ -215,6 +215,9 @@ export class AuthService {
           status: 'ACTIVE',
           isVerified: true,
           isEsiaVerified: false
+        },
+        include: {
+          staffProfile: true
         }
       });
 
@@ -222,7 +225,17 @@ export class AuthService {
         where: { id: request.id }
       });
 
-      // Здесь можно инициировать следующий шаг — авторизацию через ЕСИА
+      const { passwordHash, verificationCode, ...safeUser } = user;
+      const tokens = this.issueTokens(user.id);
+
+      return {
+        result: true,
+        user: {
+          ...safeUser,
+          commercialOffersAvailable: Boolean(user.isEsiaVerified)
+        },
+        ...tokens
+      };
     } catch (error) {
       if (
         error instanceof BadRequestException ||
