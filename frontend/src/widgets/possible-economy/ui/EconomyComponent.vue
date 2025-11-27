@@ -317,7 +317,7 @@ const handleBenefitKey = (event: KeyboardEvent, benefitId: string) => {
 
   &__date {
     text-decoration: underline;
-    color: #a2a2a2;
+    color: #000;
     font-size: 0.75rem;
     white-space: nowrap;
   }
