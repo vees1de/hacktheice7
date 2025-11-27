@@ -1,20 +1,25 @@
 .default {
-    --bg: #fff;
-    --invert-bg: #2f88f0;
-    --btn-primary-bg: #1a73e8;
-    --btn-secondary-bg: #e4e9f5;
-    --btn-primary-text: #fff;
-    --btn-secondary-text: #000;
-    --input: #e5f0ff;
-    --input-border: #c6ddfd;
-    --logo-main: brightness(0) saturate(100%) invert(30%) sepia(84%) saturate(1600%) hue-rotate(197deg) brightness(101%) contrast(90%);
-    --card: #e5f0ff;
-    --card-border: 1px solid #c6ddfd;
-    --money-bg: #e5f0ff;
-    --menu-item: brightness(0) saturate(100%) invert(67%) sepia(0%) saturate(343%) hue-rotate(343deg) brightness(96%) contrast(90%);
-    --menu-item-active: brightness(0) saturate(100%) invert(37%) sepia(60%) saturate(3622%) hue-rotate(202deg) brightness(93%) contrast(95%);
-    --chat-item-svg: brightness(0) saturate(100%) invert(100%) sepia(100%) saturate(0%) hue-rotate(116deg) brightness(106%) contrast(101%);
-    --chat-item: #2f88f0;
-    --category-icon: brightness(0) saturate(100%) invert(99%) sepia(15%) saturate(666%) hue-rotate(283deg) brightness(110%) contrast(101%);
-    --category-bg: #1a73e8;
+  --bg: #fff;
+  --invert-bg: #2f88f0;
+  --btn-primary-bg: #1a73e8;
+  --btn-secondary-bg: #e4e9f5;
+  --btn-primary-text: #fff;
+  --btn-secondary-text: #000;
+  --input: #e5f0ff;
+  --input-border: #c6ddfd;
+  --logo-main: brightness(0) saturate(100%) invert(30%) sepia(84%)
+    saturate(1600%) hue-rotate(197deg) brightness(101%) contrast(90%);
+  --card: #e5f0ff;
+  --card-border: 1px solid #c6ddfd;
+  --money-bg: #e5f0ff;
+  --menu-item: brightness(0) saturate(100%) invert(67%) sepia(0%) saturate(343%)
+    hue-rotate(343deg) brightness(96%) contrast(90%);
+  --menu-item-active: brightness(0) saturate(100%) invert(37%) sepia(60%)
+    saturate(3622%) hue-rotate(202deg) brightness(93%) contrast(95%);
+  --chat-item-svg: brightness(0) saturate(100%) invert(100%) sepia(100%)
+    saturate(0%) hue-rotate(116deg) brightness(106%) contrast(101%);
+  --chat-item: #2f88f0;
+  --category-icon: brightness(0) saturate(100%) invert(99%) sepia(15%)
+    saturate(666%) hue-rotate(283deg) brightness(110%) contrast(101%);
+  --category-bg: #1a73e8;
 }

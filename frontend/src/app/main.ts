@@ -1,3 +1,4 @@
+import { useThemeStore } from '@shared/stores/theme.store';
 import { vMaska } from 'maska/vue';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
@@ -5,7 +6,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import './styles/index.scss';
-import { useThemeStore } from '@shared/stores/theme.store';
+import './styles/themes/default.scss';
 
 const app = createApp(App);
 const pinia = createPinia();

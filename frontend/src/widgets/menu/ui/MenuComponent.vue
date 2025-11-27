@@ -106,8 +106,10 @@ effect(() => {
   height: 58px;
 
   img {
-    width: 28px;
-    height: 28px;
+    width: 58px;
+    height: 58px;
+    background-color: #fff;
+    border-radius: 20px;
     filter: var(--chat-item-svg);
   }
 }
