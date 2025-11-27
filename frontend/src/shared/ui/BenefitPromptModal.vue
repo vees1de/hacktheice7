@@ -76,6 +76,8 @@ const step = ref(0);
 const selectedBenefits = ref<string[]>([]);
 const selectedMode = ref<'simple' | 'default' | null>(null);
 const isEsiaModalOpen = ref(false);
+const isEsiaWarmup = ref(false);
+let esiaTimer: ReturnType<typeof setTimeout> | null = null;
 const finishing = ref(false);
 const finishError = ref('');
 
@@ -117,11 +119,27 @@ const proceedFromBenefits = () => {
   goToStep(2);
 };
 
-const openEsia = () => (isEsiaModalOpen.value = true);
+const openEsia = () => {
+  if (esiaTimer) {
+    clearTimeout(esiaTimer);
+  }
+  isEsiaWarmup.value = true;
+  esiaTimer = setTimeout(() => {
+    isEsiaWarmup.value = false;
+    isEsiaModalOpen.value = true;
+  }, 2000);
+};
 const closeEsiaModal = () => {
+  if (esiaTimer) {
+    clearTimeout(esiaTimer);
+  }
+  isEsiaWarmup.value = false;
   isEsiaModalOpen.value = false;
 };
 const handleEsiaSubmit = () => {
+  if (esiaTimer) {
+    clearTimeout(esiaTimer);
+  }
   isEsiaModalOpen.value = false;
   goToStep(3);
 };
@@ -141,6 +159,10 @@ watch(
       step.value = 0;
       selectedMode.value = null;
       isEsiaModalOpen.value = false;
+      isEsiaWarmup.value = false;
+      if (esiaTimer) {
+        clearTimeout(esiaTimer);
+      }
       finishError.value = '';
       syncBenefitsFromProfile();
     }
@@ -256,7 +278,6 @@ const finalizeOnboarding = async () => {
               v-else-if="step === 1"
               class="panel__card"
             >
-              <p class="eyebrow">Экран 1</p>
               <div class="panel__heading">
                 <h3>Какая у вас льгота?</h3>
                 <p>Можно выбрать несколько категорий — сохраним в профиле.</p>
@@ -304,7 +325,6 @@ const finalizeOnboarding = async () => {
               v-else-if="step === 2"
               class="panel__card"
             >
-              <p class="eyebrow">Экран 2</p>
               <div class="panel__heading">
                 <h3>Подтверждение через Госуслуги</h3>
                 <p>
@@ -316,21 +336,28 @@ const finalizeOnboarding = async () => {
               <button
                 class="btn btn--gos"
                 type="button"
+                :disabled="isEsiaWarmup"
                 @click="openEsia"
               >
                 <img
-                  src="/assets/icons/gosuslugi.png"
+                  src="/assets/icons/gos-low-icon.svg"
                   alt=""
                 />
-                Войти через Госуслуги
+                <span v-if="isEsiaWarmup">Загрузка...</span>
+                <span v-else>Войти через Госуслуги</span>
               </button>
+              <p
+                v-if="isEsiaWarmup"
+                class="gos-hint"
+              >
+                Подождите, открываем окно авторизации…
+              </p>
             </div>
 
             <div
               v-else
               class="panel__card"
             >
-              <p class="eyebrow">Экран 3</p>
               <div class="panel__heading">
                 <h3>Выберите режим</h3>
                 <p>Как удобнее начать работу с Лассо?</p>
@@ -744,14 +771,14 @@ const finalizeOnboarding = async () => {
 .mode-card {
   padding: 18px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #0e5ccf, #1a73e8);
+  background: #407cad;
   color: #fff;
   display: grid;
   gap: 10px;
   position: relative;
   overflow: hidden;
   box-shadow: 0 16px 42px rgba(26, 115, 232, 0.28);
-  border: 2px solid transparent;
+  border: 4px solid transparent;
   cursor: pointer;
   text-align: left;
 }
@@ -863,19 +890,31 @@ const finalizeOnboarding = async () => {
 }
 
 .btn--gos {
-  color: #142a4a;
+  margin-top: 30px;
+  color: #0d4cd3;
   background-color: #fff;
   border: #516079 1px solid;
+  border-radius: 8px;
+  border: 1px solid #0d4cd3;
   padding: 0px;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 8px 8px;
+  gap: 20px;
+  font-weight: 400;
 
   img {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     border: 16px;
   }
+}
+
+.gos-hint {
+  margin: 4px 0 0 0;
+  color: #6b7280;
+  font-size: 14px;
 }
 
 .eyebrow {

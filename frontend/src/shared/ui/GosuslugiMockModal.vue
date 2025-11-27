@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { reactive, ref, watch } from 'vue';
 
 defineProps<{
   open: boolean;
@@ -15,8 +15,47 @@ const form = reactive({
   password: ''
 });
 
-const handleSubmit = () => emit('submit');
-const handleClose = () => emit('close');
+const isLoading = ref(false);
+const isSuccess = ref(false);
+let loadingTimer: number | null = null;
+
+const startLoading = () => {
+  if (loadingTimer) {
+    clearTimeout(loadingTimer);
+  }
+  isLoading.value = true;
+  isSuccess.value = false;
+  loadingTimer = window.setTimeout(() => {
+    isLoading.value = false;
+    isSuccess.value = true;
+  }, 3000);
+};
+
+const handleSubmit = () => {
+  startLoading();
+};
+
+const handleClose = () => {
+  if (loadingTimer) {
+    clearTimeout(loadingTimer);
+  }
+  isLoading.value = false;
+  isSuccess.value = false;
+  emit('close');
+};
+
+watch(
+  () => open,
+  val => {
+    if (!val && loadingTimer) {
+      clearTimeout(loadingTimer);
+    }
+    if (val()) {
+      isLoading.value = false;
+      isSuccess.value = false;
+    }
+  }
+);
 </script>
 
 <template>
@@ -26,18 +65,14 @@ const handleClose = () => emit('close');
       class="esia-fullscreen"
     >
       <div class="esia-wrapper">
-        <div class="esia-card">
+        <div
+          v-if="!isSuccess"
+          class="esia-card"
+        >
           <div class="esia-card__head">
             <div class="esia-card__logo">
               гос<span class="logo-accent">услуги</span>
             </div>
-            <!-- <button
-              class="esia-card__close"
-              type="button"
-              @click="handleClose"
-            >
-              ×
-            </button> -->
           </div>
           <div class="esia-card__head">
             <div class="esia-card__lang">
@@ -52,6 +87,7 @@ const handleClose = () => emit('close');
               v-model="form.login"
               type="text"
               placeholder="ivanov@mail.ru"
+              :disabled="isLoading"
             />
           </div>
 
@@ -61,10 +97,12 @@ const handleClose = () => emit('close');
               v-model="form.password"
               type="password"
               placeholder="Введите пароль"
+              :disabled="isLoading"
             />
             <button
               class="esia-link"
               type="button"
+              :disabled="isLoading"
             >
               Восстановить
             </button>
@@ -73,14 +111,17 @@ const handleClose = () => emit('close');
           <button
             class="esia-primary"
             type="button"
+            :disabled="isLoading"
             @click="handleSubmit"
           >
-            Войти
+            <span v-if="isLoading">Проверяем…</span>
+            <span v-else>Войти</span>
           </button>
 
           <button
             class="esia-link esia-link--center"
             type="button"
+            :disabled="isLoading"
           >
             Не удаётся войти
           </button>
@@ -95,14 +136,44 @@ const handleClose = () => emit('close');
             <button
               class="esia-alt__btn"
               type="button"
+              :disabled="isLoading"
             >
               QR-код
             </button>
             <button
               class="esia-alt__btn"
               type="button"
+              :disabled="isLoading"
             >
               Эл. подпись
+            </button>
+          </div>
+        </div>
+
+        <div
+          v-else
+          class="esia-card esia-card--success"
+        >
+          <div class="esia-card__head">
+            <div class="esia-card__logo">
+              гос<span class="logo-accent">услуги</span>
+            </div>
+          </div>
+          <div class="esia-success">
+            <div class="esia-success__icon">
+              <img
+                src="/assets/icons/account-found.svg"
+                alt=""
+              />
+            </div>
+            <h3>Льготы подтверждены!</h3>
+            <p>Авторизация прошла, можно продолжать.</p>
+            <button
+              class="esia-primary"
+              type="button"
+              @click="emit('submit')"
+            >
+              Продолжить
             </button>
           </div>
         </div>
@@ -234,6 +305,13 @@ const handleClose = () => emit('close');
   transform: translateY(1px);
 }
 
+.esia-primary:disabled,
+.esia-link:disabled,
+.esia-alt__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .esia-divider {
   height: 1px;
   background: #e4ebff;
@@ -260,6 +338,30 @@ const handleClose = () => emit('close');
   font-weight: 400;
   background: #f9fbff;
   cursor: pointer;
+}
+
+.esia-card--success {
+  padding: 32px;
+}
+
+.esia-success {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  text-align: center;
+  padding: 12px 0 6px;
+
+  h3 {
+    font-size: 24px;
+    font-weight: 500;
+  }
+}
+
+.esia-success__icon {
+  img {
+    width: 100px;
+    height: 100px;
+  }
 }
 
 @media (max-width: 540px) {
