@@ -1,0 +1,10 @@
+User-agent: *
+Disallow:
+
+Disallow: /admin/
+Disallow: /api/
+
+Allow: /
+
+
+Host: bims14.ru

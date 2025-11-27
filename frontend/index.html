@@ -2,18 +2,141 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=5.0,"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+    />
+
+    <title>
+      Лассо — цифровое удостоверение льготника и сервис городских льгот
+    </title>
+    <meta
+      name="description"
+      content="Лассо — сервис, который помогает льготникам находить и использовать скидки, субсидии и специальные предложения в городе. Цифровое удостоверение льготника в вашем смартфоне."
+    />
+    <meta
+      name="keywords"
+      content="Лассо, льготы, скидки, субсидии, социальные выплаты, цифровое удостоверение льготника, социальная карта"
+    />
+    <meta
+      name="robots"
+      content="index,follow"
+    />
+    <meta
+      name="theme-color"
+      content="#0b1220"
+    />
+
+    <link
+      rel="canonical"
+      href="https://example.com/"
     />
 
     <link
       rel="icon"
-      type="image/svg"
+      type="image/svg+xml"
       href="/assets/icons/lasso-icon.svg"
     />
-    <title>Лассо</title>
+
+    <meta
+      property="og:type"
+      content="website"
+    />
+    <meta
+      property="og:locale"
+      content="ru_RU"
+    />
+    <meta
+      property="og:title"
+      content="Лассо — цифровое удостоверение льготника"
+    />
+    <meta
+      property="og:description"
+      content="Находите и используйте все доступные вам льготы и скидки в одном приложении."
+    />
+    <meta
+      property="og:site_name"
+      content="Лассо"
+    />
+    <meta
+      property="og:url"
+      content="https://example.com/"
+    />
+    <meta
+      property="og:image"
+      content="https://example.com/assets/og/lasso-og.png"
+    />
+
+    <meta
+      name="twitter:card"
+      content="summary_large_image"
+    />
+    <meta
+      name="twitter:title"
+      content="Лассо — цифровое удостоверение льготника"
+    />
+    <meta
+      name="twitter:description"
+      content="Находите и используйте все доступные вам льготы и скидки в одном приложении."
+    />
+    <meta
+      name="twitter:image"
+      content="https://example.com/assets/og/lasso-og.png"
+    />
+
+    <!-- Стили лучше держать в <head> -->
+    <style>
+      html,
+      body {
+        touch-action: manipulation;
+      }
+
+      #boot-loader {
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(circle at 20% 20%, #0ea5e91f 0, transparent 25%),
+          radial-gradient(circle at 80% 10%, #2563eb1c 0, transparent 22%),
+          #0b1220;
+        display: grid;
+        place-items: center;
+        z-index: 9999;
+      }
+      #boot-loader .boot-logo {
+        color: #fff;
+        text-align: center;
+        display: grid;
+        gap: 12px;
+        animation: pulse 1.4s ease-in-out infinite;
+      }
+      #boot-loader img {
+        width: 88px;
+        height: 88px;
+        filter: drop-shadow(0 10px 25px rgba(14, 165, 233, 0.3));
+      }
+      #boot-loader p {
+        margin: 0;
+        font-size: 1.1rem;
+        letter-spacing: 0.01em;
+      }
+      @keyframes pulse {
+        0% {
+          transform: translateY(0);
+          opacity: 0.9;
+        }
+        50% {
+          transform: translateY(-4px);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(0);
+          opacity: 0.9;
+        }
+      }
+    </style>
   </head>
+
   <body>
     <div id="boot-loader">
       <div class="boot-logo">
@@ -29,54 +152,4 @@
       src="/src/app/main.ts"
     ></script>
   </body>
-
-  <style>
-    html,
-    body {
-      touch-action: manipulation;
-    }
-
-    #boot-loader {
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(circle at 20% 20%, #0ea5e91f 0, transparent 25%),
-        radial-gradient(circle at 80% 10%, #2563eb1c 0, transparent 22%),
-        #0b1220;
-      display: grid;
-      place-items: center;
-      z-index: 9999;
-    }
-    #boot-loader .boot-logo {
-      color: #fff;
-      text-align: center;
-      display: grid;
-      gap: 12px;
-      animation: pulse 1.4s ease-in-out infinite;
-    }
-    #boot-loader img {
-      width: 88px;
-      height: 88px;
-      filter: drop-shadow(0 10px 25px rgba(14, 165, 233, 0.3));
-    }
-    #boot-loader p {
-      margin: 0;
-      font-size: 1.1rem;
-      letter-spacing: 0.01em;
-    }
-    @keyframes pulse {
-      0% {
-        transform: translateY(0);
-        opacity: 0.9;
-      }
-      50% {
-        transform: translateY(-4px);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(0);
-        opacity: 0.9;
-      }
-    }
-  </style>
 </html>
