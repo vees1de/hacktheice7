@@ -110,7 +110,6 @@ effect(() => {
     height: 58px;
     background-color: #fff;
     border-radius: 20px;
-    filter: var(--chat-item-svg);
   }
 }
 </style>
