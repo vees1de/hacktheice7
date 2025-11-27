@@ -99,7 +99,6 @@ const redirect = async (route: string) => {
 
 const goToBenefitSelection = async () => {
   showBenefitModal.value = false;
-  await router.push(ROUTE_NAMES.EDIT_BENEFITS);
 };
 
 const goToSimpleMode = async () => {

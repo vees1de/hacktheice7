@@ -53,6 +53,7 @@ export interface UpdateUserPayload {
   snils?: string;
   regionId?: string;
   password?: string;
+  onboardingStep?: UserProfile['onboardingStep'];
   userBeneficiaryCategories?: Array<{
     name: BeneficiaryCategoryType;
     confirmed: boolean;

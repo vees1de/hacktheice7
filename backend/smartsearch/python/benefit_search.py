@@ -18,6 +18,63 @@ SMART_SEARCH_USER_ID = os.getenv("SMART_SEARCH_USER_ID")
 
 YANDEX_MODEL_URL = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
 
+CATEGORY_HINTS = {
+    "PENSIONER": ["пенсион", "пенсия", "пенсионер"],
+    "LOW_INCOME": ["малоимущ", "низкий доход", "невысокий доход"],
+    "MULTICHILD_PARENT": ["многодет", "многодетная", "большая семья"],
+    "STUDENT": ["студент", "учеба", "университет", "институт"],
+    "VETERAN": ["ветеран"],
+    "DISABLED_1": ["инвалид 1", "инвалид i"],
+    "DISABLED_2": ["инвалид 2", "инвалид ii"],
+    "DISABLED_3": ["инвалид 3", "инвалид iii"],
+    "DISABLED_CHILD_PARENT": ["ребенок-инвалид", "ребёнок-инвалид", "родитель ребенка-инвалида"],
+    "RESIDENTS_NORTH_REGIONS": ["север", "крайнего севера"]
+}
+
+TYPE_HINTS = {
+    "housing": ["жкх", "коммун", "капремонт", "квартплата"],
+    "medical": ["медицин", "здоров", "лекар"],
+    "transport": ["транспорт", "проезд", "автобус", "метро", "трамвай"],
+    "social": ["социал", "соц"],
+    "federal": ["федерал"],
+    "regional": ["регион"],
+    "commercial": ["акция", "скидк", "предложение"],
+    "tax": ["налог", "вычет"],
+    "family": ["семь", "родител", "детей"],
+    "education": ["учеб", "образован", "студент", "университет"]
+}
+
+
+def unique_list(items):
+    seen = set()
+    result = []
+    for item in items:
+        if item in seen:
+            continue
+        seen.add(item)
+        result.append(item)
+    return result
+
+
+def guess_categories(text: str):
+    found = []
+    for code, hints in CATEGORY_HINTS.items():
+        for h in hints:
+            if h in text:
+                found.append(code)
+                break
+    return found
+
+
+def guess_types(text: str):
+    found = []
+    for code, hints in TYPE_HINTS.items():
+        for h in hints:
+            if h in text:
+                found.append(code)
+                break
+    return found
+
 
 async def db():
     return await asyncpg.connect(DATABASE_URL)
@@ -103,21 +160,45 @@ async def load_benefits(conn, region_id=None, category_ids=None):
 
     return await conn.fetch(query, *params)
 
-def score_benefit(benefit, query):
+def score_benefit(benefit, query, category_index):
     score = 0
-    text = f"{benefit['title']} {benefit['description']}".lower()
+    title = (benefit.get("title") or "").lower()
+    description = (benefit.get("description") or "").lower()
+    requirements = (benefit.get("requirements") or "").lower()
+    how_to_get = (benefit.get("howToGet") or "").lower()
+    benefit_type = (benefit.get("type") or "").lower()
+    text_full = " ".join([title, description, requirements, how_to_get])
+    benefit_category_names = set()
+    for cid in benefit.get("category_ids") or []:
+        cat = category_index.get(cid)
+        if cat and cat.get("name"):
+            benefit_category_names.add(cat["name"])
 
     for c in query["categories"]:
-        if c.lower() in text:
-            score += 4
+        if c in benefit_category_names:
+            score += 6
+            continue
+        # прямое совпадение кодов категорий по заголовку/описанию
+        if c.lower() in text_full:
+            score += 2
 
     for t in query["types"]:
-        if t in benefit["type"]:
-            score += 3
+        t_lower = t.lower()
+        if t_lower in benefit_type:
+          score += 3
+        else:
+          for hint in TYPE_HINTS.get(t, []):
+              if hint in benefit_type:
+                  score += 2
+                  break
 
     for k in query["keywords"]:
-        k = k.lower()
-        if len(k) >= 4 and k in text:
+        k = k.lower().strip()
+        if len(k) < 3:
+            continue
+        if k in title:
+            score += 2
+        elif k in text_full:
             score += 1
 
     vt = benefit.get("valid_to")
@@ -134,6 +215,14 @@ async def smart_benefit_search(user_text: str):
 
     # 2. Семантический анализ
     semantic = llm_parse_query(text_ru)
+    text_norm = text_ru.lower()
+    semantic["categories"] = unique_list(
+        semantic.get("categories", []) + guess_categories(text_norm)
+    )
+    semantic["types"] = unique_list(
+        semantic.get("types", []) + guess_types(text_norm)
+    )
+    semantic["keywords"] = unique_list(semantic.get("keywords", []))
 
     conn = await db()
 
@@ -159,10 +248,10 @@ async def smart_benefit_search(user_text: str):
 
         categories = await load_categories(conn)
 
-        scored = [(score_benefit(b, semantic), b) for b in benefits]
+        scored = [(score_benefit(b, semantic, categories), b) for b in benefits]
         scored.sort(key=lambda x: x[0], reverse=True)
 
-        top = [x for x in scored if x[0] > 0][:3]
+        top = [x for x in scored if x[0] > 1][:3]
         if not top:
             top = scored[:3]
 

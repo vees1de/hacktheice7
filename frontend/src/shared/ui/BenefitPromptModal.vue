@@ -1,5 +1,10 @@
 <script setup lang="ts">
-defineProps<{
+import { useUserStore, userApi } from '@entities/user';
+import { computed, reactive, ref, watch } from 'vue';
+
+import GosuslugiMockModal from './GosuslugiMockModal.vue';
+
+const props = defineProps<{
   open: boolean;
   title?: string;
   description?: string;
@@ -14,9 +19,164 @@ const emit = defineEmits<{
   (e: 'simple'): void;
 }>();
 
-const handleBackdrop = () => emit('close');
+const userStore = useUserStore();
+
+const steps = [
+  { id: 0, label: 'Старт' },
+  { id: 1, label: 'Льготы' },
+  { id: 2, label: 'Госуслуги' },
+  { id: 3, label: 'Режим' }
+];
+
+const benefitOptions = reactive([
+  {
+    value: 'PENSIONER',
+    title: 'Пенсионер',
+    subtitle: 'Есть пенсионное удостоверение'
+  },
+  {
+    value: 'DISABLED_1',
+    title: 'Инвалид I группы',
+    subtitle: 'Подтвержденная I группа инвалидности'
+  },
+  {
+    value: 'DISABLED_2',
+    title: 'Инвалид II группы',
+    subtitle: 'Подтвержденная II группа инвалидности'
+  },
+  {
+    value: 'DISABLED_3',
+    title: 'Инвалид III группы',
+    subtitle: 'Подтвержденная III группа инвалидности'
+  },
+  {
+    value: 'MULTICHILD_PARENT',
+    title: 'Многодетный родитель',
+    subtitle: 'Три и более детей в семье'
+  },
+  { value: 'VETERAN', title: 'Ветеран', subtitle: 'Удостоверение ветерана' },
+  {
+    value: 'LOW_INCOME',
+    title: 'Малоимущий',
+    subtitle: 'Подтвержден статус малоимущего'
+  },
+  {
+    value: 'STUDENT',
+    title: 'Студент',
+    subtitle: 'Очное или заочное обучение'
+  },
+  {
+    value: 'DISABLED_CHILD_PARENT',
+    title: 'Родитель ребенка-инвалида',
+    subtitle: 'Есть ребенок с инвалидностью'
+  }
+]);
+
+const step = ref(0);
+const selectedBenefits = ref<string[]>([]);
+const selectedMode = ref<'simple' | 'default' | null>(null);
+const isEsiaModalOpen = ref(false);
+const finishing = ref(false);
+const finishError = ref('');
+
+const progress = computed(() => ((step.value + 1) / steps.length) * 100);
+
+const welcomeTitle = computed(() => props.title || 'Добро пожаловать в Лассо!');
+const welcomeDescription = computed(
+  () =>
+    props.description ||
+    'Мы подберём для вас персональные льготы, скидки и компенсации. Это займёт меньше минуты.'
+);
+
+// const handleClose = () => {
+//   isEsiaModalOpen.value = false;
+//   emit('close');
+// };
 const handlePrimary = () => emit('primary');
 const handleSimple = () => emit('simple');
+
+const goToStep = (nextStep: number) => {
+  if (nextStep < 0 || nextStep >= steps.length) return;
+  step.value = nextStep;
+};
+
+const goBack = () => goToStep(step.value - 1);
+const startFlow = () => goToStep(1);
+
+const syncBenefitsFromProfile = () => {
+  const current = userStore.user.userBeneficiaryCategories ?? [];
+  selectedBenefits.value = current
+    .map(category => category.beneficiaryCategory?.name || '')
+    .filter(Boolean);
+};
+
+const toggleBenefit = (value: string) => {
+  if (selectedBenefits.value.includes(value)) {
+    selectedBenefits.value = selectedBenefits.value.filter(
+      item => item !== value
+    );
+  } else {
+    selectedBenefits.value = [...selectedBenefits.value, value];
+  }
+};
+
+const proceedFromBenefits = () => {
+  goToStep(2);
+};
+
+const openEsia = () => (isEsiaModalOpen.value = true);
+const closeEsiaModal = () => {
+  isEsiaModalOpen.value = false;
+};
+const handleEsiaSubmit = () => {
+  isEsiaModalOpen.value = false;
+  goToStep(3);
+};
+
+const selectMode = (mode: 'simple' | 'default') => {
+  selectedMode.value = mode;
+};
+
+// const finishRegistration = () => {
+//   // handled below with async finalize
+// };
+
+watch(
+  () => props.open,
+  val => {
+    if (val) {
+      step.value = 0;
+      selectedMode.value = null;
+      isEsiaModalOpen.value = false;
+      finishError.value = '';
+      syncBenefitsFromProfile();
+    }
+  }
+);
+
+const finalizeOnboarding = async () => {
+  if (!selectedMode.value) return;
+  finishError.value = '';
+  finishing.value = true;
+  try {
+    const withBenefits = await userApi.updateUserCategories(
+      selectedBenefits.value
+    );
+    userStore.setUser(withBenefits);
+
+    if (selectedMode.value === 'simple') {
+      handleSimple();
+    } else {
+      handlePrimary();
+    }
+  } catch (error: any) {
+    finishError.value =
+      error?.response?.data?.message ||
+      'Не удалось завершить регистрацию. Попробуйте ещё раз.';
+  } finally {
+    finishing.value = false;
+  }
+};
 </script>
 
 <template>
@@ -26,109 +186,258 @@ const handleSimple = () => emit('simple');
       class="benefit-modal"
     >
       <div class="benefit-modal__body">
-        <div class="benefit-modal__glow benefit-modal__glow--one"></div>
-        <div class="benefit-modal__glow benefit-modal__glow--two"></div>
-        <button
-          class="benefit-modal__close"
-          type="button"
-          aria-label="Закрыть"
-          @click="handleBackdrop"
-        >
-          x
-        </button>
-        <div class="benefit-modal__content">
-          <div class="benefit-modal__hero">
-            <div class="hero__pill">Новичкам в LASSO</div>
-            <div class="hero__header">
+        <div class="benefit-modal__grid">
+          <aside class="benefit-cover">
+            <div class="benefit-cover__pill">Новичкам в LASSO</div>
+            <div class="benefit-cover__logo">
               <img
-                class="hero__logo"
                 src="/assets/icons/lasso-icon.svg"
                 alt="LASSO"
               />
               <div>
-                <p class="eyebrow">Добро пожаловать</p>
-                <h2>{{ title || 'Начнем с персональных льгот' }}</h2>
+                <p class="cover__eyebrow">Лассо</p>
+                <h2>Цифровое удостоверение льготника</h2>
               </div>
             </div>
-            <p class="hero__text">
-              {{
-                description ||
-                'Отметьте категории, включите подсказки в простом режиме и мгновенно переходите к нужным разделам.'
-              }}
-            </p>
-            <div class="benefit-modal__actions">
-              <button
-                class="btn btn--primary"
-                type="button"
-                @click="handlePrimary"
-              >
-                {{ primaryLabel || 'Выбрать льготы' }}
-              </button>
-              <button
-                class="btn btn--simple"
-                type="button"
-                @click="handleSimple"
-              >
-                {{ simpleLabel || 'Включить простой режим' }}
-              </button>
-              <button
-                class="btn btn--ghost"
-                type="button"
-                @click="handleBackdrop"
-              >
-                {{ secondaryLabel || 'Позже' }}
-              </button>
-            </div>
-          </div>
 
-          <div class="benefit-modal__quick">
-            <div class="quick__header">
-              <p class="quick__title">Быстрый старт</p>
-              <p class="quick__subtitle">Что можно сделать за пару касаний</p>
-            </div>
-            <div class="quick__grid">
-              <div
-                class="quick-card"
-                v-for="item in [
-                  {
-                    title: 'Подобрать льготы',
-                    desc: 'Подскажем, что вам доступно прямо сейчас.',
-                    icon: '/assets/icons/shield-icon.svg'
-                  },
-                  {
-                    title: 'Показать удостоверение',
-                    desc: 'QR для подтверждения льгот в одном касании.',
-                    icon: '/assets/icons/user-icon.svg'
-                  },
-                  {
-                    title: 'Открыть чат-бот',
-                    desc: 'Спросите про выплаты, документы и статусы.',
-                    icon: '/assets/icons/chat-icon.svg'
-                  },
-                  {
-                    title: 'Найти акции и выгоды',
-                    desc: 'Скидки и бонусы, подобранные под вас.',
-                    icon: '/assets/icons/sale-icon.svg'
-                  }
-                ]"
-                :key="item.title"
-              >
-                <div class="quick-card__icon">
-                  <img
-                    :src="item.icon"
-                    :alt="item.title"
-                  />
+            <p class="benefit-cover__text">
+              Лассо — цифровое удостоверение льготника. Работает в магазинах и
+              сервисах вашего региона.
+            </p>
+
+            <div class="benefit-cover__meta">
+              <div class="meta__item">
+                <span class="meta__label"
+                  >Шаг {{ step + 1 }} из {{ steps.length }}</span
+                >
+                <div class="progress">
+                  <span class="progress__bar">
+                    <span
+                      class="progress__fill"
+                      :style="{ width: `${progress}%` }"
+                    ></span>
+                  </span>
                 </div>
-                <div class="quick-card__text">
-                  <p class="quick-card__title">{{ item.title }}</p>
-                  <p class="quick-card__desc">{{ item.desc }}</p>
-                </div>
-                <div class="quick-card__chevron">></div>
+              </div>
+              <div class="meta__item meta__muted">
+                {{ welcomeDescription }}
               </div>
             </div>
-          </div>
+          </aside>
+
+          <section class="benefit-panel">
+            <div class="panel__steps">
+              <div
+                v-for="item in steps"
+                :key="item.id"
+                class="step-chip"
+                :class="{
+                  'step-chip--active': step === item.id,
+                  'step-chip--done': step > item.id
+                }"
+              >
+                <span class="step-chip__index">{{ item.id + 1 }}</span>
+                <span>{{ item.label }}</span>
+              </div>
+              <button
+                v-if="step > 0"
+                class="step-chip__back"
+                type="button"
+                @click="goBack"
+              >
+                ← Назад
+              </button>
+            </div>
+
+            <div
+              v-if="step === 0"
+              class="panel__card panel__welcome"
+            >
+              <p class="eyebrow">Экран 0</p>
+              <h3>{{ welcomeTitle }}</h3>
+              <p class="panel__lead">
+                {{ welcomeDescription }}
+              </p>
+              <div class="panel__actions">
+                <button
+                  class="btn btn--primary"
+                  type="button"
+                  @click="startFlow"
+                >
+                  Начать →
+                </button>
+              </div>
+              <p class="panel__muted">
+                Лассо — цифровое удостоверение льготника. Работает в магазинах и
+                сервисах вашего региона.
+              </p>
+            </div>
+
+            <div
+              v-else-if="step === 1"
+              class="panel__card"
+            >
+              <p class="eyebrow">Экран 1</p>
+              <div class="panel__heading">
+                <h3>Какая у вас льгота?</h3>
+                <p>Можно выбрать несколько категорий — сохраним в профиле.</p>
+              </div>
+
+              <div class="benefit-grid">
+                <button
+                  v-for="item in benefitOptions"
+                  :key="item.value"
+                  type="button"
+                  class="option-card"
+                  :class="{
+                    'option-card--active': selectedBenefits.includes(item.value)
+                  }"
+                  @click="toggleBenefit(item.value)"
+                >
+                  <div class="option-card__top">
+                    <div class="option-card__title">{{ item.title }}</div>
+                    <span
+                      v-if="selectedBenefits.includes(item.value)"
+                      class="option-card__check"
+                    >
+                      ✓
+                    </span>
+                  </div>
+                  <p class="option-card__subtitle">
+                    {{ item.subtitle }}
+                  </p>
+                  <span class="option-card__chevron">→</span>
+                </button>
+              </div>
+
+              <div class="panel__actions">
+                <button
+                  class="btn btn--primary"
+                  type="button"
+                  @click="proceedFromBenefits"
+                >
+                  Далее
+                </button>
+              </div>
+            </div>
+
+            <div
+              v-else-if="step === 2"
+              class="panel__card"
+            >
+              <p class="eyebrow">Экран 2</p>
+              <div class="panel__heading">
+                <h3>Подтверждение через Госуслуги</h3>
+                <p>
+                  Для доступа к вашим официальным льготам требуется
+                  подтверждение личности через Госуслуги.
+                </p>
+              </div>
+
+              <div class="gos-card">
+                <div class="gos-card__logo">госуслуги</div>
+                <div class="gos-card__text">
+                  <p>
+                    Мы не сохраняем логин и пароль — данные нужны только для
+                    проверки статуса льготника.
+                  </p>
+                  <p class="gos-card__hint">
+                    Мок-версия, выглядит как на портале.
+                  </p>
+                </div>
+                <button
+                  class="btn btn--gos"
+                  type="button"
+                  @click="openEsia"
+                >
+                  Войти через Госуслуги
+                </button>
+              </div>
+
+              <div class="panel__actions panel__actions--end">
+                <button
+                  class="btn btn--ghost"
+                  type="button"
+                  @click="handleEsiaSubmit"
+                >
+                  Продолжить без авторизации
+                </button>
+              </div>
+            </div>
+
+            <div
+              v-else
+              class="panel__card"
+            >
+              <p class="eyebrow">Экран 3</p>
+              <div class="panel__heading">
+                <h3>Выберите режим</h3>
+                <p>Как удобнее начать работу с Лассо?</p>
+              </div>
+
+              <div class="mode-grid">
+                <button
+                  class="mode-card"
+                  :class="{ 'mode-card--active': selectedMode === 'simple' }"
+                  type="button"
+                  @click="selectMode('simple')"
+                >
+                  <div class="mode-card__badge">Рекомендуем</div>
+                  <h4>Простой режим</h4>
+                  <p class="mode-card__subtitle">
+                    Минимальный интерфейс и подсказки для быстрого старта.
+                  </p>
+                  <ul class="mode-card__list">
+                    <li>минимальный интерфейс</li>
+                    <li>подсказки</li>
+                    <li>подходит новичкам</li>
+                  </ul>
+                </button>
+
+                <button
+                  class="mode-card mode-card--light"
+                  :class="{ 'mode-card--active': selectedMode === 'default' }"
+                  type="button"
+                  @click="selectMode('default')"
+                >
+                  <h4>Обычный режим</h4>
+                  <p class="mode-card__subtitle">
+                    Полный функционал и быстрый доступ ко всем возможностям.
+                  </p>
+                  <ul class="mode-card__list">
+                    <li>полный функционал</li>
+                    <li>быстрый доступ ко всем функциям</li>
+                    <li>готовы сразу пользоваться</li>
+                  </ul>
+                </button>
+              </div>
+
+              <div class="finish-row">
+                <p
+                  v-if="finishError"
+                  class="finish-row__error"
+                >
+                  {{ finishError }}
+                </p>
+                <button
+                  class="btn btn--primary finish-row__cta"
+                  type="button"
+                  :disabled="!selectedMode || finishing"
+                  @click="finalizeOnboarding"
+                >
+                  {{ finishing ? 'Завершаем...' : 'Завершить регистрацию' }}
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
+
+      <GosuslugiMockModal
+        :open="isEsiaModalOpen"
+        @close="closeEsiaModal"
+        @submit="handleEsiaSubmit"
+      />
     </div>
   </teleport>
 </template>
@@ -139,313 +448,512 @@ const handleSimple = () => emit('simple');
   inset: 0;
   z-index: 2000;
   display: flex;
-  justify-content: center;
   align-items: stretch;
-  background: rgba(15, 23, 42, 0.55); // полупрозрачный фон под модалкой
-  overflow: hidden; // чтобы не было двойного скролла по краям
+  justify-content: stretch;
+  background: rgba(11, 23, 41, 0.72);
 }
 
 .benefit-modal__body {
   position: relative;
-  padding: 24px 16px 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  color: #0b1729;
-  background: linear-gradient(135deg, #f8fbff 0%, #eef4ff 48%, #f7fffb 100%);
-
-  max-height: 100vh; // << ключевое
   width: 100%;
-  overflow-y: auto; // << внутри модалки теперь скролл
-  -webkit-overflow-scrolling: touch; // приятный скролл на iOS
-}
-.benefit-modal__close {
-  position: absolute;
-  right: 14px;
-  top: 14px;
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  border: 1px solid #d6d9e0;
-  background: #fff;
-  font-size: 18px;
-  font-weight: 700;
-  color: #0f172a;
-  z-index: 2001;
-  cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    background 0.15s ease;
-
-  &:active {
-    background: #f1f5f9;
-    transform: scale(0.96);
-  }
+  height: 100%;
+  background: #f7f9ff;
+  overflow: auto;
 }
 
-.benefit-modal__glow {
-  position: absolute;
-  filter: blur(80px);
-  opacity: 0.45;
-  pointer-events: none;
+.benefit-modal__grid {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  min-height: 100%;
 }
 
-.benefit-modal__glow--one {
-  width: 240px;
-  height: 240px;
-  background: #0ea5e9;
-  top: 10%;
-  left: 12%;
-}
-
-.benefit-modal__glow--two {
-  width: 280px;
-  height: 280px;
-  background: #10b981;
-  bottom: 4%;
-  right: 10%;
-}
-
-.benefit-modal__content {
-  position: relative;
-  z-index: 1;
-  width: min(1100px, 100%);
+.benefit-cover {
+  background: linear-gradient(140deg, #1a73e8, #0a4ec2);
+  color: #fff;
+  padding: 32px 28px;
   display: grid;
   gap: 18px;
+  align-content: space-between;
+  min-height: 100%;
 }
 
-.benefit-modal__hero {
-  display: grid;
-  gap: 12px;
-  padding: 18px;
-  border-radius: 20px;
-  background: linear-gradient(
-    140deg,
-    rgba(15, 23, 42, 0.9),
-    #0f172a 55%,
-    #0b1729 100%
-  );
-  color: #fff;
-  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.35);
-
-  h2 {
-    margin: 0;
-    font-size: 26px;
-    line-height: 1.2;
-    color: #fff;
-  }
-}
-
-.hero__header {
+.benefit-cover__logo {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 12px;
   align-items: center;
+
+  img {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  h2 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 1.25;
+  }
 }
 
-.hero__logo {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  padding: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.hero__pill {
+.benefit-cover__pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #e0f2fe;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  padding: 8px 14px;
   border-radius: 999px;
-  padding: 6px 12px;
   font-weight: 700;
   width: fit-content;
-}
-
-.eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #7dd3fc;
+}
+
+.benefit-cover__text {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.benefit-cover__meta {
+  display: grid;
+  gap: 12px;
+}
+
+.meta__item {
+  display: grid;
+  gap: 8px;
+}
+
+.meta__label {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 700;
+}
+
+.meta__muted {
+  color: rgba(255, 255, 255, 0.76);
+  line-height: 1.5;
+}
+
+.progress {
+  width: 100%;
+}
+
+.progress__bar {
+  display: block;
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.progress__fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #d7e9ff, #9dd0ff);
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+.cover__eyebrow {
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.benefit-panel {
+  background: #fff;
+  padding: 28px;
+  display: grid;
+  gap: 16px;
+  min-height: 100%;
+}
+
+.panel__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.step-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #f2f5ff;
+  color: #1d2b46;
+  font-weight: 700;
+  font-size: 14px;
+  border: 1px solid #e4e9fb;
+  transition: all 0.15s ease;
+}
+
+.step-chip__index {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #e2eaff;
+}
+
+.step-chip--active {
+  background: #1a73e8;
+  color: #fff;
+  border-color: #1a73e8;
+}
+
+.step-chip--active .step-chip__index {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.step-chip--done {
+  border-color: #7cc4ff;
+  background: #e8f3ff;
+}
+
+.step-chip__back {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  color: #1a73e8;
+  cursor: pointer;
+  padding: 8px 10px;
+}
+
+.panel__card {
+  border: 1px solid #e6eaf4;
+  border-radius: 20px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgba(7, 23, 50, 0.06);
+}
+
+.panel__welcome h3 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.panel__lead {
+  margin: 0;
+  color: #1d2b46;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.panel__heading h3 {
+  margin: 0 0 6px 0;
+  font-size: 22px;
+}
+
+.panel__heading p {
+  margin: 0;
+  color: #6b7280;
+}
+
+.panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.panel__actions--end {
+  justify-content: flex-end;
+}
+
+.panel__muted {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.benefit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.option-card {
+  border: 1px solid #e6eaf4;
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  background: #f9fbff;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: grid;
+  gap: 6px;
+}
+
+.option-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.option-card__title {
+  font-weight: 800;
+  color: #102a4e;
+}
+
+.option-card__subtitle {
+  margin: 0;
+  color: #516079;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.option-card__chevron {
+  margin-left: auto;
+  color: #1a73e8;
+  font-weight: 700;
+}
+
+.option-card__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #1a73e8;
+  color: #fff;
   font-weight: 800;
   font-size: 13px;
-  margin: 0 0 2px 0;
 }
 
-.hero__text {
-  margin: 0;
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 16px;
+.option-card--active {
+  border-color: #1a73e8;
+  background: linear-gradient(135deg, #f1f6ff, #e8f2ff);
+  box-shadow: 0 12px 32px rgba(26, 115, 232, 0.15);
 }
 
-.benefit-modal__actions {
+.gos-card {
+  border: 1px solid #d9e1f5;
+  border-radius: 16px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  background: linear-gradient(135deg, #f4f6fb, #ffffff);
+}
+
+.gos-card__logo {
+  background: linear-gradient(90deg, #1a5ad7, #d81b60);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.gos-card__text {
+  color: #1d2b46;
+  line-height: 1.4;
+}
+
+.gos-card__text p {
+  margin: 0 0 4px 0;
+}
+
+.gos-card__hint {
+  color: #1a73e8;
+  font-weight: 700;
+}
+
+.mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.mode-card {
+  padding: 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0e5ccf, #1a73e8);
+  color: #fff;
   display: grid;
   gap: 10px;
-  grid-template-columns: 1fr;
-  width: min(560px, 100%);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 42px rgba(26, 115, 232, 0.28);
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.mode-card--light {
+  background: #f9fbff;
+  color: #0f172a;
+  border: 2px solid #e1e7f5;
+  box-shadow: none;
+}
+
+.mode-card--active {
+  border-color: #1a73e8;
+  box-shadow: 0 18px 44px rgba(26, 115, 232, 0.25);
+}
+
+.mode-card__badge {
+  width: fit-content;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.mode-card--light .mode-card__badge {
+  background: #e7efff;
+}
+
+.mode-card h4 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.mode-card__subtitle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  line-height: 1.4;
+}
+
+.mode-card--light .mode-card__subtitle {
+  color: #45516a;
+}
+
+.mode-card__list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.mode-card--light .mode-card__list {
+  color: #45516a;
+}
+
+.finish-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.finish-row__cta {
+  min-width: 220px;
+}
+
+.finish-row__error {
+  margin: 0;
+  color: #b91c1c;
+  font-weight: 700;
 }
 
 .btn {
   border: none;
   border-radius: 14px;
-  padding: 14px 16px;
-  font-weight: 700;
+  padding: 12px 16px;
+  font-weight: 800;
   cursor: pointer;
   transition:
     opacity 0.2s ease,
     transform 0.12s ease,
     box-shadow 0.12s ease;
+  font-size: 14px;
+}
 
-  &:hover {
-    opacity: 0.9;
-  }
+.btn:hover {
+  opacity: 0.95;
+}
 
-  &:active {
-    transform: translateY(1px);
-    box-shadow: none;
-  }
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn--primary {
-  background: linear-gradient(135deg, #0f766e, #0ea5e9);
+  background: linear-gradient(135deg, #1a73e8, #0a4ec2);
   color: #fff;
-  box-shadow: 0 12px 32px rgba(14, 165, 233, 0.35);
-}
-
-.btn--simple {
-  background: #0f172a;
-  color: #fff;
-  border: 1px solid #0f172a;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.35);
+  box-shadow: 0 12px 28px rgba(26, 115, 232, 0.35);
 }
 
 .btn--ghost {
   background: #f4f6fb;
-  color: #1f2937;
-  border: 1px solid #e2e8f0;
+  color: #1d2b46;
+  border: 1px solid #dfe4f3;
 }
 
-.benefit-modal__quick {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e2e8f0;
-  border-radius: 18px;
-  padding: 16px;
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.06);
-  display: grid;
-  gap: 16px;
+.btn--gos {
+  background: linear-gradient(90deg, #1a5ad7, #d81b60);
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(26, 90, 215, 0.25);
 }
 
-.quick__title {
+.eyebrow {
   margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7a96;
   font-weight: 800;
-  color: #0f172a;
+  font-size: 12px;
 }
 
-.quick__subtitle {
-  margin: 0;
-  color: #475467;
-}
+@media (max-width: 1100px) {
+  .benefit-modal__grid {
+    grid-template-columns: 1fr;
+  }
 
-.quick__header {
-  display: grid;
-  gap: 2px;
-}
-
-.quick__grid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: 1fr;
-}
-
-.quick-card {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 12px;
-  align-items: center;
-  padding: 12px;
-  border-radius: 14px;
-  border: 1px solid #e2e8f0;
-  background: linear-gradient(120deg, rgba(226, 232, 240, 0.38), #fff);
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
-}
-
-.quick-card__icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #0f172a;
-  display: grid;
-  place-items: center;
-
-  img {
-    width: 24px;
-    height: 24px;
+  .benefit-cover {
+    min-height: 220px;
   }
 }
 
-.quick-card__text {
-  display: grid;
-  gap: 4px;
-}
-
-.quick-card__title {
-  margin: 0;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.quick-card__desc {
-  margin: 0;
-  color: #475467;
-  font-size: 14px;
-}
-
-.quick-card__chevron {
-  font-weight: 800;
-  color: #0f172a;
-  font-size: 18px;
-}
-
-@media (min-width: 720px) {
-  .benefit-modal__body {
-    padding: 36px 32px 48px;
+@media (max-width: 720px) {
+  .benefit-panel {
+    padding: 18px;
   }
 
-  .benefit-modal__actions {
-    grid-template-columns: repeat(3, max-content);
-    align-items: center;
-    gap: 12px;
+  .benefit-cover {
+    padding: 22px 18px;
+  }
+
+  .panel__actions {
+    flex-direction: column;
+    align-items: stretch;
 
     .btn {
-      min-width: 180px;
+      width: 100%;
       justify-content: center;
     }
   }
 
-  .quick__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 960px) {
-  .benefit-modal__body {
-    padding: 46px 40px 64px;
+  .finish-row {
+    justify-content: stretch;
   }
 
-  .benefit-modal__content {
-    gap: 22px;
-  }
-
-  .benefit-modal__hero {
-    padding: 24px;
-    grid-template-columns: 1fr;
-  }
-
-  .benefit-modal__actions {
-    grid-template-columns: repeat(3, max-content);
+  .finish-row__cta {
+    width: 100%;
   }
 }
 </style>

@@ -3,13 +3,17 @@ import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { useViewStore } from '@shared/stores/view.store';
 import { QrSheetComponent } from '@widgets/qr-sheet';
 import { storeToRefs } from 'pinia';
-import { useRouter } from 'vue-router';
+import { ref } from 'vue';
+import { onBeforeRouteLeave, useRouter } from 'vue-router';
 
 const router = useRouter();
 const viewStore = useViewStore();
 const { isQrSheetVisible } = storeToRefs(viewStore);
 
-const go = async (route: string) => {
+const allowLeave = ref(false);
+
+const safeGo = async (route: string) => {
+  allowLeave.value = true;
   await router.push(route);
 };
 
@@ -17,12 +21,25 @@ const openQr = () => {
   viewStore.toggleQrVisible();
 };
 
+const exitSimple = async () => {
+  await safeGo(ROUTE_NAMES.HOME);
+};
+
+onBeforeRouteLeave((_to, _from, next) => {
+  if (allowLeave.value) {
+    allowLeave.value = false;
+    next();
+    return;
+  }
+  next(false);
+});
+
 const actions = [
   {
     title: 'Подобрать льготы',
     desc: 'Ответьте на пару вопросов и получите список доступных льгот.',
     icon: '/assets/icons/shield-icon.svg',
-    handler: () => go(ROUTE_NAMES.EDIT_BENEFITS)
+    handler: () => safeGo(ROUTE_NAMES.EDIT_BENEFITS)
   },
   {
     title: 'Показать удостоверение',
@@ -34,25 +51,25 @@ const actions = [
     title: 'Чат-бот ЛАССО',
     desc: 'Спросите про выплаты, документы и статусы.',
     icon: '/assets/icons/chat-icon.svg',
-    handler: () => go(ROUTE_NAMES.CHAT)
+    handler: () => safeGo(ROUTE_NAMES.CHAT)
   },
   {
     title: 'Льготы и предложения',
     desc: 'Весь каталог ваших льгот в одном месте.',
     icon: '/assets/icons/users-icon.svg',
-    handler: () => go(ROUTE_NAMES.BENEFITS)
+    handler: () => safeGo(ROUTE_NAMES.BENEFITS)
   },
   {
     title: 'Акции и скидки',
     desc: 'Подборка выгодных предложений под ваш профиль.',
     icon: '/assets/icons/sale-icon.svg',
-    handler: () => go(ROUTE_NAMES.SALES)
+    handler: () => safeGo(ROUTE_NAMES.SALES)
   },
   {
     title: 'Моя выгода',
     desc: 'Отслеживайте, сколько уже сэкономили.',
     icon: '/assets/icons/ruble-bold-icon.svg',
-    handler: () => go(ROUTE_NAMES.PROFITS)
+    handler: () => safeGo(ROUTE_NAMES.PROFITS)
   }
 ];
 </script>
@@ -63,8 +80,8 @@ const actions = [
       <p class="eyebrow">Простой режим</p>
       <h1>Все главные действия на одной странице</h1>
       <p class="lead">
-        Выберите, что сделать прямо сейчас: показать удостоверение, подобрать льготы
-        или задать вопрос в чат-боте.
+        Выберите, что сделать прямо сейчас: показать удостоверение, подобрать
+        льготы или задать вопрос в чат-боте.
       </p>
     </div>
 
@@ -91,6 +108,17 @@ const actions = [
           src="/assets/icons/arrow.svg"
           alt=""
         />
+      </button>
+    </div>
+
+    <div class="simple__exit">
+      <p>Выйти из простого режима можно только по кнопке ниже.</p>
+      <button
+        class="exit-btn"
+        type="button"
+        @click="exitSimple"
+      >
+        Выйти из простого режима
       </button>
     </div>
   </div>
@@ -149,7 +177,9 @@ const actions = [
   background: #fff;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
 
   &:active {
     transform: translateY(1px);
@@ -192,6 +222,29 @@ const actions = [
 .simple-card__arrow {
   width: 20px;
   height: 20px;
+}
+
+.simple__exit {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px dashed #0ea5e9;
+  border-radius: 16px;
+  background: #f0f9ff;
+  display: grid;
+  gap: 8px;
+  color: #0f172a;
+}
+
+.exit-btn {
+  width: fit-content;
+  background: linear-gradient(135deg, #0ea5e9, #0f766e);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(14, 165, 233, 0.35);
 }
 
 @media (min-width: 720px) {

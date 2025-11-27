@@ -1,5 +1,6 @@
 import { useAuthStore, useBiometricStore } from '@entities/auth';
 import AdminPage from '@pages/AdminPage.vue';
+import AuthLockPage from '@pages/AuthLockPage.vue';
 import AuthPage from '@pages/AuthPage.vue';
 import AuthSberPage from '@pages/AuthSberPage.vue';
 import AuthSecurePage from '@pages/AuthSecurePage.vue';
@@ -10,10 +11,9 @@ import BenefintsPage from '@pages/BenefitsPage.vue';
 import ChatPage from '@pages/ChatPage.vue';
 import HomePage from '@pages/HomePage.vue';
 import ProfitPage from '@pages/ProfitPage.vue';
-import SimpleModePage from '@pages/SimpleModePage.vue';
 import RegistrationPage from '@pages/RegistrationPage.vue';
 import SalesPage from '@pages/SalesPage.vue';
-import AuthLockPage from '@pages/AuthLockPage.vue';
+import SimpleModePage from '@pages/SimpleModePage.vue';
 import UserPage from '@pages/UserPage/UserPage.vue';
 import AppSettings from '@pages/UserPage/childs/AppSettings.vue';
 import EditBenefits from '@pages/UserPage/childs/EditBenefits.vue';
@@ -116,7 +116,11 @@ router.beforeEach(async (to, _from, next) => {
       (biometricStore as any).isPinSet?.value ?? (biometricStore as any).pinHash
     );
 
-  if (to.path === ROUTE_NAMES.WELCOME && hasQuickAccess && !isAuthenticated.value) {
+  if (
+    to.path === ROUTE_NAMES.WELCOME &&
+    hasQuickAccess &&
+    !isAuthenticated.value
+  ) {
     next({ path: ROUTE_NAMES.LOCK });
     return;
   }
