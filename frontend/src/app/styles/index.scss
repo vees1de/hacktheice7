@@ -1,63 +1,64 @@
-@import "./reset.scss";
-@import "./typography.scss";
-@import "./themes/accessible.scss";
-@import "./themes/default.scss";
-@import "./variables.scss";
-
+@import './reset.scss';
+@import './typography.scss';
+@import './themes/accessible.scss';
+@import './themes/default.scss';
+@import './variables.scss';
 
 html {
-    font-family: Inter, Inter dev, sans-serif;
-    color: #0E172E;
-
+  font-family:
+    Inter,
+    Inter dev,
+    sans-serif;
+  color: #0e172e;
 }
 
 body {
-    min-height: 100dvh;
-    background-color: var(--bg);
+  min-height: 100dvh;
+  background-color: var(--bg);
 
-    color: var(--primary-text);
+  color: var(--primary-text);
 }
 
 .section-heading {
-    img {
-        filter: var(--icon)
-    }
+  img {
+    filter: var(--icon);
+  }
 }
 
 .back-button {
-    img {
-        filter: var(--icon)
-    }
+  img {
+    filter: var(--icon);
+  }
 }
 
 .theme-card__title,
 .security__title {
-    color: var(--invert-primary-text)
+  color: var(--invert-primary-text);
 }
 
 .economy-modal {
-    color: var(--invert-primary-text);
+  color: var(--invert-primary-text);
 }
 
 *,
 *::before,
 *::after {
-    box-sizing: border-box;
-    font-family: inherit;
-    scrollbar-width: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  scrollbar-width: none;
 }
 
 .section-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 
-    h3 {
-        font-size: 20px;
-        font-weight: 600;
-    }
+  h3 {
+    font-size: 20px;
+    font-weight: 600;
+  }
 
-    img {
-        transform: rotate(180deg);
-    }
+  img {
+    transform: rotate(180deg);
+  }
 }

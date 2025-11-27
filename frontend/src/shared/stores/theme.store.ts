@@ -10,16 +10,17 @@ export const useThemeStore = defineStore('theme', () => {
   const theme = ref<Theme>('default');
 
   async function setTheme(newTheme: Theme) {
+    const next = newTheme || 'default';
     body.classList.remove(theme.value);
-    body.classList.add(newTheme);
-    theme.value = newTheme;
+    body.classList.add(next);
+    theme.value = next;
 
-    await localForage.setItem(KEY, newTheme);
+    await localForage.setItem(KEY, next);
   }
 
   async function init() {
-    const theme = (await localForage.getItem(KEY)) as Theme;
-    setTheme(theme);
+    const savedTheme = (await localForage.getItem(KEY)) as Theme | null;
+    await setTheme(savedTheme || 'default');
   }
 
   return { setTheme, theme, init };
