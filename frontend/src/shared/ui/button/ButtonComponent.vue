@@ -64,13 +64,13 @@ const handleClick = (event: MouseEvent) => {
 }
 
 .btn--primary {
-  background-color: #1a73e8;
-  color: #fff;
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
 }
 
 .btn--secondary {
-  background: #e4e9f5;
-  color: #0f172a;
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
 }
 
 .btn:disabled {

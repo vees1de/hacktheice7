@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { BENEFIT_CATEGORY_LIST } from '@shared/constants/benefitCategories';
+import { ROUTE_NAMES } from '@shared/model/routes.constants';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -21,7 +21,10 @@ const openCategory = (slug: string) => {
         @click="openCategory(item.slug)"
       >
         <div class="category__image">
-          <img :src="`/assets/icons/${item.icon}-icon.svg`" />
+          <img
+            :src="`/assets/icons/${item.icon}-icon.svg`"
+            alt="''"
+          />
         </div>
         <div class="category__name">{{ item.name }}</div>
       </button>
@@ -51,7 +54,7 @@ const openCategory = (slug: string) => {
     width: 58px;
     height: 58px;
     border-radius: 16px;
-    background-color: #1a73e8;
+    background-color: var(--category-bg);
     margin-bottom: 6px;
     display: grid;
     place-items: center;
@@ -59,8 +62,7 @@ const openCategory = (slug: string) => {
     img {
       width: 25px;
       height: 25px;
-      filter: brightness(0) saturate(100%) invert(99%) sepia(15%) saturate(666%)
-        hue-rotate(283deg) brightness(110%) contrast(101%);
+      filter: var(--category-icon);
     }
   }
 
@@ -72,6 +74,7 @@ const openCategory = (slug: string) => {
     font-size: 0.75rem;
     font-weight: 500;
     text-align: center;
+    color: var(--primary-text);
   }
 }
 </style>

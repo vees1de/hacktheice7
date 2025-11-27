@@ -11,8 +11,14 @@ const goBack = () => router.push(ROUTE_NAMES.WELCOME);
 <template>
   <div class="auth">
     <div class="logo">
-      <img src="/assets/icons/lasso-icon.svg" />
-      <img src="/assets/icons/lasso-title.svg" />
+      <img
+        src="/assets/icons/lasso-icon.svg"
+        alt="''"
+      />
+      <img
+        src="/assets/icons/lasso-title.svg"
+        alt="''"
+      />
     </div>
 
     <SberIdStub @back="goBack" />

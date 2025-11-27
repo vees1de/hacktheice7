@@ -155,15 +155,21 @@ const goToHome = async () => {
 <template>
   <div class="auth">
     <div class="logo">
-      <img src="/assets/icons/lasso-icon.svg" />
-      <img src="/assets/icons/lasso-title.svg" />
+      <img
+        src="/assets/icons/lasso-icon.svg"
+        alt="''"
+      />
+      <img
+        src="/assets/icons/lasso-title.svg"
+        alt="''"
+      />
     </div>
 
     <div class="language">
       <span>Русский язык</span>
       <img
         src="/assets/icons/russia-icon.svg"
-        alt=""
+        alt="''"
       />
     </div>
 

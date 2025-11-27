@@ -47,7 +47,10 @@ const goToPhoneConfirmationStep = async () => {
       await router.push(ROUTE_NAMES.HOME);
       step.value = 2;
     } catch (error) {
-      showError(error, 'Не удалось войти. Проверьте данные и попробуйте снова.');
+      showError(
+        error,
+        'Не удалось войти. Проверьте данные и попробуйте снова.'
+      );
     } finally {
       viewStore.toggleLoader();
     }
@@ -62,8 +65,14 @@ const redirectToRegisterPage = async () => {
 <template>
   <div class="auth">
     <div class="logo">
-      <img src="/assets/icons/lasso-icon.svg" />
-      <img src="/assets/icons/lasso-title.svg" />
+      <img
+        src="/assets/icons/lasso-icon.svg"
+        alt="''"
+      />
+      <img
+        src="/assets/icons/lasso-title.svg"
+        alt="''"
+      />
     </div>
     <SmsAuthForm
       :form="form"
@@ -86,8 +95,7 @@ const redirectToRegisterPage = async () => {
   margin-bottom: 32px;
 
   img {
-    filter: brightness(0) saturate(100%) invert(30%) sepia(84%) saturate(1600%)
-      hue-rotate(197deg) brightness(101%) contrast(90%);
+    filter: var(--logo-main);
   }
 
   img:first-child {

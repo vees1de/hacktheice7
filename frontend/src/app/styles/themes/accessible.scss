@@ -1,0 +1,28 @@
+.accessible {
+    --bg: #2455CC;
+    --invert-bg: #fff;
+    --primary-text: #fff;
+    --invert-primary-text: #000;
+    --input: #fff;
+    --input-border: #000;
+    --border: #000;
+    --btn-primary-bg: #fff;
+    --btn-secondary-bg: #fff;
+    --btn-primary-text: #000;
+    --btn-secondary-text: #000;
+    --logo-main: brightness(0) saturate(100%) invert(100%) sepia(43%) saturate(360%) hue-rotate(339deg) brightness(110%) contrast(101%);
+    --icon: brightness(0) saturate(100%) invert(100%) sepia(43%) saturate(360%) hue-rotate(339deg) brightness(110%) contrast(101%);
+    --icon-invert: brightness(0) saturate(100%) invert(0%) sepia(100%) saturate(0%) hue-rotate(199deg) brightness(98%) contrast(102%);
+    --card: #fff;
+    --card-border: 1px solid #000;
+    --card-banner: 1px solid #000;
+    --money-bg: #fff;
+    --money-text: #000;
+    --menu-item: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7500%) hue-rotate(49deg) brightness(102%) contrast(102%);
+    --menu-item-active: brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(7500%) hue-rotate(52deg) brightness(97%) contrast(103%);
+    --setting-icon: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7500%) hue-rotate(49deg) brightness(102%) contrast(102%);
+    --chat-item-svg: brightness(0) saturate(100%) invert(100%) sepia(0%) saturate(7500%) hue-rotate(49deg) brightness(102%) contrast(102%);
+    --chat-item: #000;
+    --category-icon: brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(0%) hue-rotate(219deg) brightness(99%) contrast(101%);
+    --category-bg: #fff;
+}

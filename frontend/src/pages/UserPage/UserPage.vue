@@ -88,7 +88,7 @@ const downloadCertificate = async () => {
             <img
               class="btn-icon"
               src="/assets/icons/chat-icon.svg"
-              alt=""
+              alt="''"
             />
             <span>Настройки приложения</span>
           </div>
@@ -117,7 +117,7 @@ const downloadCertificate = async () => {
             <img
               class="btn-icon"
               src="/assets/icons/exit-icon.svg"
-              alt=""
+              alt="''"
             />
             <span>Выйти</span>
           </div>
@@ -130,6 +130,8 @@ const downloadCertificate = async () => {
 <style lang="scss" scoped>
 .profile__benefits {
   margin-bottom: 20px;
+  background-color: var(--invert-bg);
+  color: var(--invert-primary-text);
 }
 
 .profile {
@@ -148,6 +150,10 @@ const downloadCertificate = async () => {
     display: grid;
     gap: 16px;
     width: 100%;
+
+    img {
+      filter: var(--setting-icon);
+    }
   }
 
   &__benefits {

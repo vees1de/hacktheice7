@@ -35,12 +35,13 @@ const isShow = computed(
       <img
         class="arrow-icon"
         src="/assets/icons/arrow.svg"
+        alt="''"
       />
     </div>
     <img
       class="right"
       src="/assets/icons/bell-icon.svg"
-      alt=""
+      alt="''"
     />
   </div>
 </template>
@@ -69,5 +70,9 @@ const isShow = computed(
       transform: rotate(180deg);
     }
   }
+}
+
+img {
+  filter: var(--icon);
 }
 </style>

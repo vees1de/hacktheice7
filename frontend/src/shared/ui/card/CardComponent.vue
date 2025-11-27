@@ -12,7 +12,7 @@ defineProps<Card>();
       }"
     ></div>
     <div class="card__info">
-      <h6 class="title">{{ title }}</h6>
+      <h4 class="title">{{ title }}</h4>
       <p class="subtitle">{{ subtitle }}</p>
       <div class="tags">
         <div
@@ -30,8 +30,8 @@ defineProps<Card>();
 .card {
   height: 250px;
   border-radius: 16px;
-  background-color: #e5f0ff;
-  border: 1px solid #c6ddfd;
+  background-color: var(--card);
+  border: var(--card-border);
   display: grid;
   grid-template-rows: 7fr 5fr;
 
@@ -40,6 +40,7 @@ defineProps<Card>();
     background-repeat: no-repeat;
     background-position: center;
     border-radius: 16px;
+    border: var(--card-banner);
   }
 
   &__info {
