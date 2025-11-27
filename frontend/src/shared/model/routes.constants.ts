@@ -11,6 +11,7 @@ export const ROUTE_NAMES = {
   USER_SETTINGS: '/user/settings',
   CHAT: '/chat',
   SALES: '/sales',
+  SIMPLE: '/simple',
   BENEFITS: '/benefits',
   BENEFITS_CATEGORY: '/benefits/category/:categoryType',
   BENEFIT_DETAIL: '/benefits/:benefitId',

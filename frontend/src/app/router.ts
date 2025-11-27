@@ -10,6 +10,7 @@ import BenefintsPage from '@pages/BenefitsPage.vue';
 import ChatPage from '@pages/ChatPage.vue';
 import HomePage from '@pages/HomePage.vue';
 import ProfitPage from '@pages/ProfitPage.vue';
+import SimpleModePage from '@pages/SimpleModePage.vue';
 import RegistrationPage from '@pages/RegistrationPage.vue';
 import SalesPage from '@pages/SalesPage.vue';
 import AuthLockPage from '@pages/AuthLockPage.vue';
@@ -51,6 +52,7 @@ const routes: Array<RouteRecordRaw> = [
   { path: ROUTE_NAMES.BENEFITS_CATEGORY, component: BenefitCategoryPage },
   { path: ROUTE_NAMES.BENEFIT_DETAIL, component: BenefitDetailPage },
   { path: ROUTE_NAMES.ADMIN, component: AdminPage },
+  { path: ROUTE_NAMES.SIMPLE, component: SimpleModePage },
   { path: ROUTE_NAMES.ROOT, redirect: ROUTE_NAMES.WELCOME },
   { path: ROUTE_NAMES.PROFITS, component: ProfitPage }
 ];

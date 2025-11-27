@@ -101,6 +101,11 @@ const goToBenefitSelection = async () => {
   showBenefitModal.value = false;
   await router.push(ROUTE_NAMES.EDIT_BENEFITS);
 };
+
+const goToSimpleMode = async () => {
+  showBenefitModal.value = false;
+  await router.push(ROUTE_NAMES.SIMPLE);
+};
 </script>
 
 <template>
@@ -213,8 +218,10 @@ const goToBenefitSelection = async () => {
     :open="showBenefitModal"
     description="Укажите категории, чтобы мы подобрали льготы и открыли чат."
     primary-label="Выбрать льготы"
+    simple-label="Простой режим"
     secondary-label="Продолжить позже"
     @primary="goToBenefitSelection"
+    @simple="goToSimpleMode"
     @close="showBenefitModal = false"
   />
 </template>
