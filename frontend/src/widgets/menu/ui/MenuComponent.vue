@@ -73,7 +73,7 @@ effect(() => {
 </template>
 <style lang="scss" scoped>
 .menu {
-  height: var(--menu-height);
+  height: calc(var(--menu-height) + 8px);
   display: flex;
   justify-content: space-between;
   background-color: var(--bg);
@@ -111,5 +111,10 @@ effect(() => {
     background-color: #fff;
     border-radius: 20px;
   }
+}
+
+.chat_item .item__icon_active,
+.chat_item .item__icon_unactive {
+  filter: none;
 }
 </style>

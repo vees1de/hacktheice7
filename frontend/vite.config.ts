@@ -31,19 +31,19 @@ export default defineConfig({
         orientation: 'any',
         icons: [
           {
-            src: '/assets/icons/16.png',
+            src: '/assets/icons/logo_quad.png',
             sizes: '16x16',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/assets/icons/32.png',
+            src: '/assets/icons/logo_quad.png',
             sizes: '32x32',
             type: 'image/png',
             purpose: 'any maskable'
           },
           {
-            src: '/assets/icons/192.png',
+            src: '/assets/icons/logo_quad.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any maskable'
