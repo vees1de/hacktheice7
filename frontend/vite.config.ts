@@ -20,8 +20,8 @@ export default defineConfig({
         sourcemap: false
       },
       manifest: {
-        short_name: 'ЛАССО',
-        name: 'ЛАССО',
+        short_name: 'Лассо',
+        name: 'ЛАССЛассоО',
         id: '/?source=pwa',
         start_url: '/?source=pwa',
         scope: '/',
@@ -34,19 +34,19 @@ export default defineConfig({
             src: '/assets/icons/16.png',
             sizes: '16x16',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
           },
           {
             src: '/assets/icons/32.png',
             sizes: '32x32',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
           },
           {
             src: '/assets/icons/192.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
           }
         ]
       }
