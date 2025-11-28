@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { type UserLossResult, lossApi } from '@entities/loss';
+import { useUserStore } from '@entities/user';
 import { ROUTE_NAMES } from '@shared/model/routes.constants';
+import { storeToRefs } from 'pinia';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -9,8 +11,10 @@ const { type = 'both' } = defineProps<{
 }>();
 
 const router = useRouter();
+const { benefitsVersion } = storeToRefs(useUserStore());
 const lossData = ref<UserLossResult | null>(null);
 const isLossLoading = ref(false);
+const lastLossVersion = ref<number | null>(null);
 const selectedSection = ref<'sales' | 'benefits' | null>(null);
 
 const currencyFormatter = new Intl.NumberFormat('ru-RU');
@@ -49,6 +53,20 @@ onMounted(() => {
     loadLoss();
   }
 });
+
+watch(
+  () => benefitsVersion.value,
+  newVersion => {
+    if (type === 'sales') return;
+    if (lastLossVersion.value === null) {
+      lastLossVersion.value = newVersion;
+      return;
+    }
+    if (newVersion === lastLossVersion.value) return;
+    lastLossVersion.value = newVersion;
+    loadLoss();
+  }
+);
 
 const modalLossItems = computed(() => lossData.value?.lossItems ?? []);
 const isModalOpen = computed(() => selectedSection.value !== null);

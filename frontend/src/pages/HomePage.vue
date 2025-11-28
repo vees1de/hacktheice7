@@ -13,13 +13,13 @@ import { QrSheetComponent } from '@widgets/qr-sheet';
 import { SalesCarousel } from '@widgets/sales-carousel';
 import { storeToRefs } from 'pinia';
 import QRCode from 'qrcode';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const viewStore = useViewStore();
 const { isQrSheetVisible } = storeToRefs(viewStore);
 const userStore = useUserStore();
-const { user, hasBenefits } = storeToRefs(userStore);
+const { user, hasBenefits, benefitsVersion } = storeToRefs(userStore);
 const catalogStore = useCatalogStore();
 const { benefits, offers, benefitsLoading, offersLoading } =
   storeToRefs(catalogStore);
@@ -27,6 +27,8 @@ const showBenefitModal = ref(false);
 const qrPreview = ref<string | null>(null);
 const qrPreviewLoading = ref(false);
 const qrPreviewError = ref('');
+const isRefreshingHome = ref(false);
+const pendingRefreshForce = ref(false);
 
 const loadQrPreview = async () => {
   if (qrPreviewLoading.value) return;
@@ -53,18 +55,40 @@ const loadQrPreview = async () => {
   }
 };
 
-onMounted(async () => {
-  if (!user.value?.id) {
+const refreshHomeData = async (forceCatalog = false) => {
+  if (isRefreshingHome.value) {
+    pendingRefreshForce.value = pendingRefreshForce.value || forceCatalog;
+    return;
+  }
+  isRefreshingHome.value = true;
+  try {
     try {
       await userStore.getUser();
     } catch (error) {
       // ignore
     }
+    await Promise.all([
+      catalogStore.fetchBenefits(forceCatalog),
+      catalogStore.fetchOffers(forceCatalog)
+    ]);
+    await loadQrPreview();
+  } finally {
+    isRefreshingHome.value = false;
+    if (pendingRefreshForce.value) {
+      pendingRefreshForce.value = false;
+      refreshHomeData(true);
+    }
   }
-  catalogStore.fetchBenefits();
-  catalogStore.fetchOffers();
-  loadQrPreview();
-});
+};
+
+watch(
+  () => benefitsVersion.value,
+  async (newVersion, oldVersion) => {
+    const forceCatalog = oldVersion !== undefined ? true : newVersion > 0;
+    await refreshHomeData(forceCatalog);
+  },
+  { immediate: true }
+);
 
 watch(
   () => [hasBenefits.value, user.value?.id],
